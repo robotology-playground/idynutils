@@ -35,6 +35,7 @@ private:
     bool isAvailable;
     std::string module_prefix;
     yarp::sig::Vector q_buffer;
+    bool internal_isAvailable;
 public:
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IPositionDirect *positionDirect;

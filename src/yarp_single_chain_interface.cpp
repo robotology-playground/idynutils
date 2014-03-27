@@ -1,10 +1,11 @@
-#include "../include/yarp_single_chain_interface.h"
+#include "drc_shared/yarp_single_chain_interface.h"
 
 using namespace walkman::drc;
 
-yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,std::string module_prefix_with_no_slash):module_prefix(module_prefix_with_no_slash),kinematic_chain(kinematic_chain)
+yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,std::string module_prefix_with_no_slash):
+module_prefix(module_prefix_with_no_slash),kinematic_chain(kinematic_chain),isAvailable(internal_isAvailable)
 {
-    isAvailable=false;
+    internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
     {
         std::cout<<"ERROR: do not insert / into module prefix"<<std::endl;
@@ -17,9 +18,9 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(controlMode);
         temp=temp&&polyDriver.view(positionControl);
-        isAvailable = temp;
+        internal_isAvailable = temp;
     }
-    if (!isAvailable)
+    if (!internal_isAvailable)
     {
         //TODO
         return;
@@ -48,7 +49,7 @@ void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
 
 void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
     if(!positionDirect->setPositions(q_d.data()))
-        std::cout<<"Cannot move left_leg using Direct Position Ctrl"<<std::cout;
+        std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::cout;
     
 }
 

@@ -1,4 +1,4 @@
-#include "../include/yarp_ft_interface.h"
+#include "drc_shared/yarp_ft_interface.h"
 #include <yarp/dev/IAnalogSensor.h>
 
 yarp_ft_interface::yarp_ft_interface(std::string kinematic_chain)
