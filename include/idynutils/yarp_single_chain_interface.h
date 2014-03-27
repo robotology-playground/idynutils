@@ -26,17 +26,20 @@ public:
         return joint_numbers;
     }
     ~yarp_single_chain_interface();
-    
+    inline std::string getChainName(){
+        return kinematic_chain;
+    }
 private:
     
     bool createPolyDriver ( const std::string &kinematic_chain, yarp::dev::PolyDriver &polyDriver );
     std::string kinematic_chain;
     int joint_numbers;
-    bool isAvailable;
     std::string module_prefix;
     yarp::sig::Vector q_buffer;
     bool internal_isAvailable;
 public:
+    bool& isAvailable;
+    
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IControlMode *controlMode;
