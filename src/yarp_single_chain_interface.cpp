@@ -3,7 +3,9 @@
 using namespace walkman::drc;
 
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,std::string module_prefix_with_no_slash):
-module_prefix(module_prefix_with_no_slash),kinematic_chain(kinematic_chain),isAvailable(internal_isAvailable)
+    module_prefix(module_prefix_with_no_slash),
+    kinematic_chain(kinematic_chain),
+    isAvailable(internal_isAvailable)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -18,6 +20,8 @@ module_prefix(module_prefix_with_no_slash),kinematic_chain(kinematic_chain),isAv
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(controlMode);
         temp=temp&&polyDriver.view(positionControl);
+        temp=temp&&polyDriver.view(impedancePositionControl);
+        temp=temp&&polyDriver.view(torqueControl);
         internal_isAvailable = temp;
     }
     if (!internal_isAvailable)

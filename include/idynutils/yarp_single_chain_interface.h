@@ -18,9 +18,9 @@ class yarp_single_chain_interface
 {
 public:
     yarp_single_chain_interface(std::string kinematic_chain, std::string module_prefix_with_no_slash);
-    yarp::sig::Vector sense();
-    void sense(yarp::sig::Vector& q_sensed);
-    void move(const yarp::sig::Vector& q_d);
+    virtual yarp::sig::Vector sense();
+    virtual void sense(yarp::sig::Vector& q_sensed);
+    virtual void move(const yarp::sig::Vector& q_d);
     inline int getNumberOfJoints()
     {
         return joint_numbers;
@@ -37,6 +37,7 @@ private:
     std::string module_prefix;
     yarp::sig::Vector q_buffer;
     bool internal_isAvailable;
+    yarp::dev::PolyDriver polyDriver;
 public:
     bool& isAvailable;
     
@@ -44,7 +45,9 @@ public:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IControlMode *controlMode;
     yarp::dev::IPositionControl2 *positionControl;
-    yarp::dev::PolyDriver polyDriver;
+    yarp::dev::IImpedanceControl *impedancePositionControl;
+    yarp::dev::ITorqueControl *torqueControl;
+
 
 };
 
