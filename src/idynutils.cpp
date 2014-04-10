@@ -1,5 +1,4 @@
 #include "drc_shared/idynutils.h"
-// #include "drc_shared/cartesian_utils.h"
 
 
 using namespace iCub::iDynTree;
@@ -136,6 +135,42 @@ void iDynUtils::setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector&
     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
     coman_iDyn3.setWorldBasePose(worldT);
     coman_iDyn3.computePositions();
+}
+
+/**
+ * THIS IS AN EXAMPLE OF A MODULE USING THESE UTILS
+ * 
+ * q=yarp_interface.sense();
+ * updateiDyn3Model(q);
+ * receiveTargetPosition(waist_target_position);
+ *  KDL::Frame waist_target_position;
+ *  KDL::Frame from_waist_to_end_effector = fromYARPMatrixtoKDLFrame(coman_iDyn3.getPosition(chain.index,true));
+ *  KDL::Vector position_error=-from_waist_to_end_effector*waist_target_position;
+ *  J=getSmallJacobian()
+ *  q_dot=pinv(J)*(k*position_error) , k>0, q_dot.size=chain.size
+ *  yarp_interface.moveSpeed(q_dot);
+ */
+
+yarp::sig::Matrix iDynUtils::getSmallJacobian(const kinematic_chain chain,bool world_frame)
+{    
+    yarp::sig::Matrix temp;
+    if(!coman_iDyn3.getRelativeJacobian(chain.joint_numbers.back(),chain.joint_numbers.front(),temp,world_frame))
+        std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
+    temp = temp.removeCols(0,6);    // removing unactuated joints (floating base)
+    for(unsigned int i = temp.cols();i>0; i--)
+    {
+        bool set_zero = true;
+        for(unsigned int j = 0; j <chain.joint_names.size(); ++j){
+            if(i-1 == chain.joint_numbers[j])
+            {
+                set_zero = false;
+                break;
+            }
+        }
+        if (set_zero)
+            temp.removeCols(i-1,1);
+    }
+    return temp;
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref)
