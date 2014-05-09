@@ -156,7 +156,6 @@ yarp::sig::Matrix iDynUtils::getSmallJacobian(const kinematic_chain chain,bool w
     yarp::sig::Matrix temp;
     if(!coman_iDyn3.getRelativeJacobian(chain.joint_numbers.back(),chain.joint_numbers.front(),temp,world_frame))
         std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
-    temp = temp.removeCols(0,6);    // removing unactuated joints (floating base)
     for(unsigned int i = temp.cols();i>0; i--)
     {
         bool set_zero = true;
