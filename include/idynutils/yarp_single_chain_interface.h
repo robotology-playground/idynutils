@@ -47,6 +47,7 @@ public:
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
+    yarp::dev::IVelocityControl *velocityControl;
 
 
 };

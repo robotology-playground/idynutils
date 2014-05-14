@@ -22,6 +22,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionControl);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
+	temp=temp&&polyDriver.view(velocityControl);
         internal_isAvailable = temp;
     }
     if (!internal_isAvailable)
