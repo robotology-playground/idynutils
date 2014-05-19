@@ -151,10 +151,10 @@ void iDynUtils::setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector&
  *  yarp_interface.moveSpeed(q_dot);
  */
 
-yarp::sig::Matrix iDynUtils::getSmallJacobian(const kinematic_chain chain,bool world_frame)
+yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,bool world_frame)
 {    
     yarp::sig::Matrix temp;
-    if(!coman_iDyn3.getRelativeJacobian(chain.joint_numbers.back(),chain.joint_numbers.front(),temp,world_frame))
+    if(!coman_iDyn3.getRelativeJacobian(chain.index,torso.index,temp,world_frame))
         std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
     for(unsigned int i = temp.cols();i>0; i--)
     {

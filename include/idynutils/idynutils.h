@@ -31,7 +31,7 @@ public:
     void fromRobotToIDyn(const yarp::sig::Vector& q_chain,yarp::sig::Vector& q_out,kinematic_chain& chain);
     void updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
     void setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
-    yarp::sig::Matrix getSmallJacobian(const kinematic_chain chain, bool world_frame=false);
+    yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
     
     
 private:
