@@ -12,6 +12,16 @@
 
 
 namespace walkman{
+    namespace coman{
+        static const std::string left_arm = "left_arm";
+        static const std::string right_arm = "right_arm";
+        static const std::string left_leg = "left_leg";
+        static const std::string right_leg = "right_leg";
+        static const std::string torso = "torso";
+    }
+}
+
+namespace walkman{
     namespace drc{
 
 class yarp_single_chain_interface
