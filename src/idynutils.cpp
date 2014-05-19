@@ -1,4 +1,5 @@
 #include "drc_shared/idynutils.h"
+#include <drc_shared/yarp_single_chain_interface.h>
 
 
 using namespace iCub::iDynTree;
@@ -6,10 +7,12 @@ using namespace yarp::math;
 
 // Here is the path to the URDF model
 const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/coman_yarp_apps/coman_urdf/coman.urdf";
+const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/coman_yarp_apps/srdf/coman.srdf";
 
 
 iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("left arm"),left_leg("left leg"),torso("torso")
 {
+    worldT.resize(4,4);
     iDyn3Model();
     setJointNames();   
     setControlledKinematicChainsLinkIndex();
@@ -20,6 +23,29 @@ iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("l
 
 void iDynUtils::setJointNames()
 {
+    
+    for(unsigned int i = 0; i < coman_robot_model->getJointModelGroupNames().size(); ++i)
+    {
+        std::string group = coman_robot_model->getJointModelGroupNames()[i];
+        moveit::core::JointModelGroup *joint_group = coman_robot_model->getJointModelGroup(group);
+        
+        if(group.compare(walkman::coman::left_arm) == 0)
+            left_arm.joint_names = joint_group->getActiveJointModelNames();
+        
+        if(group.compare(walkman::coman::right_arm) == 0)
+            right_arm.joint_names = joint_group->getActiveJointModelNames();
+        
+        if(group.compare(walkman::coman::left_leg) == 0)
+            left_leg.joint_names = joint_group->getActiveJointModelNames();
+        
+        if(group.compare(walkman::coman::right_leg) == 0)
+            right_leg.joint_names = joint_group->getActiveJointModelNames();
+        
+        if(group.compare(walkman::coman::torso) == 0)
+            torso.joint_names = joint_group->getActiveJointModelNames();
+    }
+    
+    /*
     right_arm.joint_names.push_back("RShSag");
     right_arm.joint_names.push_back("RShLat");
     right_arm.joint_names.push_back("RShYaw");
@@ -52,7 +78,7 @@ void iDynUtils::setJointNames()
     
     torso.joint_names.push_back("WaistSag");
     torso.joint_names.push_back("WaistLat");
-    torso.joint_names.push_back("WaistYaw");
+    torso.joint_names.push_back("WaistYaw");*/
 }
 
 
@@ -65,10 +91,26 @@ void iDynUtils::iDyn3Model()
     joint_sensor_names.push_back("r_ankle_joint");
     std::string waist_link_name = "Waist";
     
-    if (!coman_model.initFile(coman_model_folder))
-        std::cout<<"Failed to parse urdf robot model"<<std::endl;
+    coman_model.reset(new urdf::Model());
     
-    if (!kdl_parser::treeFromUrdfModel(coman_model, coman_tree))
+    if (!coman_model->initFile(coman_model_folder))
+        std::cout<<"Failed to parse urdf robot model"<<std::endl;
+    else
+    {
+        coman_srdf.reset(new srdf::Model());
+        if(!coman_srdf->initFile(*coman_model, coman_srdf_folder))
+            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+        else
+        {
+            coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
+            std::ostringstream robot_info;
+            coman_robot_model->printModelInfo(robot_info);
+            //ROS_INFO(robot_info.str().c_str());
+        }
+        
+    }
+    
+    if (!kdl_parser::treeFromUrdfModel(*coman_model, coman_tree))
         std::cout<<"Failed to construct kdl tree"<<std::endl;
     
     // Here the iDyn3 model of the robot is generated
@@ -80,7 +122,7 @@ void iDynUtils::iDyn3Model()
     yarp::sig::Vector qMin; qMin.resize(nJ,0.0);
     
     std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator i;
-    for(i = coman_model.joints_.begin(); i != coman_model.joints_.end(); ++i) {
+    for(i = coman_model->joints_.begin(); i != coman_model->joints_.end(); ++i) {
         int jIndex = coman_iDyn3.getDOFIndex(i->first);
         if(jIndex != -1) {
             qMax[jIndex] = i->second->limits->upper;
@@ -90,6 +132,21 @@ void iDynUtils::iDyn3Model()
     
     coman_iDyn3.setJointBoundMax(qMax);
     coman_iDyn3.setJointBoundMin(qMin);
+    
+    yarp::sig::Vector tauMax; tauMax.resize(nJ,1.0);
+    for(i = coman_model->joints_.begin(); i != coman_model->joints_.end(); ++i) {
+        int jIndex = coman_iDyn3.getDOFIndex(i->first);
+        if(jIndex != -1) {
+            tauMax[jIndex] = i->second->limits->effort;
+        }
+    }
+    std::cout<<"Setting torque MAX"<<std::endl;
+    
+   coman_iDyn3.setJointTorqueBoundMax(tauMax);
+    
+    yarp::sig::Vector a; a = coman_iDyn3.getJointTorqueMax();
+    std::cout<<"MAX TAU: [ "<<a.toString()<<std::endl;
+    
     std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
     
     std::cout<<"#DOFS: "<<coman_iDyn3.getNrOfDOFs()<<std::endl;
@@ -121,20 +178,32 @@ void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radiands,yarp::
     }
 }
 
+void iDynUtils::setWorldPose()
+{
+    worldT.eye();
+    coman_iDyn3.setWorldBasePose(worldT);
+    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex("l_sole"),true);
+    worldT(0,3) = 0.0;
+    worldT(1,3) = 0.0;
+    coman_iDyn3.setWorldBasePose(worldT);
+    coman_iDyn3.computePositions();
+}
+
 
 void iDynUtils::setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref)
 {
     updateiDyn3Model(q,dq_ref,ddq_ref);
     
-    yarp::sig::Matrix worldT(4,4);
-    worldT.eye();
-    coman_iDyn3.setWorldBasePose(worldT);
-    yarp::sig::Vector foot_pose(3);
-    foot_pose = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex("r_sole")).getCol(3).subVector(0,2);
-    worldT(2,3) = -foot_pose(2);
-    //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
-    coman_iDyn3.setWorldBasePose(worldT);
-    coman_iDyn3.computePositions();
+//     yarp::sig::Matrix worldT(4,4);
+//     worldT.eye();
+//     coman_iDyn3.setWorldBasePose(worldT);
+//     yarp::sig::Vector foot_pose(3);
+//     foot_pose = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex("r_sole")).getCol(3).subVector(0,2);
+//     worldT(2,3) = -foot_pose(2);
+//     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
+//     coman_iDyn3.setWorldBasePose(worldT);
+//     coman_iDyn3.computePositions();
+    setWorldPose();
 }
 
 /**
