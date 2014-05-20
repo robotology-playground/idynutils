@@ -6,8 +6,8 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 // Here is the path to the URDF model
-const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/coman_yarp_apps/coman_urdf/coman.urdf";
-const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/coman_yarp_apps/srdf/coman.srdf";
+const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
+const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
 
 
 iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("left arm"),left_leg("left leg"),torso("torso")
