@@ -1,4 +1,10 @@
-#include "drc_shared/cartesian_utils.h"
+/*
+ * Copyright: (C) 2014 Walkman Consortium
+ * Authors: Enrico Mingo
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*/
+
+#include <drc_shared/cartesian_utils.h>
 
 #define toDeg(X) (X*180.0/M_PI)
 
@@ -24,19 +30,25 @@ void cartesian_utils::computeCartesianError(yarp::sig::Matrix &T,
                                             yarp::sig::Matrix &Td,
                                             yarp::sig::Vector& position_error,
                                             yarp::sig::Vector& orientation_error)
-{
+{   
     position_error.resize(3, 0.0);
     orientation_error.resize(3, 0.0);
 
-    KDL::Frame x(KDL::Rotation::RPY(0.0, 0.0, 0.0), KDL::Vector(0.0, 0.0, 0.0)); // ee pose
+    KDL::Frame x; // ee pose
+    x.Identity();
     fromYARPMatrixtoKDLFrame(T, x);
     quaternion q;
     x.M.GetQuaternion(q.x, q.y, q.z, q.w);
 
-    KDL::Frame xd(KDL::Rotation::RPY(0.0, 0.0, 0.0), KDL::Vector(0.0, 0.0, 0.0)); // ee desired pose
+    KDL::Frame xd; // ee desired pose
+    xd.Identity();
     fromYARPMatrixtoKDLFrame(Td, xd);
     quaternion qd;
     xd.M.GetQuaternion(qd.x, qd.y, qd.z, qd.w);
+
+    //This is needed to move along the short path in the quaternion error
+    if(quaternion::dot(q, qd) < 0.0)
+        q = q.operator *(-1.0); //che cagata...
 
     KDL::Vector xerr_p; // Cartesian position error
     KDL::Vector xerr_o; // Cartesian orientation error
