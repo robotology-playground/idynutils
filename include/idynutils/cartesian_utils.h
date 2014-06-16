@@ -90,6 +90,7 @@ public:
     static void fromKDLFrameToYARPMatrix(const KDL::Frame& Ti, yarp::sig::Matrix& To);
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);
+    static void printKDLFrame(const KDL::Frame& T);
 };
 
 #endif

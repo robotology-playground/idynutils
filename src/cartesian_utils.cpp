@@ -87,18 +87,23 @@ void cartesian_utils::printHomogeneousTransform(const yarp::sig::Matrix &T)
     KDL::Frame p(KDL::Rotation::RPY(0.0, 0.0, 0.0), KDL::Vector(0.0, 0.0, 0.0)); // ee desired pose
     fromYARPMatrixtoKDLFrame(T, p);
 
+    printKDLFrame(p);
+}
+
+void cartesian_utils::printKDLFrame(const KDL::Frame& T)
+{
     double R = 0.0;
     double P = 0.0;
     double Y = 0.0;
-    p.M.GetRPY(R,P,Y);
+    T.M.GetRPY(R,P,Y);
 
     double qx = 0.0;
     double qy = 0.0;
     double qz = 0.0;
     double qw = 0.0;
-    p.M.GetQuaternion(qx, qy, qz, qw);
+    T.M.GetQuaternion(qx, qy, qz, qw);
 
-    std::cout<<"Position: [ "<<p.p.x()<<" "<<p.p.y()<<" "<<p.p.z()<<" ] [m]"<<std::endl;
+    std::cout<<"Position: [ "<<T.p.x()<<" "<<T.p.y()<<" "<<T.p.z()<<" ] [m]"<<std::endl;
     std::cout<<"RPY: [ "<<toDeg(R)<<" "<<toDeg(P)<<" "<<toDeg(Y)<<" ] [deg]"<<std::endl;
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
 }

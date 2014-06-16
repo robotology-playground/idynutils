@@ -34,13 +34,13 @@ public:
     void setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
     void setWorldPose();
     yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
-    
+    boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
+    robot_model::RobotModelPtr coman_robot_model; // A robot model
+
     
 private:
     KDL::Tree coman_tree; // A KDL Tree
-    boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
-    robot_model::RobotModelPtr coman_robot_model; // A robot model
-    
+
     void setJointNumbers(kinematic_chain& chain);
     void setChainIndex(std::string endeffector_name,kinematic_chain& chain);
     void setControlledKinematicChainsLinkIndex();
