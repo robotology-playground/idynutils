@@ -19,12 +19,12 @@ def yarpPose2KDLPose(poseBottle):
     r = kdl.Rotation()
     return kdl.Frame(r, v)
 
-def KDLPose2yarpPose(kdlPose, bottle):
+def KDLPose2yarpPose(kdlPose, bottle, frame="world"):
     bottle.clear()
 
     tmp0 = bottle.addList()
     tmp0.addString("frame")
-    tmp0.addString("world")
+    tmp0.addString(frame)
     p = kdlPose.p
     r = kdlPose.M.GetQuaternion()
     tmp = bottle.addList()
