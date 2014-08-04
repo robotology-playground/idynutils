@@ -2,10 +2,13 @@
 
 using namespace walkman::drc;
 
-yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,std::string module_prefix_with_no_slash):
+yarp_single_chain_interface::yarp_single_chain_interface(   std::string kinematic_chain,
+                                                            std::string module_prefix_with_no_slash,
+                                                            bool useSI):
     module_prefix(module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
-    isAvailable(internal_isAvailable)
+    isAvailable(internal_isAvailable),
+    _useSI(useSI)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -43,16 +46,17 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
 
 yarp::sig::Vector yarp_single_chain_interface::sense() {
     encodersMotor->getEncoders(q_buffer.data());
+    if(_useSI) convertEncoderToSI(q_buffer);
     return q_buffer;
-    
 }
 
 void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
     encodersMotor->getEncoders(q_sensed.data());
-    
+    if(_useSI) convertEncoderToSI(q_sensed);
 }
 
 void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
+    if(_useSI) convertMotorCommandToSI(q_d);
     if(!positionDirect->setPositions(q_d.data()))
         std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::cout;
     
@@ -91,6 +95,28 @@ yarp_single_chain_interface::~yarp_single_chain_interface()
         polyDriver.close();
 }
 
+inline void yarp_single_chain_interface::convertEncoderToSI(yarp::sig::Vector &vector)
+{
+    for(unsigned int i = 0; i < vector.size(); ++i) {
+        vector[i] *= M_PI / 180.0;
+    }
+}
+
+inline void yarp_single_chain_interface::convertMotorCommandToSI(yarp::sig::Vector &vector)
+{
+    for(unsigned int i = 0; i < vector.size(); ++i) {
+        vector[i] *= 180.0 / M_PI;
+    }
+}
+
+inline yarp::sig::Vector yarp_single_chain_interface::convertMotorCommandToSI(const yarp::sig::Vector &vector_in)
+{
+    yarp::sig::Vector vector_out(vector_in);
+    for(unsigned int i = 0; i < vector_out.size(); ++i) {
+        vector_out[i] *= 180.0 / M_PI;
+    }
+    return vector_out;
+}
 
 // #endif
 

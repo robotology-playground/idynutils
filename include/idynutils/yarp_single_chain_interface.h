@@ -4,12 +4,10 @@
 #include <yarp/dev/all.h>
 #include <vector>
 #include <iostream>
+#include <mutex>
+#include <math.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
-#include <mutex>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/BufferedPort.h>
-
 
 namespace walkman{
     namespace coman{
@@ -27,7 +25,15 @@ namespace walkman{
 class yarp_single_chain_interface
 {
 public:
-    yarp_single_chain_interface(std::string kinematic_chain, std::string module_prefix_with_no_slash);
+    /**
+     * @brief yarp_single_chain_interface is a simple interface for control of kinematic chains
+     * @param kinematic_chain the name of the kinematic chain as defined in the robot srdf
+     * @param module_prefix_with_no_slash the module name
+     * @param useSI does the sense() and move() use SI units? defaults to false
+     */
+    yarp_single_chain_interface(std::string kinematic_chain,
+                                std::string module_prefix_with_no_slash,
+                                bool useSI = false);
     virtual yarp::sig::Vector sense();
     virtual void sense(yarp::sig::Vector& q_sensed);
     virtual void move(const yarp::sig::Vector& q_d);
@@ -40,7 +46,7 @@ public:
         return kinematic_chain;
     }
 private:
-    
+
     bool createPolyDriver ( const std::string &kinematic_chain, yarp::dev::PolyDriver &polyDriver );
     std::string kinematic_chain;
     int joint_numbers;
@@ -48,9 +54,14 @@ private:
     yarp::sig::Vector q_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
+    bool _useSI;
+
+    void convertEncoderToSI(yarp::sig::Vector& vector);
+    void convertMotorCommandToSI(yarp::sig::Vector& vector);
+    yarp::sig::Vector convertMotorCommandToSI(const yarp::sig::Vector& vector);
 public:
     bool& isAvailable;
-    
+
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IControlMode *controlMode;
