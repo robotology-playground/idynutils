@@ -36,7 +36,8 @@ convex_hull::~convex_hull()
 
 }
 
-void convex_hull::getConvexHull(const std::list<KDL::Vector>& points, yarp::sig::Matrix& A, yarp::sig::Vector& b)
+bool convex_hull::getConvexHull(const std::list<KDL::Vector>& points,
+                                      std::vector<KDL::Vector>& convex_hull)
 {
     fromSTDList2PCLPointCloud(points, _pointCloud);
 
@@ -56,16 +57,22 @@ void convex_hull::getConvexHull(const std::list<KDL::Vector>& points, yarp::sig:
     huller.reconstruct(pointsInConvexHull, indicesOfVertexes);
     if(indicesOfVertexes.size() != 1) {
         ROS_ERROR("Error: more than one polygon found!");
-        return;
-    } else
-        pcl::Vertices hullVertices = indicesOfVertexes[0];
+    }
+    pcl::Vertices hullVertices = indicesOfVertexes[0];
 
     //printIndexAndPointsInfo(pointsInConvexHull, indicesOfVertexes);
 
-    getConstraints(pointsInConvexHull, indicesOfVertexes, A, b);
+    const pcl::Vertices& vs = indicesOfVertexes[0];
+    for(unsigned int j = 0; j < vs.vertices.size(); ++j)
+    {
+        pcl::PointXYZ pointXYZ = pointsInConvexHull.at(vs.vertices[j]);
+        convex_hull.push_back(fromPCLPointXYZ2KDLVector(pointXYZ));
+    }
 
     _pointCloud->clear();
     _projectedPointCloud->clear();
+
+    return true;
 }
 
 pcl::PointXYZ convex_hull::fromKDLVector2PCLPointXYZ(const KDL::Vector &point)
@@ -77,57 +84,18 @@ pcl::PointXYZ convex_hull::fromKDLVector2PCLPointXYZ(const KDL::Vector &point)
     return p;
 }
 
+KDL::Vector convex_hull::fromPCLPointXYZ2KDLVector(const pcl::PointXYZ &point)
+{
+    return KDL::Vector(point.x,point.y,point.z);
+}
+
 void convex_hull::fromSTDList2PCLPointCloud(const std::list<KDL::Vector> &points, pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud)
 {
     for(std::list<KDL::Vector>::const_iterator i = points.begin(); i != points.end(); ++i)
         point_cloud->push_back(fromKDLVector2PCLPointXYZ(*i));
 }
 
-void convex_hull::getLineCoefficients(const pcl::PointXYZ &p0, const pcl::PointXYZ &p1, double &a, double &b, double&c)
-{
-    double x1 = p0.x;
-    double x2 = p1.x;
-    double y1 = p0.y;
-    double y2 = p1.y;
 
-    a = y1 - y2;
-    b = x2 - x1;
-    c = -b*y1 -a*x1;
-}
-
-void convex_hull::getConstraints(const pcl::PointCloud<pcl::PointXYZ> &pointsInConvexHull, const std::vector<pcl::Vertices> &indicesOfVertexes,
-                                 yarp::sig::Matrix &A, yarp::sig::Vector &b)
-{
-    double _a, _b, _c;
-    A.resize(pointsInConvexHull.size() ,2);
-    b.resize(pointsInConvexHull.size());
-
-    unsigned int z = 0;
-    for(unsigned int i = 0; i < indicesOfVertexes.size(); ++i)
-    {
-        const pcl::Vertices& vs = indicesOfVertexes[i];
-        for(unsigned int j = 0; j < vs.vertices.size(); ++j)
-        {
-            unsigned int k = (j + 1)%vs.vertices.size();
-            getLineCoefficients(pointsInConvexHull[vs.vertices[j]], pointsInConvexHull[vs.vertices[k]], _a, _b, _c);
-            if(_c <= 0.0) { // see Moleskine
-                A(z,0) = + _a;
-                A(z,1) = + _b;
-                b[z] =   - _c;
-            } else {
-                A(z,0) = - _a;
-                A(z,1) = - _b;
-                b[z] =   + _c;
-            }
-            double ch_boundary = 1e-2;
-            if(fabs(_c) <= ch_boundary)
-                b[z] = 0.0;
-            else 
-                b[z] -= ch_boundary;
-            z++;
-        }
-    }
-}
 
 void convex_hull::projectPCL2Plane(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud, const double ransac_distance_thr,
                                    pcl::PointCloud<pcl::PointXYZ>::Ptr projected_point_cloud)
