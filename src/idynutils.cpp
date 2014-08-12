@@ -244,7 +244,11 @@ yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,
     return temp;
 }
 
-void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref)
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
+                                 const yarp::sig::Vector& dq_ref,
+                                 const yarp::sig::Vector& ddq_ref,
+                                 const bool set_world_pose,
+                                 const std::string &support_foot)
 {
     // Here we set these values in our internal model
     coman_iDyn3.setAng(q);
@@ -258,7 +262,11 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vec
     coman_iDyn3.setInertialMeasure(o, o, g);
     
     coman_iDyn3.kinematicRNEA();
-    coman_iDyn3.computePositions();
+
+    if(set_world_pose)
+        this->setWorldPose(support_foot);
+    else
+        coman_iDyn3.computePositions();
 }
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)

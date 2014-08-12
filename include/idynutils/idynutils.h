@@ -31,7 +31,7 @@ struct kinematic_chain
 public:
     kinematic_chain(std::string chain_name):chain_name(chain_name)
     {
-        
+
     }
   std::string chain_name;
   std::string name;
@@ -46,8 +46,25 @@ public:
     iDynUtils();
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
-    void fromRobotToIDyn(const yarp::sig::Vector& q_chain,yarp::sig::Vector& q_out,kinematic_chain& chain);
-    void updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
+
+    void fromRobotToIDyn(const yarp::sig::Vector& q_chain,
+                         yarp::sig::Vector& q_out,
+                         kinematic_chain& chain);
+
+    /**
+     * @brief updateiDyn3Model updates the underlying robot model
+     * @param q robot configuration
+     * @param dq_ref robot joint velocities
+     * @param ddq_ref robot joint accelerations
+     * @param set_world_pose do we update the base link pose wrt the world frame?
+     * @param support_foot what is the support foot link name in single stance mode?
+     * @TODO in the future we should use the IMU + rgbdslam + FK
+     */
+    void updateiDyn3Model(const yarp::sig::Vector& q,
+                          const yarp::sig::Vector& dq_ref,
+                          const yarp::sig::Vector& ddq_ref,
+                          const bool set_world_pose = false,
+                          const std::string& support_foot = "l_sole");
 
     /**
      * @brief setWorldPose calls setWorldPose() after updating the iDyn3 model
@@ -87,8 +104,8 @@ private:
     void iDyn3Model();
     yarp::sig::Matrix worldT;
     boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description
-    
-    
+
+
 };
 
 #endif // IDYNUTILS_H
