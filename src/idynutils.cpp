@@ -178,11 +178,11 @@ void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radiands,yarp::
     }
 }
 
-void iDynUtils::setWorldPose()
+void iDynUtils::setWorldPose(const std::string& support_foot)
 {
     worldT.eye();
     coman_iDyn3.setWorldBasePose(worldT);
-    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex("l_sole"),true);
+    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex(support_foot),true);
     worldT(0,3) = 0.0;
     worldT(1,3) = 0.0;
     coman_iDyn3.setWorldBasePose(worldT);
@@ -190,7 +190,10 @@ void iDynUtils::setWorldPose()
 }
 
 
-void iDynUtils::setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref)
+void iDynUtils::setWorldPose(const yarp::sig::Vector& q,
+                             const yarp::sig::Vector& dq_ref,
+                             const yarp::sig::Vector& ddq_ref,
+                             const std::string& support_foot)
 {
     updateiDyn3Model(q,dq_ref,ddq_ref);
     
@@ -203,7 +206,7 @@ void iDynUtils::setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector&
 //     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
 //     coman_iDyn3.setWorldBasePose(worldT);
 //     coman_iDyn3.computePositions();
-    setWorldPose();
+    setWorldPose(support_foot);
 }
 
 /**

@@ -48,13 +48,34 @@ public:
     iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
     void fromRobotToIDyn(const yarp::sig::Vector& q_chain,yarp::sig::Vector& q_out,kinematic_chain& chain);
     void updateiDyn3Model(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
-    void setWorldPose(const yarp::sig::Vector& q,const yarp::sig::Vector& dq_ref,const yarp::sig::Vector& ddq_ref);
-    void setWorldPose();
+
+    /**
+     * @brief setWorldPose calls setWorldPose() after updating the iDyn3 model
+     * @param q the robot configuration
+     * @param dq_ref the robot velocities
+     * @param ddq_ref the robot accelerations
+     * @param support_foot
+     */
+    void setWorldPose(const yarp::sig::Vector& q,
+                      const yarp::sig::Vector& dq_ref,
+                      const yarp::sig::Vector& ddq_ref,
+                      const std::string& support_foot = "l_sole");
+
+    /**
+     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
+     *                     which corresponds to the floating base configuration. This is done by taking a link,
+     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
+     *                     The x and y coordinates of the original frame remain unchanged.
+     * @param support_foot the link name wrt which we compute the z-offset. By default, l_sole.
+     *                     This should be, in general, the support foot.
+     */
+    void setWorldPose(const std::string& support_foot = "l_sole");
+
     yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
     boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
     robot_model::RobotModelPtr coman_robot_model; // A robot model
 
-    
+
 private:
     KDL::Tree coman_tree; // A KDL Tree
 
