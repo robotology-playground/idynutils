@@ -116,7 +116,7 @@ public:
     boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
     robot_model::RobotModelPtr coman_robot_model; // A robot model
 
-        const std::vector<std::string> &getJointNames() const;
+    const std::vector<std::string> &getJointNames() const;
     yarp::sig::Vector zeros;
 
 private:
