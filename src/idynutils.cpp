@@ -17,7 +17,8 @@ iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("l
     setJointNames();   
     setControlledKinematicChainsLinkIndex();
     setControlledKinematicChainsJointNumbers();
-    
+
+    zeros.resize(coman_iDyn3.getNrOfDOFs(),0.0);
 }
 
 
@@ -242,6 +243,19 @@ yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,
             temp.removeCols(i-1,1);
     }
     return temp;
+}
+
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
+                                 const bool set_world_pose,
+                                 const std::string &support_foot) {
+    this->updateiDyn3Model(q,zeros,zeros, set_world_pose, support_foot);
+}
+
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
+                                 const yarp::sig::Vector& dq,
+                                 const bool set_world_pose,
+                                 const std::string &support_foot) {
+    this->updateiDyn3Model(q,dq,zeros, set_world_pose, support_foot);
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
