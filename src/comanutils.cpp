@@ -14,9 +14,13 @@ ComanUtils::ComanUtils(const std::string moduleName,
 {
 }
 
-void ComanUtils::sense(yarp::sig::Vector &q, yarp::sig::Vector &qdot, yarp::sig::Vector &tau)
+void ComanUtils::sense(yarp::sig::Vector &q,
+                       yarp::sig::Vector &qdot,
+                       yarp::sig::Vector &tau)
 {
-
+    q = sensePosition();
+    qdot = senseVelocity();
+    tau = senseTorque();
 }
 
 yarp::sig::Vector &ComanUtils::sensePosition()
