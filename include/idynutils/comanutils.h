@@ -27,7 +27,7 @@ class ComanUtils
 {
 public:
     ComanUtils(const std::string moduleName,
-               const int controlModeVocab);
+               const int controlModeVocab = VOCAB_CM_POSITION);
 
     walkman::drc::yarp_single_chain_interface right_arm, left_arm;
     walkman::drc::yarp_single_chain_interface torso;

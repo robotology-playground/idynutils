@@ -5,7 +5,7 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
-                       const int controlModeVocab = VOCAB_CM_POSITION):
+                       const int controlModeVocab):
     right_arm("right arm", moduleName, controlModeVocab, true),
     right_leg("right leg", moduleName, controlModeVocab, true),
     left_arm("left arm", moduleName, controlModeVocab, true),
