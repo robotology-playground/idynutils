@@ -6,10 +6,10 @@ using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
-    right_arm("right arm", moduleName, controlModeVocab, true),
-    right_leg("right leg", moduleName, controlModeVocab, true),
-    left_arm("left arm", moduleName, controlModeVocab, true),
-    left_leg("left leg", moduleName, controlModeVocab, true),
+    right_arm("right_arm", moduleName, controlModeVocab, true),
+    right_leg("right_leg", moduleName, controlModeVocab, true),
+    left_arm("left_arm", moduleName, controlModeVocab, true),
+    left_leg("left_leg", moduleName, controlModeVocab, true),
     torso("torso", moduleName, controlModeVocab, true)
 {
 }
