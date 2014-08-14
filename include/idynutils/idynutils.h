@@ -116,10 +116,8 @@ public:
     boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
     robot_model::RobotModelPtr coman_robot_model; // A robot model
 
-    /**
-     * @brief zeros a vector of zeros equal to the number of dofs of the robot
-     */
-    yarp::sig::Vector zeros;
+    std::vector<std::string> joint_names;
+
 private:
     KDL::Tree coman_tree; // A KDL Tree
 
@@ -129,6 +127,8 @@ private:
     void setControlledKinematicChainsJointNumbers();
     void setJointNames();
     void iDyn3Model();
+
+    yarp::sig::Vector zeros;
 
     yarp::sig::Matrix worldT;
     boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description

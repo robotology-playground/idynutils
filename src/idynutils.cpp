@@ -24,7 +24,15 @@ iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("l
 
 void iDynUtils::setJointNames()
 {
-    
+    std::vector<std::string> temp_joint_names = this->coman_robot_model->getJointModelNames();
+    this->joint_names.resize(coman_iDyn3.getNrOfDOFs(), "unknown_joint_name");
+    for(unsigned int i = 0; i < temp_joint_names.size(); ++i) {
+        int jointIndex = coman_iDyn3.getDOFIndex(temp_joint_names[i]);
+        if(jointIndex>=0 &&
+           jointIndex <= coman_iDyn3.getNrOfDOFs())
+            joint_names[jointIndex] = temp_joint_names[i];
+    }
+
     for(unsigned int i = 0; i < coman_robot_model->getJointModelGroupNames().size(); ++i)
     {
         std::string group = coman_robot_model->getJointModelGroupNames()[i];
