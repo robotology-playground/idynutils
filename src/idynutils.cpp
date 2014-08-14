@@ -289,6 +289,7 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.setInertialMeasure(o, o, g);
     
     coman_iDyn3.kinematicRNEA();
+    coman_iDyn3.dynamicRNEA();
 
     if(set_world_pose)
         this->setWorldPose(support_foot);
