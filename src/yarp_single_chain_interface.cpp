@@ -2,9 +2,10 @@
 
 using namespace walkman::drc;
 
-yarp_single_chain_interface::yarp_single_chain_interface(   std::string kinematic_chain,
-                                                            std::string module_prefix_with_no_slash,
-                                                            bool useSI):
+yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
+                                                         std::string module_prefix_with_no_slash,
+                                                         const int controlModeVocab,
+                                                         bool useSI):
     module_prefix(module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
@@ -36,13 +37,70 @@ yarp_single_chain_interface::yarp_single_chain_interface(   std::string kinemati
     
     encodersMotor->getAxes(&(this->joint_numbers));
     q_buffer.resize(joint_numbers);
-    for(unsigned int i = 0; i < joint_numbers; ++i)
-    {
-        controlMode->setPositionMode(i);
+    qdot_buffer.resize(joint_numbers);
+    tau_buffer.resize(joint_numbers);
+
+    switch(controlModeVocab) {
+        case VOCAB_CM_TORQUE:
+        for(unsigned int i = 0; i < joint_numbers; ++i)
+        {
+            controlMode->setTorqueMode(i);
+        }
+        break;
+        case VOCAB_CM_IMPEDANCE_POS:
+        for(unsigned int i = 0; i < joint_numbers; ++i)
+        {
+            controlMode->setImpedancePositionMode(i);
+        }
+        break;
+        case VOCAB_CM_VELOCITY:
+        for(unsigned int i = 0; i < joint_numbers; ++i)
+        {
+            controlMode->setVelocityMode(i);
+        }
+        break;
+    case VOCAB_CM_POSITION:
+    default:
+        for(unsigned int i = 0; i < joint_numbers; ++i)
+        {
+            controlMode->setPositionMode(i);
+        }
+        break;
     }
     
 }
 
+yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
+    torqueControl->getTorques(tau_buffer.data());
+    return tau_buffer;
+}
+
+void yarp_single_chain_interface::senseTorque(yarp::sig::Vector& tau_sensed) {
+    if(tau_sensed.size() != this->joint_numbers)
+        tau_sensed.resize(this->joint_numbers);
+    torqueControl->getTorques(tau_sensed.data());
+}
+
+yarp::sig::Vector yarp_single_chain_interface::senseVelocity() {
+    encodersMotor->getEncoderSpeeds(qdot_buffer.data());
+    if(_useSI) convertEncoderToSI(qdot_buffer);
+    return qdot_buffer;
+}
+
+void yarp_single_chain_interface::senseVelocity(yarp::sig::Vector& velocity_sensed) {
+    if(velocity_sensed.size() != this->joint_numbers)
+        velocity_sensed.resize(this->joint_numbers);
+    encodersMotor->getEncoderSpeeds(velocity_sensed.data());
+    if(_useSI) convertEncoderToSI(velocity_sensed);
+}
+
+yarp::sig::Vector yarp_single_chain_interface::sensePosition() {
+    return sense();
+}
+
+void yarp_single_chain_interface::sensePosition(yarp::sig::Vector& q_sensed) {
+    sense(q_sensed);
+}
 
 yarp::sig::Vector yarp_single_chain_interface::sense() {
     encodersMotor->getEncoders(q_buffer.data());
@@ -51,6 +109,8 @@ yarp::sig::Vector yarp_single_chain_interface::sense() {
 }
 
 void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
+    if(q_sensed.size() != this->joint_numbers)
+        q_sensed.resize(this->joint_numbers);
     encodersMotor->getEncoders(q_sensed.data());
     if(_useSI) convertEncoderToSI(q_sensed);
 }

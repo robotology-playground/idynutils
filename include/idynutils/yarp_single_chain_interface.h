@@ -33,9 +33,20 @@ public:
      */
     yarp_single_chain_interface(std::string kinematic_chain,
                                 std::string module_prefix_with_no_slash,
+                                const int controlModeVocab = VOCAB_CM_POSITION,
                                 bool useSI = false);
     virtual yarp::sig::Vector sense();
     virtual void sense(yarp::sig::Vector& q_sensed);
+
+    yarp::sig::Vector sensePosition();
+    void sensePosition(yarp::sig::Vector &q_sensed);
+
+    yarp::sig::Vector senseVelocity();
+    void senseVelocity(yarp::sig::Vector &velocity_sensed);
+
+    yarp::sig::Vector senseTorque();
+    void senseTorque(yarp::sig::Vector &tau_sensed);
+
     virtual void move(const yarp::sig::Vector& q_d);
     inline int getNumberOfJoints()
     {
@@ -52,6 +63,8 @@ private:
     int joint_numbers;
     std::string module_prefix;
     yarp::sig::Vector q_buffer;
+    yarp::sig::Vector qdot_buffer;
+    yarp::sig::Vector tau_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
     bool _useSI;
@@ -69,7 +82,6 @@ public:
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
     yarp::dev::IVelocityControl *velocityControl;
-
 
 };
 
