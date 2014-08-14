@@ -116,10 +116,11 @@ public:
     boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
     robot_model::RobotModelPtr coman_robot_model; // A robot model
 
-    std::vector<std::string> joint_names;
+        const std::vector<std::string> &getJointNames() const;
     yarp::sig::Vector zeros;
 
 private:
+    std::vector<std::string> joint_names;
     KDL::Tree coman_tree; // A KDL Tree
 
     void setJointNumbers(kinematic_chain& chain);

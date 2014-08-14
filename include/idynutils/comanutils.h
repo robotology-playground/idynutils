@@ -43,6 +43,7 @@ public:
     yarp::sig::Vector& senseTorque();
 
     const unsigned int& getNumberOfJoints() const;
+    const std::vector<std::string> &getJointNames() const;
 
 private:
     unsigned int number_of_joints;

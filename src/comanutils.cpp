@@ -23,6 +23,11 @@ const unsigned int& ComanUtils::getNumberOfJoints() const
     return this->number_of_joints;
 }
 
+const std::vector<std::string> &ComanUtils::getJointNames() const
+{
+    return idynutils.getJointNames();
+}
+
 void ComanUtils::sense(yarp::sig::Vector &q,
                        yarp::sig::Vector &qdot,
                        yarp::sig::Vector &tau)

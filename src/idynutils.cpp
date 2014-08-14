@@ -21,6 +21,9 @@ iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("l
     zeros.resize(coman_iDyn3.getNrOfDOFs(),0.0);
 }
 
+const std::vector<std::string>& iDynUtils::getJointNames() const {
+    return this->joint_names;
+}
 
 void iDynUtils::setJointNames()
 {
