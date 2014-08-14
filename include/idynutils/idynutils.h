@@ -117,6 +117,7 @@ public:
     robot_model::RobotModelPtr coman_robot_model; // A robot model
 
     std::vector<std::string> joint_names;
+    yarp::sig::Vector zeros;
 
 private:
     KDL::Tree coman_tree; // A KDL Tree
@@ -127,8 +128,6 @@ private:
     void setControlledKinematicChainsJointNumbers();
     void setJointNames();
     void iDyn3Model();
-
-    yarp::sig::Vector zeros;
 
     yarp::sig::Matrix worldT;
     boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description
