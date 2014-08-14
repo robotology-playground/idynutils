@@ -12,6 +12,15 @@ ComanUtils::ComanUtils(const std::string moduleName,
     left_leg("left_leg", moduleName, controlModeVocab, true),
     torso("torso", moduleName, controlModeVocab, true)
 {
+    this->number_of_joints = idynutils.coman_iDyn3.getNrOfDOFs();
+    q_sensed.resize(this->number_of_joints,0.0);
+    qdot_sensed.resize(this->number_of_joints,0.0);
+    tau_sensed.resize(this->number_of_joints,0.0);
+}
+
+const unsigned int& ComanUtils::getNumberOfJoints() const
+{
+    return this->number_of_joints;
 }
 
 void ComanUtils::sense(yarp::sig::Vector &q,

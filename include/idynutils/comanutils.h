@@ -42,7 +42,11 @@ public:
     yarp::sig::Vector& senseVelocity();
     yarp::sig::Vector& senseTorque();
 
+    const unsigned int& getNumberOfJoints() const;
+
 private:
+    unsigned int number_of_joints;
+
     yarp::sig::Vector q_sensed;
 
     yarp::sig::Vector q_sensed_left_arm;
