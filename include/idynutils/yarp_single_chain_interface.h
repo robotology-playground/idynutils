@@ -48,14 +48,12 @@ public:
     void senseTorque(yarp::sig::Vector &tau_sensed);
 
     virtual void move(const yarp::sig::Vector& q_d);
-    inline int getNumberOfJoints()
-    {
-        return joint_numbers;
-    }
+
+    int getNumberOfJoints();
+    std::string getChainName();
+
     ~yarp_single_chain_interface();
-    inline std::string getChainName(){
-        return kinematic_chain;
-    }
+
 private:
 
     bool createPolyDriver ( const std::string &kinematic_chain, yarp::dev::PolyDriver &polyDriver );

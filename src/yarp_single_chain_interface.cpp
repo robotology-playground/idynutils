@@ -122,6 +122,15 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
     
 }
 
+inline int yarp_single_chain_interface::getNumberOfJoints()
+{
+    return this->joint_numbers;
+}
+
+inline std::string yarp_single_chain_interface::getChainName(){
+    return kinematic_chain;
+}
+
 bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, yarp::dev::PolyDriver& polyDriver)
 {
     yarp::os::Property options;
