@@ -49,8 +49,8 @@ public:
 
     virtual void move(const yarp::sig::Vector& q_d);
 
-    int getNumberOfJoints();
-    std::string getChainName();
+    const int& getNumberOfJoints();
+    const std::string &getChainName();
 
     ~yarp_single_chain_interface();
 
