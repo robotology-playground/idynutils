@@ -179,11 +179,13 @@ void iDynUtils::setControlledKinematicChainsLinkIndex()
     setChainIndex("Waist",torso);    
 }
 
-void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radiands,yarp::sig::Vector& q_out,kinematic_chain& chain)
+void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radians,
+                                yarp::sig::Vector& q_out,
+                                kinematic_chain& chain)
 {
     for(unsigned int i = 0; i < chain.joint_numbers.size(); ++i)
     {
-        q_out[chain.joint_numbers[i]] = q_chain_radiands[i];
+        q_out[chain.joint_numbers[i]] = q_chain_radians[i];
     }
 }
 
