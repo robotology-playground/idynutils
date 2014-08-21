@@ -77,6 +77,12 @@ public:
 class cartesian_utils
 {
 public:
+
+    class CostFunction {
+    public:
+        virtual double compute(const yarp::sig::Vector &x) = 0;
+    };
+
     static void computeCartesianError(yarp::sig::Matrix &T,
                                       yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
@@ -91,6 +97,9 @@ public:
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);
     static void printKDLFrame(const KDL::Frame& T);
+    yarp::sig::Vector computeGradient(yarp::sig::Vector &x,
+                                      CostFunction &fun,
+                                      const double &step = 1E-3);
 };
 
 #endif

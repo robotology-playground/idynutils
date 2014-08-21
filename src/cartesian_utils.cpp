@@ -5,6 +5,9 @@
 */
 
 #include <drc_shared/cartesian_utils.h>
+#include <yarp/math/Math.h>
+
+using namespace yarp::math;
 
 #define toDeg(X) (X*180.0/M_PI)
 
@@ -106,4 +109,24 @@ void cartesian_utils::printKDLFrame(const KDL::Frame& T)
     std::cout<<"Position: [ "<<T.p.x()<<" "<<T.p.y()<<" "<<T.p.z()<<" ] [m]"<<std::endl;
     std::cout<<"RPY: [ "<<toDeg(R)<<" "<<toDeg(P)<<" "<<toDeg(Y)<<" ] [deg]"<<std::endl;
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
+}
+
+yarp::sig::Vector cartesian_utils::computeGradient(yarp::sig::Vector &x,
+                                                   CostFunction& fun,
+                                                   const double& step) {
+    static yarp::sig::Vector gradient(x.size(),0.0);
+    static yarp::sig::Vector deltas(x.size(),0.0);
+
+    for(unsigned int i = 0; i < gradient.size(); ++i)
+    {
+        const double h = step;
+        deltas[i] = h;
+        double fun_a = fun.compute(x+deltas);
+        double fun_b = fun.compute(x-deltas);
+
+        gradient[i] = (fun_a - fun_b)/(2*h);
+        deltas[i] = 0;
+    }
+
+    return gradient;
 }
