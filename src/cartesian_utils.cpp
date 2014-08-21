@@ -111,7 +111,7 @@ void cartesian_utils::printKDLFrame(const KDL::Frame& T)
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
 }
 
-yarp::sig::Vector cartesian_utils::computeGradient(yarp::sig::Vector &x,
+yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
                                                    CostFunction& fun,
                                                    const double& step) {
     static yarp::sig::Vector gradient(x.size(),0.0);

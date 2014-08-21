@@ -87,17 +87,23 @@ public:
                                       yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
                                       yarp::sig::Vector& orientation_error);
+
     static void homogeneousMatrixFromRPY(yarp::sig::Matrix& T,
                                          const double x, const double y, const double z,
                                          const double R, const double P, const double Y);
     static void homogeneousMatrixFromQuaternion(yarp::sig::Matrix& T,
                                                 const double x, const double y, const double z,
                                                 const double quaternion_x, const double quaternion_y, const double quaternion_z, const double quaternion_w);
+
     static void fromKDLFrameToYARPMatrix(const KDL::Frame& Ti, yarp::sig::Matrix& To);
+
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
+
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);
+
     static void printKDLFrame(const KDL::Frame& T);
-    static yarp::sig::Vector computeGradient(yarp::sig::Vector &x,
+
+    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
                                              CostFunction &fun,
                                              const double &step = 1E-3);
 };
