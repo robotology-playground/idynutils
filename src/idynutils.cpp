@@ -1,7 +1,7 @@
 #include "drc_shared/idynutils.h"
 #include <iCub/iDynTree/yarp_kdl.h>
 #include <drc_shared/yarp_single_chain_interface.h>
-
+#include <yarp/math/SVD.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -362,4 +362,57 @@ void iDynUtils::setControlledKinematicChainsJointNumbers()
     setJointNumbers(left_arm);
     setJointNumbers(left_leg);
     setJointNumbers(torso);
+}
+
+
+yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
+    yarp::sig::Matrix J_left_foot, J_right_foot, J_left_hand, J_right_hand;
+    yarp::sig::Matrix J_contacts;
+
+    if(contacts & CONTACT_LEFT_FOOT) {
+        this->coman_iDyn3.getJacobian(this->left_leg.index, J_left_foot);
+        J_contacts = pile(J_contacts, J_left_foot);
+    }
+
+    if(contacts & CONTACT_RIGHT_FOOT) {
+        this->coman_iDyn3.getJacobian(this->right_leg.index, J_right_foot);
+        J_contacts = pile(J_contacts, J_right_foot);
+    }
+
+    if(contacts & CONTACT_LEFT_HAND) {
+        this->coman_iDyn3.getJacobian(this->left_arm.index, J_left_hand);
+        J_contacts = pile(J_contacts, J_left_hand);
+    }
+
+    if(contacts & CONTACT_RIGHT_HAND) {
+        this->coman_iDyn3.getJacobian(this->right_arm.index, J_right_hand);
+        J_contacts = pile(J_contacts, J_right_hand);
+    }
+
+    return computeFloatingBaseProjector(J_contacts);
+
+}
+
+yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts) {
+    int nJ = this->coman_iDyn3.getNrOfDOFs();
+    /**
+     * @brief nullContacts is a R^{n+6xn+6} matrix that projects into
+     *                     the null space of J_contacts
+     */
+    yarp::sig::Matrix nullContacts = nullspaceProjection(JContacts, 1E-6);
+    assert(nullContacts.cols() == nullContacts.rows());
+    assert(nullContacts.cols() == nJ + 6);
+
+    yarp::sig::Matrix floatingBaseProjector;
+
+    floatingBaseProjector = pinv(nullContacts.submatrix(6,6 + nJ-1,
+                                                        6,6 + nJ-1),1E-7)
+                                                        *
+                                nullContacts.submatrix(6,6 + nJ -1,
+                                                       0,6 + nJ -1);
+
+    assert(floatingBaseProjector.cols() == 6+nJ);
+    assert(floatingBaseProjector.rows() == nJ);
+
+    return floatingBaseProjector;
 }
