@@ -1,4 +1,5 @@
 #include "drc_shared/idynutils.h"
+#include <iCub/iDynTree/yarp_kdl.h>
 #include <drc_shared/yarp_single_chain_interface.h>
 
 
@@ -192,22 +193,60 @@ void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radians,
     }
 }
 
-void iDynUtils::setWorldPose(const std::string& support_foot)
+void iDynUtils::initWorldPose(const std::string& anchor)
 {
-    worldT.eye();
-    coman_iDyn3.setWorldBasePose(worldT);
-    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex(support_foot),true);
+    this->anchor_name = anchor;
+    this->anchor_T_world = this->setWorldPose(anchor);
+}
+
+void iDynUtils::updateWorldPose()
+{
+    assert(this->anchor_name.length() > 0);
+    this->setWorldPose(anchor_T_world, anchor_name);
+}
+
+
+
+KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
+{
+    // worldT = anchor_T_baselink
+    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex(anchor),0);
+
+    // anchor_T_world is the offset between the anchor link and the inertial frame,
+    //                which is in this case the projection of the base link
+    //                ( the base link position vector in anchor frame )
+    //                on to the plane determined by the anchor frame x and y axes
+    KDL::Frame anchor_T_world;
+    anchor_T_world.Identity();
+    anchor_T_world.p[0] = worldT(0,3);
+    anchor_T_world.p[1] = worldT(1,3);
+
     worldT(0,3) = 0.0;
     worldT(1,3) = 0.0;
+    coman_iDyn3.setWorldBasePose(worldT);
+
+    coman_iDyn3.computePositions();
+
+    return anchor_T_world;
+}
+
+void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor)
+{
+    worldT =    KDLtoYarp_position(
+                    anchor_T_world.Inverse()
+                    *
+                    coman_iDyn3.getPositionKDL(coman_iDyn3.getLinkIndex(anchor),0)
+                );
+
     coman_iDyn3.setWorldBasePose(worldT);
     coman_iDyn3.computePositions();
 }
 
 
-void iDynUtils::setWorldPose(const yarp::sig::Vector& q,
+KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
                              const yarp::sig::Vector& dq_ref,
                              const yarp::sig::Vector& ddq_ref,
-                             const std::string& support_foot)
+                             const std::string& anchor)
 {
     updateiDyn3Model(q,dq_ref,ddq_ref);
     
@@ -220,7 +259,7 @@ void iDynUtils::setWorldPose(const yarp::sig::Vector& q,
 //     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
 //     coman_iDyn3.setWorldBasePose(worldT);
 //     coman_iDyn3.computePositions();
-    setWorldPose(support_foot);
+    return setWorldPose(anchor);
 }
 
 /**
@@ -281,19 +320,29 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.setAng(q);
     coman_iDyn3.setDAng(dq_ref);
     coman_iDyn3.setD2Ang(ddq_ref);
-    // This is the fake Inertial Measure
-    yarp::sig::Vector g(3);
-    g[0] = 0; g[1] = 0; g[2] = 9.81;
-    yarp::sig::Vector o(3);
-    o[0] = 0; o[1] = 0; o[2] = 0;
-    coman_iDyn3.setInertialMeasure(o, o, g);
     
     coman_iDyn3.kinematicRNEA();
 
-    if(set_world_pose)
-        this->setWorldPose(support_foot);
-    else
+    if(set_world_pose) {
+        if(anchor_name.length() == 0)
+            this->initWorldPose(support_foot);
+        else this->updateWorldPose();
+    } else
         coman_iDyn3.computePositions();
+
+    // This is the fake Inertial Measure
+    yarp::sig::Vector g(3);
+    g[0] = 0; g[1] = 0; g[2] = 9.81;
+
+    // get the rotational part of worldT (w_R_b),
+    // compute the inverse (b_R_w = w_R_b^T) and multiply by w_g
+    // to obtain g expressed in base link coordinates, b_g
+    g = worldT.submatrix(0,2,0,2).transposed() * g;
+
+
+    yarp::sig::Vector o(3);
+    o[0] = 0; o[1] = 0; o[2] = 0;
+    coman_iDyn3.setInertialMeasure(o, o, g);
 
     coman_iDyn3.dynamicRNEA();
 }

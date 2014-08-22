@@ -90,27 +90,57 @@ public:
                           const bool set_world_pose = false,
                           const std::string& support_foot = "l_sole");
 
+
     /**
-     * @brief setWorldPose calls setWorldPose() after updating the iDyn3 model
+     * @brief initWorldPose inits the inertial frame putting it on the plane idenfitied by
+     *                      the anchor link, on the point located by the projection of the
+     *                      base link position on that same plane
+     * @param anchor        the anchor link
+     */
+    void initWorldPose(const std::string &anchor = "l_sole");
+
+    /**
+     * @brief updateWorldPose updates the world pose relative to the current robot state,
+     *        using anchor and offset calculated by the initWorldPose function
+     */
+    void updateWorldPose();
+
+    /**
+     * @brief *DEPRECATED* setWorldPose calls setWorldPose() after updating the iDyn3 model
      * @param q the robot configuration
      * @param dq_ref the robot velocities
      * @param ddq_ref the robot accelerations
-     * @param support_foot
+     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
+     *                     This should be, in general, the support foot.
      */
-    void setWorldPose(const yarp::sig::Vector& q,
-                      const yarp::sig::Vector& dq_ref,
-                      const yarp::sig::Vector& ddq_ref,
-                      const std::string& support_foot = "l_sole");
+    KDL::Frame setWorldPose(const yarp::sig::Vector& q,
+                            const yarp::sig::Vector& dq_ref,
+                            const yarp::sig::Vector& ddq_ref,
+                            const std::string& anchor = "l_sole");
 
     /**
      * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
      *                     which corresponds to the floating base configuration. This is done by taking a link,
      *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
      *                     The x and y coordinates of the original frame remain unchanged.
-     * @param support_foot the link name wrt which we compute the z-offset. By default, l_sole.
-     *                     This should be, in general, the support foot.
+     *                     Returns anchor_T_world, the offset betweent the anchor link and the
+     *                     inertial frame
+     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
+     *               This should be, in general, the support foot.
      */
-    void setWorldPose(const std::string& support_foot = "l_sole");
+    KDL::Frame setWorldPose(const std::string& anchor = "l_sole");
+
+    /**
+     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
+     *                     which corresponds to the floating base configuration. This is done by taking a link,
+     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
+     *                     The x and y coordinates of the original frame remain unchanged.
+     * @param anchor_T_world the offset between the inertial frame and the anchor frame, expressed in the
+     *                       anchor frame
+     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
+     *               This should be, in general, the support foot.
+     */
+    void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
 
     yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
     boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
@@ -122,6 +152,9 @@ public:
 private:
     std::vector<std::string> joint_names;
     KDL::Tree coman_tree; // A KDL Tree
+
+    std::string anchor_name;    // last anchor used
+    KDL::Frame anchor_T_world;  // offset between inertial frame and anchor link (e.g., l_sole)
 
     void setJointNumbers(kinematic_chain& chain);
     void setChainIndex(std::string endeffector_name,kinematic_chain& chain);
