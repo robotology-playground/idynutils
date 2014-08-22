@@ -331,17 +331,15 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
         coman_iDyn3.computePositions();
 
     // This is the fake Inertial Measure
-    yarp::sig::Vector g(3);
-    g[0] = 0; g[1] = 0; g[2] = 9.81;
+    yarp::sig::Vector g(3,0.0);
+    g[2] = 9.81;
 
     // get the rotational part of worldT (w_R_b),
     // compute the inverse (b_R_w = w_R_b^T) and multiply by w_g
     // to obtain g expressed in base link coordinates, b_g
     g = worldT.submatrix(0,2,0,2).transposed() * g;
 
-
-    yarp::sig::Vector o(3);
-    o[0] = 0; o[1] = 0; o[2] = 0;
+    yarp::sig::Vector o(3,0.0);
     coman_iDyn3.setInertialMeasure(o, o, g);
 
     coman_iDyn3.dynamicRNEA();
