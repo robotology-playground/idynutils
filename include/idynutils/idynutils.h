@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014 Walkman
- * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
+ * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi, Federico Moro
  * email:  mirko.ferrati@gmail.com, enrico.mingo@iit.it, alessio.rocchi@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU Lesser General Public License, version 2 or any
@@ -157,12 +157,18 @@ public:
     };
 
     /**
-     * @brief computeFloatingBaseProjector
+     * @brief computeFloatingBaseProjector computes a projector for torques in floating base systems
      * @param contacts a list of contacts as defined in DefaultProjectorContacts
      * @return a R^{nx6+n} projector matrix that projects a R^{6+n} vector
      *         of generalized forces into joint torques
      */
     yarp::sig::Matrix computeFloatingBaseProjector(const int contacts);
+    /**
+     * @brief computeFloatingBaseProjector computes a projector for torques in floating base systems
+     * @param JContacts a Jacobian of contact points expressed in the world frame coordinate system
+     * @return a R^{nx6+n} projector matrix that projects a R^{6+n} vector
+     *         of generalized forces into joint torques
+     */
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
 
 private:
