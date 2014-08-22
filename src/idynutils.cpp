@@ -371,22 +371,31 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
 
     if(contacts & CONTACT_LEFT_FOOT) {
         this->coman_iDyn3.getJacobian(this->left_leg.index, J_left_foot);
-        J_contacts = pile(J_contacts, J_left_foot);
+        J_contacts = J_left_foot;
     }
 
     if(contacts & CONTACT_RIGHT_FOOT) {
         this->coman_iDyn3.getJacobian(this->right_leg.index, J_right_foot);
-        J_contacts = pile(J_contacts, J_right_foot);
+        if(J_contacts.rows() == 0)
+            J_contacts = J_right_foot;
+        else
+            J_contacts = pile(J_contacts, J_right_foot);
     }
 
     if(contacts & CONTACT_LEFT_HAND) {
         this->coman_iDyn3.getJacobian(this->left_arm.index, J_left_hand);
-        J_contacts = pile(J_contacts, J_left_hand);
+        if(J_contacts.rows() == 0)
+            J_contacts = J_left_hand;
+        else
+            J_contacts = pile(J_contacts, J_left_hand);
     }
 
     if(contacts & CONTACT_RIGHT_HAND) {
         this->coman_iDyn3.getJacobian(this->right_arm.index, J_right_hand);
-        J_contacts = pile(J_contacts, J_right_hand);
+        if(J_contacts.rows() == 0)
+            J_contacts = J_right_hand;
+        else
+            J_contacts = pile(J_contacts, J_right_hand);
     }
 
     return computeFloatingBaseProjector(J_contacts);
