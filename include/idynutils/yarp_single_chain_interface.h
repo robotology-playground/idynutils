@@ -33,8 +33,9 @@ public:
      */
     yarp_single_chain_interface(std::string kinematic_chain,
                                 std::string module_prefix_with_no_slash,
-                                const int controlModeVocab = VOCAB_CM_POSITION,
-                                bool useSI = false);
+                                bool useSI = false,
+                                const int controlModeVocab = VOCAB_CM_POSITION
+                                );
     virtual yarp::sig::Vector sense();
     virtual void sense(yarp::sig::Vector& q_sensed);
 

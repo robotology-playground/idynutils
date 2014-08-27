@@ -4,8 +4,8 @@ using namespace walkman::drc;
 
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
                                                          std::string module_prefix_with_no_slash,
-                                                         const int controlModeVocab,
-                                                         bool useSI):
+                                                         bool useSI,
+                                                         const int controlModeVocab):
     module_prefix(module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
@@ -116,10 +116,11 @@ void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
 }
 
 void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
-    if(_useSI) convertMotorCommandToSI(q_d);
-    if(!positionDirect->setPositions(q_d.data()))
+    yarp::sig::Vector q_sent(q_d);
+    if(_useSI) convertMotorCommandToSI(q_sent);
+    if(!positionDirect->setPositions(q_sent.data()))
         std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::cout;
-    
+
 }
 
 const int& yarp_single_chain_interface::getNumberOfJoints()
