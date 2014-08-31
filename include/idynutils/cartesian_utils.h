@@ -154,8 +154,18 @@ public:
                                                 const double x, const double y, const double z,
                                                 const double quaternion_x, const double quaternion_y, const double quaternion_z, const double quaternion_w);
 
+    /**
+     * @brief fromKDLFrameToYARPMatrix convert a KDL::Frame in a yarp::sig::Matrix
+     * @param Ti KDL::Frame
+     * @param To yarp::sig::Matrix
+     */
     static void fromKDLFrameToYARPMatrix(const KDL::Frame& Ti, yarp::sig::Matrix& To);
 
+    /**
+     * @brief fromYARPMatrixtoKDLFrame convert a yarp::sig::Matrix in a KDL::Frame
+     * @param Ti yarp::sig::Matrix
+     * @param To KDL::Frame
+     */
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
 
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);

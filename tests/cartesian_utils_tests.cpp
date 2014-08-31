@@ -113,6 +113,30 @@ TEST_F(testCartesianUtils, testMatrixConversions)
             EXPECT_DOUBLE_EQ(T1(i,j), T2(i,j));
         }
     }
+
+    KDL::Frame A;
+    cartesian_utils::fromYARPMatrixtoKDLFrame(T2, A);
+    for(unsigned int i = 0; i < 3; ++i)
+        EXPECT_DOUBLE_EQ(A.p.data[i], T2(i,3));
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+        {
+            EXPECT_DOUBLE_EQ(A.M(i,j), T2(i,j));
+        }
+    }
+
+    yarp::sig::Matrix B(4,4);
+    cartesian_utils::fromKDLFrameToYARPMatrix(A, B);
+    for(unsigned int i = 0; i < 3; ++i)
+        EXPECT_DOUBLE_EQ(A.p.data[i], B(i,3));
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+        {
+            EXPECT_DOUBLE_EQ(A.M(i,j), B(i,j));
+        }
+    }
 }
 
 TEST_F(testCartesianUtils, testComputeCartesianError)
