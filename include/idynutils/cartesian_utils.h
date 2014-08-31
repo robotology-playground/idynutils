@@ -9,6 +9,10 @@
     "Operational Space Control: A Theoretical and Empirical Comparison"
   Authors: Jun Nakanishi, Rick Cory, Michael Mistry, Jan Peters and Stefan Schaal
   The International Journal of Robotics Research, Vol. 27, No. 6, June 2008, pp. 737–757
+
+  REMEMBER: if e is the quaternion error, the orientation error is defined as:
+                o_error = -Ke
+            with K positive definite!
   **/
 class quaternion
 {
