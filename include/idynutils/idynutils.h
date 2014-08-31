@@ -33,6 +33,9 @@ public:
     {
 
     }
+
+    unsigned int getNrOfDOFs(){return joint_numbers.size();}
+
   std::string chain_name;
   std::string name;
   std::vector<std::string> joint_names;
@@ -47,12 +50,18 @@ public:
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
 
+    /**
+     * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
+     * @param q_chain vector of joint values
+     * @param q_out vector where you want ot put q_chain
+     * @param chain joints to update using q_chain in q_out
+     */
     void fromRobotToIDyn(const yarp::sig::Vector& q_chain,
                          yarp::sig::Vector& q_out,
                          kinematic_chain& chain);
 
     /**
-     * @brief updateiDyn3Model updates the underlying robot model
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
      * @param set_world_pose do we update the base link pose wrt the world frame?
      * @param support_foot what is the support foot link name in single stance mode?
@@ -63,7 +72,7 @@ public:
                           const std::string& support_foot = "l_sole");
 
     /**
-     * @brief updateiDyn3Model updates the underlying robot model
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
      * @param dq robot joint velocities
      * @param set_world_pose do we update the base link pose wrt the world frame?
@@ -76,7 +85,7 @@ public:
                           const std::string& support_foot = "l_sole");
 
     /**
-     * @brief updateiDyn3Model updates the underlying robot model
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
      * @param dq_ref robot joint velocities
      * @param ddq_ref robot joint accelerations
@@ -171,7 +180,7 @@ public:
      */
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
 
-private:
+protected:
     std::vector<std::string> joint_names;
     KDL::Tree coman_tree; // A KDL Tree
 
