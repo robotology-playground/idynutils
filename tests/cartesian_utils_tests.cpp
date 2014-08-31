@@ -28,7 +28,18 @@ protected:
 
 class testCartesianUtils: public ::testing::Test
 {
+
+    class sin: public cartesian_utils::CostFunction
+    {
+        double compute(const yarp::sig::Vector &x)
+        {
+            return std::sin(x[0]);
+        }
+    };
+
 protected:
+    sin sin_function;
+
     testCartesianUtils()
     {
 
@@ -165,6 +176,23 @@ TEST_F(testCartesianUtils, testComputeCartesianError)
     {
         EXPECT_DOUBLE_EQ(position_error[i], 0.0);
         EXPECT_DOUBLE_EQ(orientation_error[i], 0.0);
+    }
+}
+
+TEST_F(testCartesianUtils, testComputeGradient)
+{
+    int n_of_iterations = 100;
+    double dT = 1.0 / ((double)n_of_iterations);
+
+    for(unsigned int i = 0; i < 100; ++i)
+    {
+        double df = cos(i * dT);
+
+        yarp::sig::Vector x(1, 0.0);
+        x[0] = i*dT;
+        yarp::sig::Vector df_numerical = cartesian_utils::computeGradient(x, this->sin_function, 1E-6);
+
+        EXPECT_NEAR(df, df_numerical[0], 1E-6);
     }
 }
 

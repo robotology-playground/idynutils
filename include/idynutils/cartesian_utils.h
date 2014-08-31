@@ -108,11 +108,6 @@ class cartesian_utils
 {
 public:
 
-    class CostFunction {
-    public:
-        virtual double compute(const yarp::sig::Vector &x) = 0;
-    };
-
     /**
      * @brief computeCartesianError orientation and position error
      * @param T actual pose Homogeneous Matrix [4x4]
@@ -168,10 +163,42 @@ public:
      */
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
 
+    /**
+     * @brief printHomogeneousTransform print on terminal a yarp::sig::Matrix used as pose Homogeneous Transform [4x4]
+     * @param T yarp::sig::Matrix [4x4]
+     */
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);
 
+    /**
+     * @brief printKDLFrame print a KDL::Frame
+     * @param T KDL::Frame
+     */
     static void printKDLFrame(const KDL::Frame& T);
 
+    /**
+     * @brief The CostFunction class pure virtual function used to describe functions for computeGradient method.
+     */
+    class CostFunction {
+    public:
+        /**
+         * @brief compute value of function in x
+         * @param x
+         * @return scalar
+         */
+        virtual double compute(const yarp::sig::Vector &x) = 0;
+    };
+
+    /**
+     * @brief computeGradient compute numerical gradient of a function using 2 points formula:
+     *
+     *           f(x+h) - f(x-h)
+     *   df(x)= ----------------
+     *                2h
+     * @param x points around gradient is compute
+     * @param fun function to derive
+     * @param step step of gradient
+     * @return vector of gradient
+     */
     static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
                                              CostFunction &fun,
                                              const double &step = 1E-3);
