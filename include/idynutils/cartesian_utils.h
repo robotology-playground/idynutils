@@ -40,11 +40,22 @@ public:
 
     }
 
+    /**
+     * @brief dot product between two quaternions
+     * @param a first quaternion
+     * @param b second quaternion
+     * @return a scalar
+     */
     static double dot(const quaternion& a, const quaternion& b)
     {
         return a.w*b.w + a.x*b.x + a.y*b.y + a.z*b.z;
     }
 
+    /**
+     * @brief operator * product between a quaternion and a scalar
+     * @param a scalar
+     * @return a quaternion
+     */
     quaternion operator*(const double a)
     {
         quaternion q(x, y, z, w);
@@ -57,6 +68,10 @@ public:
         return q;
     }
 
+    /**
+     * @brief skew operator
+     * @return the skew matrix of the quaternion
+     */
     KDL::Rotation skew()
     {
         KDL::Rotation s(0.0,  -z,   y,
@@ -65,6 +80,17 @@ public:
         return s;
     }
 
+    /**
+     * @brief error compute the error between two quaternion to be usable in orientation control
+     * @param q actual quaternion
+     * @param qd desired quaternion
+     * @return an error vector [3x1]
+     *
+     * REMEMBER: if e is the quaternion error, the orientation error is defined as:
+                o_error = -Ke
+            with K positive definite!
+     *
+     */
     static KDL::Vector error(quaternion& q, quaternion& qd)
     {
         KDL::Vector e(0.0, 0.0, 0.0);
