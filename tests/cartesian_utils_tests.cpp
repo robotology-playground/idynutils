@@ -120,9 +120,28 @@ TEST_F(testCartesianUtils, testComputeCartesianError)
     yarp::sig::Vector position_error(3, 0.0);
     yarp::sig::Vector orientation_error(3, 0.0);
 
-    yarp::sig::Matrix T(4,4);
-    T = T.eye();
+    KDL::Rotation rot;
+    rot.DoRotZ(M_PI);
 
+    double x = 1.0;
+    double y = -1.0;
+    double z = -2.0;
+
+    double qx, qy, qz, qw;
+    rot.GetQuaternion(qx, qy, qz, qw);
+    yarp::sig::Matrix Td(4,4);
+    cartesian_utils::homogeneousMatrixFromQuaternion(Td, x, y, z, qx, qy, qz, qw);
+
+    yarp::sig::Matrix T(4,4);
+    T = Td;
+
+    cartesian_utils::computeCartesianError(T, Td, position_error, orientation_error);
+
+    for(unsigned int i = 0; i < position_error.size(); ++i)
+    {
+        EXPECT_DOUBLE_EQ(position_error[i], 0.0);
+        EXPECT_DOUBLE_EQ(orientation_error[i], 0.0);
+    }
 }
 
 }
