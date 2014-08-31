@@ -26,6 +26,27 @@ protected:
     }
 };
 
+class testCartesianUtils: public ::testing::Test
+{
+protected:
+    testCartesianUtils()
+    {
+
+    }
+
+    virtual ~testCartesianUtils() {
+
+    }
+
+    virtual void SetUp() {
+
+    }
+
+    virtual void TearDown() {
+
+    }
+};
+
 TEST_F(testQuaternion, testQuaternionError)
 {
     EXPECT_DOUBLE_EQ(this->x, 0.0);
@@ -64,6 +85,44 @@ TEST_F(testQuaternion, testQuaternionError)
     EXPECT_DOUBLE_EQ(quaternion_error[0], 0.0);
     EXPECT_DOUBLE_EQ(quaternion_error[1], 0.0);
     EXPECT_DOUBLE_EQ(quaternion_error[2], 0.0);
+}
+
+TEST_F(testCartesianUtils, testMatrixConversions)
+{
+    KDL::Rotation rot;
+    rot.DoRotZ(M_PI);
+
+    double x = 1.0;
+    double y = -1.0;
+    double z = -2.0;
+
+    double Roll, Pitch, Yaw;
+    rot.GetRPY(Roll, Pitch, Yaw);
+    yarp::sig::Matrix T1(4,4);
+    cartesian_utils::homogeneousMatrixFromRPY(T1, x, y, z, Roll, Pitch, Yaw);
+
+    double qx, qy, qz, qw;
+    yarp::sig::Matrix T2(4,4);
+    rot.GetQuaternion(qx, qy, qz, qw);
+    cartesian_utils::homogeneousMatrixFromQuaternion(T2, x, y, z, qx, qy, qz, qw);
+
+    for(unsigned int i = 0; i < T1.cols(); ++i)
+    {
+        for(unsigned int j = 0; j < T2.rows(); ++j)
+        {
+            EXPECT_DOUBLE_EQ(T1(i,j), T2(i,j));
+        }
+    }
+}
+
+TEST_F(testCartesianUtils, testComputeCartesianError)
+{
+    yarp::sig::Vector position_error(3, 0.0);
+    yarp::sig::Vector orientation_error(3, 0.0);
+
+    yarp::sig::Matrix T(4,4);
+    T = T.eye();
+
 }
 
 }

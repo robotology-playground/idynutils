@@ -113,14 +113,43 @@ public:
         virtual double compute(const yarp::sig::Vector &x) = 0;
     };
 
+    /**
+     * @brief computeCartesianError orientation and position error
+     * @param T actual pose Homogeneous Matrix [4x4]
+     * @param Td desired pose Homogeneous Matrix [4x4]
+     * @param position_error position error [3x1]
+     * @param orientation_error orientation error [3x1]
+     */
     static void computeCartesianError(yarp::sig::Matrix &T,
                                       yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
                                       yarp::sig::Vector& orientation_error);
 
+    /**
+     * @brief homogeneousMatrixFromRPY compute Homogeneous Matrix from position [x, y, z] and orientation [Roll, Pitch, Yaw]
+     * @param T pose Homogeneous Matrix [4x4]
+     * @param x position
+     * @param y position
+     * @param z position
+     * @param R orientation
+     * @param P orientation
+     * @param Y orientation
+     */
     static void homogeneousMatrixFromRPY(yarp::sig::Matrix& T,
                                          const double x, const double y, const double z,
                                          const double R, const double P, const double Y);
+
+    /**
+     * @brief homogeneousMatrixFromQuaternion ompute Homogeneous Matrix from position [x, y, z] and orientation [x, y, z, w]
+     * @param T pose Homogeneous Matrix [4x4]
+     * @param x position
+     * @param y position
+     * @param z position
+     * @param quaternion_x orientation
+     * @param quaternion_y orientation
+     * @param quaternion_z orientation
+     * @param quaternion_w orientation
+     */
     static void homogeneousMatrixFromQuaternion(yarp::sig::Matrix& T,
                                                 const double x, const double y, const double z,
                                                 const double quaternion_x, const double quaternion_y, const double quaternion_z, const double quaternion_w);
