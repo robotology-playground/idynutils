@@ -2,6 +2,7 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 #include <drc_shared/yarp_single_chain_interface.h>
 #include <yarp/math/SVD.h>
+#include <drc_shared/cartesian_utils.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -14,6 +15,8 @@ const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/
 iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("left arm"),left_leg("left leg"),torso("torso")
 {
     worldT.resize(4,4);
+    worldT.eye();
+
     iDyn3Model();
     setJointNames();   
     setControlledKinematicChainsLinkIndex();
@@ -168,9 +171,9 @@ void iDynUtils::iDyn3Model()
 
 void iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chain)
 {
-    chain.name=endeffector_name;
-    chain.index = coman_iDyn3.getLinkIndex(chain.name);
-    if(chain.index == -1)
+    chain.end_effector_name=endeffector_name;
+    chain.end_effector_index = coman_iDyn3.getLinkIndex(chain.end_effector_name);
+    if(chain.end_effector_index == -1)
         std::cout << "Failed to get link index for "<<chain.chain_name<< std::endl;
 }
 
@@ -232,6 +235,8 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
 
 void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor)
 {
+    KDL::Frame worldT_KDL;
+    cartesian_utils::fromYARPMatrixtoKDLFrame(worldT, worldT_KDL);
     worldT =    KDLtoYarp_position(
                     anchor_T_world.Inverse()
                     *
@@ -279,7 +284,7 @@ KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
 yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,bool world_frame)
 {    
     yarp::sig::Matrix temp;
-    if(!coman_iDyn3.getRelativeJacobian(chain.index,torso.index,temp,world_frame))
+    if(!coman_iDyn3.getRelativeJacobian(chain.end_effector_index,torso.end_effector_index,temp,world_frame))
         std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
     for(unsigned int i = temp.cols();i>0; i--)
     {
@@ -347,7 +352,7 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
-    std::cout<<chain.name<<" joint indices: \n";
+    std::cout<<chain.end_effector_name<<" joint indices: \n";
     for(auto joint_name: chain.joint_names){
         std::cout<<coman_iDyn3.getDOFIndex(joint_name)<<" ";
         chain.joint_numbers.push_back(coman_iDyn3.getDOFIndex(joint_name));
@@ -370,12 +375,12 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     yarp::sig::Matrix J_contacts;
 
     if(contacts & CONTACT_LEFT_FOOT) {
-        this->coman_iDyn3.getJacobian(this->left_leg.index, J_left_foot);
+        this->coman_iDyn3.getJacobian(this->left_leg.end_effector_index, J_left_foot);
         J_contacts = J_left_foot;
     }
 
     if(contacts & CONTACT_RIGHT_FOOT) {
-        this->coman_iDyn3.getJacobian(this->right_leg.index, J_right_foot);
+        this->coman_iDyn3.getJacobian(this->right_leg.end_effector_index, J_right_foot);
         if(J_contacts.rows() == 0)
             J_contacts = J_right_foot;
         else
@@ -383,7 +388,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     }
 
     if(contacts & CONTACT_LEFT_HAND) {
-        this->coman_iDyn3.getJacobian(this->left_arm.index, J_left_hand);
+        this->coman_iDyn3.getJacobian(this->left_arm.end_effector_index, J_left_hand);
         if(J_contacts.rows() == 0)
             J_contacts = J_left_hand;
         else
@@ -391,7 +396,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     }
 
     if(contacts & CONTACT_RIGHT_HAND) {
-        this->coman_iDyn3.getJacobian(this->right_arm.index, J_right_hand);
+        this->coman_iDyn3.getJacobian(this->right_arm.end_effector_index, J_right_hand);
         if(J_contacts.rows() == 0)
             J_contacts = J_right_hand;
         else

@@ -34,12 +34,28 @@ public:
 
     }
 
+    /**
+     * @brief getNrOfDOFs return # of dofs of the kinematic chain
+     * @return # of dofs of the kinematic chain
+     */
     unsigned int getNrOfDOFs(){return joint_numbers.size();}
 
+   /**
+   * @brief chain_name is the name of the kinematic chain
+   *  e.g.
+   *           kinematic_chain right_arm("right arm");
+   */
   std::string chain_name;
-  std::string name;
+  /**
+   * @brief end_effector_name is the name of the end effector
+   */
+  std::string end_effector_name;
   std::vector<std::string> joint_names;
-  int index;
+  /**
+   * @brief end_effector_index index of the end effector
+   */
+  int end_effector_index; int &index = end_effector_index;
+
   std::vector<unsigned int> joint_numbers;
 };
 
@@ -185,6 +201,9 @@ protected:
     KDL::Tree coman_tree; // A KDL Tree
 
     std::string anchor_name;    // last anchor used
+    /**
+     * @brief anchor_T_world CONSTANT Transformation between anchor and world frame
+     */
     KDL::Frame anchor_T_world;  // offset between inertial frame and anchor link (e.g., l_sole)
 
     void setJointNumbers(kinematic_chain& chain);
@@ -194,6 +213,9 @@ protected:
     void setJointNames();
     void iDyn3Model();
 
+    /**
+     * @brief worldT Transformation between world and base_link
+     */
     yarp::sig::Matrix worldT;
     boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description
 
