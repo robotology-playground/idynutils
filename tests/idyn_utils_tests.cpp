@@ -210,6 +210,57 @@ TEST_F(testIDynUtils, testGenerarRotationGravityVector)
     EXPECT_TRUE(rotated_g == KDL::Vector(this->g[0], this->g[1], this->g[2]));
 }
 
+TEST_F(testIDynUtils, testTauGravityID)
+{
+    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector dq(q);
+    yarp::sig::Vector ddq(q);
+
+    this->updateiDyn3Model(q, dq, ddq, true);
+    this->updateiDyn3Model(q, dq, ddq, true);
+
+    yarp::sig::Vector tau_g = this->coman_iDyn3.getTorques();
+    yarp::sig::Matrix world = this->worldT;
+
+    yarp::sig::Vector q_left_leg(6, 0.0);
+    q_left_leg[0] = -25.0;
+    q_left_leg[1] = 0.0;
+    q_left_leg[2] = 0.0;
+    q_left_leg[3] = 50.0;
+    q_left_leg[4] = 0.0;
+    q_left_leg[5] = -25.0;
+
+    yarp::sig::Vector q_right_leg(6, 0.0);
+    q_right_leg[0] = -25.0;
+    q_right_leg[1] = 0.0;
+    q_right_leg[2] = 0.0;
+    q_right_leg[3] = 50.0;
+    q_right_leg[4] = 0.0;
+    q_right_leg[5] = -25.0;
+
+    this->fromRobotToIDyn(q_left_leg, q, this->left_leg);
+    this->fromRobotToIDyn(q_right_leg, q, this->right_leg);
+
+    this->updateiDyn3Model(q, dq, ddq, true);
+    this->updateiDyn3Model(q, dq, ddq, true);
+    yarp::sig::Matrix world2 = this->worldT;
+
+    yarp::sig::Vector tau_g2 = this->coman_iDyn3.getTorques();
+
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+            EXPECT_NEAR(world(i,j), world2(i,j), 1E-16);
+    }
+
+    for(unsigned int i = 0; i < 7; ++i){
+        EXPECT_NEAR(tau_g[this->left_arm.joint_numbers[i]], tau_g2[this->left_arm.joint_numbers[i]], 1E-12)<<"left_arm @ joint "<<i;
+        EXPECT_NEAR(tau_g[this->right_arm.joint_numbers[i]], tau_g2[this->right_arm.joint_numbers[i]], 1E-12)<<"right_arm @ joint "<<i;
+    }
+    for(unsigned int i = 0; i < 3; ++i)
+        EXPECT_NEAR(tau_g[this->torso.joint_numbers[i]], tau_g2[this->torso.joint_numbers[i]], 1E-12 )<<"torso @ joint "<<i;
+}
+
 }
 
 int main(int argc, char **argv) {
