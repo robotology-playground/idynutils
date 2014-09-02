@@ -22,6 +22,8 @@ iDynUtils::iDynUtils():
     worldT.resize(4,4);
     worldT.eye();
 
+    g[2] = 9.81;
+
     iDyn3Model();
     setJointNames();   
     setControlledKinematicChainsLinkIndex();
@@ -341,6 +343,7 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
         coman_iDyn3.computePositions();
 
     // This is the fake Inertial Measure
+    g.zero();
     g[2] = 9.81;
 
     // get the rotational part of worldT (w_R_b),

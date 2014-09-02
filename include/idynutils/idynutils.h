@@ -102,6 +102,9 @@ public:
 
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
+     * NOTE:
+     *          if the IMU is NOT used we are assuming l_sole as inertial frame and a flat ground!
+     *
      * @param q robot configuration
      * @param dq_ref robot joint velocities
      * @param ddq_ref robot joint accelerations

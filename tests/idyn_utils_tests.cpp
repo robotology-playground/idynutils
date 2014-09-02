@@ -163,7 +163,51 @@ TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
 
 TEST_F(testIDynUtils, testGravityVector)
 {
+    yarp::sig::Vector g(this->g);
 
+    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector dq(q);
+    yarp::sig::Vector ddq(q);
+
+    this->updateiDyn3Model(q, dq, ddq, true);
+
+    EXPECT_DOUBLE_EQ(g[0], this->g[0]);
+    EXPECT_DOUBLE_EQ(g[1], this->g[1]);
+    EXPECT_DOUBLE_EQ(g[2], this->g[2]);
+
+    /// Here I rotate the left foot of 45° on the pitch
+    double pitch = M_PI_2/2.0;
+    q[this->left_leg.joint_numbers.at(this->left_leg.joint_numbers.size()-1)] = pitch;
+    this->updateiDyn3Model(q, dq, ddq, true);
+
+    KDL::Rotation rotY;
+    rotY.DoRotY(pitch);
+    KDL::Frame T(rotY, KDL::Vector(0.0, 0.0, 0.0));
+
+    KDL::Vector rotated_g = T.M * KDL::Vector(g[0], g[1], g[2]);
+
+    EXPECT_DOUBLE_EQ(rotated_g[0], this->g[0]);
+    EXPECT_DOUBLE_EQ(rotated_g[1], this->g[1]);
+    EXPECT_DOUBLE_EQ(rotated_g[2], this->g[2]);
+}
+
+TEST_F(testIDynUtils, testGenerarRotationGravityVector)
+{
+    yarp::sig::Vector g(this->g);
+
+    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector dq(q);
+    yarp::sig::Vector ddq(q);
+
+    for(unsigned int i = 0; i < this->left_leg.getNrOfDOFs(); ++i)
+        q[this->left_leg.joint_numbers[i]] = tests_utils::getRandomAngle();
+    this->updateiDyn3Model(q, dq, ddq, true);
+
+    KDL::Frame worldT_KDL;
+    cartesian_utils::fromYARPMatrixtoKDLFrame(worldT, worldT_KDL);
+    KDL::Vector rotated_g = worldT_KDL.M.Inverse() * KDL::Vector(g[0], g[1], g[2]);
+
+    EXPECT_TRUE(rotated_g == KDL::Vector(this->g[0], this->g[1], this->g[2]));
 }
 
 }
