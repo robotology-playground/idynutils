@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <drc_shared/idynutils.h>
 #include <drc_shared/cartesian_utils.h>
+#include <drc_shared/tests_utils.h>
 
 namespace {
 
@@ -129,12 +130,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
     }
 }
 
-double getRandomAngle()
-{
-    static unsigned short seed = (unsigned short)time(NULL);
-    seed48(&seed);
-    return drand48()*M_PI-0.5*M_PI;
-}
+
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
 {
@@ -150,7 +146,7 @@ TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
     std::cout<<"world_T_l_sole "<<std::endl; cartesian_utils::printKDLFrame(world_T_l_sole); std::cout<<std::endl;
 
     for(unsigned int i = 0; i < this->left_leg.getNrOfDOFs(); ++i)
-        q[this->left_leg.joint_numbers[i]] = getRandomAngle();
+        q[this->left_leg.joint_numbers[i]] = tests_utils::getRandomAngle();
     this->updateiDyn3Model(q, dq, ddq, true);
 
     EXPECT_TRUE(world_T_l_sole == this->anchor_T_world.Inverse());
@@ -163,6 +159,11 @@ TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
     cartesian_utils::fromYARPMatrixtoKDLFrame(this->worldT, actual_world);
 
     EXPECT_TRUE(actual_world == new_world);
+}
+
+TEST_F(testIDynUtils, testGravityVector)
+{
+
 }
 
 }

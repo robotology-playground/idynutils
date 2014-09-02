@@ -219,6 +219,11 @@ protected:
     yarp::sig::Matrix worldT;
     boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description
 
+    /**
+     * @brief g gravity vector
+     */
+    yarp::sig::Vector g;
+
 
 };
 

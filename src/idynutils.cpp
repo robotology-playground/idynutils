@@ -12,7 +12,12 @@ const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "
 const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
 
 
-iDynUtils::iDynUtils():right_arm("right arm"),right_leg("right leg"),left_arm("left arm"),left_leg("left leg"),torso("torso")
+iDynUtils::iDynUtils():
+    right_arm("right arm"),
+    right_leg("right leg"),
+    left_arm("left arm"),
+    left_leg("left leg"),torso("torso"),
+    g(3,0.0)
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -336,7 +341,6 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
         coman_iDyn3.computePositions();
 
     // This is the fake Inertial Measure
-    yarp::sig::Vector g(3,0.0);
     g[2] = 9.81;
 
     // get the rotational part of worldT (w_R_b),
