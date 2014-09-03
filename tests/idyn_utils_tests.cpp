@@ -217,7 +217,6 @@ TEST_F(testIDynUtils, testTauGravityID)
     yarp::sig::Vector ddq(q);
 
     this->updateiDyn3Model(q, dq, ddq, true);
-    this->updateiDyn3Model(q, dq, ddq, true);
 
     yarp::sig::Vector tau_g = this->coman_iDyn3.getTorques();
     yarp::sig::Matrix world = this->worldT;
@@ -242,15 +241,24 @@ TEST_F(testIDynUtils, testTauGravityID)
     this->fromRobotToIDyn(q_right_leg, q, this->right_leg);
 
     this->updateiDyn3Model(q, dq, ddq, true);
-    this->updateiDyn3Model(q, dq, ddq, true);
+    yarp::sig::Vector tau_g2 = this->coman_iDyn3.getTorques();
     yarp::sig::Matrix world2 = this->worldT;
 
-    yarp::sig::Vector tau_g2 = this->coman_iDyn3.getTorques();
+    q.zero();
+    this->updateiDyn3Model(q, dq, ddq, true);
+    yarp::sig::Vector tau_g3 = this->coman_iDyn3.getTorques();
+    yarp::sig::Matrix world3 = this->worldT;
 
     for(unsigned int i = 0; i < 3; ++i)
     {
         for(unsigned int j = 0; j < 3; ++j)
             EXPECT_NEAR(world(i,j), world2(i,j), 1E-16);
+    }
+
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+            EXPECT_NEAR(world(i,j), world3(i,j), 1E-16);
     }
 
     for(unsigned int i = 0; i < 7; ++i){
@@ -259,6 +267,13 @@ TEST_F(testIDynUtils, testTauGravityID)
     }
     for(unsigned int i = 0; i < 3; ++i)
         EXPECT_NEAR(tau_g[this->torso.joint_numbers[i]], tau_g2[this->torso.joint_numbers[i]], 1E-12 )<<"torso @ joint "<<i;
+
+    for(unsigned int i = 0; i < 7; ++i){
+        EXPECT_NEAR(tau_g[this->left_arm.joint_numbers[i]], tau_g3[this->left_arm.joint_numbers[i]], 1E-12)<<"left_arm @ joint "<<i;
+        EXPECT_NEAR(tau_g[this->right_arm.joint_numbers[i]], tau_g3[this->right_arm.joint_numbers[i]], 1E-12)<<"right_arm @ joint "<<i;
+    }
+    for(unsigned int i = 0; i < 3; ++i)
+        EXPECT_NEAR(tau_g[this->torso.joint_numbers[i]], tau_g3[this->torso.joint_numbers[i]], 1E-12 )<<"torso @ joint "<<i;
 }
 
 }

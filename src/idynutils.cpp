@@ -235,8 +235,6 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
     worldT(1,3) = 0.0;
     coman_iDyn3.setWorldBasePose(worldT);
 
-    coman_iDyn3.computePositions();
-
     return anchor_T_world;
 }
 
@@ -251,7 +249,6 @@ void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string
                 );
 
     coman_iDyn3.setWorldBasePose(worldT);
-    coman_iDyn3.computePositions();
 }
 
 
@@ -333,14 +330,11 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.setDAng(dq_ref);
     coman_iDyn3.setD2Ang(ddq_ref);
     
-    coman_iDyn3.kinematicRNEA();
-
     if(set_world_pose) {
         if(anchor_name.length() == 0)
             this->initWorldPose(support_foot);
         else this->updateWorldPose();
-    } else
-        coman_iDyn3.computePositions();
+    }
 
     // This is the fake Inertial Measure
     g.zero();
@@ -353,6 +347,8 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
     yarp::sig::Vector o(3,0.0);
     coman_iDyn3.setInertialMeasure(o, o, g);
+
+    coman_iDyn3.kinematicRNEA();
 
     coman_iDyn3.dynamicRNEA();
 }
