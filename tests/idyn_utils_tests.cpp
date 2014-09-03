@@ -276,7 +276,30 @@ TEST_F(testIDynUtils, testTauGravityID)
         EXPECT_NEAR(tau_g[this->torso.joint_numbers[i]], tau_g3[this->torso.joint_numbers[i]], 1E-12 )<<"torso @ joint "<<i;
 }
 
+TEST_F(testIDynUtils, testIDyn3Model)
+{
+    EXPECT_TRUE(this->iDyn3Model())<<"Failed to load the model, are you sure that you have generated the model files? Try to "<<
+                                     "generate file model before going to Enrico or Alessio complaining."<<std::endl;
 }
+
+TEST_F(testIDynUtils, testSetJointNames)
+{
+    EXPECT_TRUE(this->setJointNames());
+}
+
+TEST_F(testIDynUtils, testSetChainIndex)
+{
+    EXPECT_TRUE(this->setChainIndex(this->left_arm.end_effector_name, this->left_arm));
+    std::string fake_name = "sossio";
+    EXPECT_FALSE(this->setChainIndex(fake_name, this->left_arm));
+}
+
+TEST_F(testIDynUtils, testComputeFloatingBaseProjectorFeetInContact)
+{
+
+}
+
+} //namespace
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
