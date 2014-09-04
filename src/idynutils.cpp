@@ -283,8 +283,8 @@ bool iDynUtils::setControlledKinematicChainsLinkIndex()
     {
 	r_wrist_index = setChainIndex("r_hand",right_arm);
 	l_wrist_index = setChainIndex("l_hand",left_arm);
-	r_sole_index = setChainIndex("r_foot",right_leg);
-	l_sole_index = setChainIndex("l_foot",left_leg);
+	r_sole_index = setChainIndex("r_sole",right_leg);
+	l_sole_index = setChainIndex("l_sole",left_leg);
 	waist_index = setChainIndex("pelvis",torso);      
     }
     
