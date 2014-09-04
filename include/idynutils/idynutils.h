@@ -62,7 +62,7 @@ public:
 class iDynUtils
 {
 public:
-    iDynUtils();
+    iDynUtils(std::string robot_name_="coman");
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
 
@@ -251,7 +251,7 @@ protected:
      */
     yarp::sig::Vector g;
 
-
+    std::string robot_name;
 };
 
 #endif // IDYNUTILS_H

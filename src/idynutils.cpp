@@ -10,14 +10,16 @@ using namespace yarp::math;
 // Here is the path to the URDF model
 const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
 const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
+const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
+const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
-
-iDynUtils::iDynUtils():
+iDynUtils::iDynUtils(std::string robot_name_):
     right_arm("right arm"),
     right_leg("right leg"),
     left_arm("left arm"),
     left_leg("left leg"),
     torso("torso"),
+    robot_name(robot_name_),
     g(3,0.0)
 {
     worldT.resize(4,4);
@@ -148,29 +150,62 @@ bool iDynUtils::iDyn3Model()
     /// iDyn3 Model creation
     // Giving name to references for FT sensors and IMU
     std::vector<std::string> joint_sensor_names;
-    joint_sensor_names.push_back("l_ankle_joint");
-    joint_sensor_names.push_back("r_ankle_joint");
-    std::string waist_link_name = "Waist";
-    
+    std::string waist_link_name;
+
     coman_model.reset(new urdf::Model());
     
-    if (!coman_model->initFile(coman_model_folder)){
-        std::cout<<"Failed to parse urdf robot model"<<std::endl;
-        return false;}
-    else
+    std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
+    
+    if(robot_name=="coman")
     {
-        coman_srdf.reset(new srdf::Model());
-        if(!coman_srdf->initFile(*coman_model, coman_srdf_folder)){
-            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
-            return false;}
-        else
-        {
-            coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
-            std::ostringstream robot_info;
-            coman_robot_model->printModelInfo(robot_info);
-            //ROS_INFO(robot_info.str().c_str());
-        }
-        
+        joint_sensor_names.push_back("l_ankle_joint");
+        joint_sensor_names.push_back("r_ankle_joint");
+        waist_link_name = "Waist";
+    
+	if (!coman_model->initFile(coman_model_folder)){
+	    std::cout<<"Failed to parse urdf robot model"<<std::endl;
+	    return false;}
+	else
+	{
+	    coman_srdf.reset(new srdf::Model());
+	    if(!coman_srdf->initFile(*coman_model, coman_srdf_folder)){
+		std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+		return false;}
+	    else
+	    {
+		coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
+		std::ostringstream robot_info;
+		coman_robot_model->printModelInfo(robot_info);
+		//ROS_INFO(robot_info.str().c_str());
+	    }
+	    
+	}
+    }
+    
+    if(robot_name=="atlas")
+    {
+        joint_sensor_names.push_back("l_leg_akx");
+        joint_sensor_names.push_back("r_leg_akx");
+        waist_link_name = "pelvis";
+	
+	if (!coman_model->initFile(atlas_model_folder)){
+	    std::cout<<"Failed to parse urdf robot model"<<std::endl;
+	    return false;}
+	else
+	{
+	    coman_srdf.reset(new srdf::Model());
+	    if(!coman_srdf->initFile(*coman_model, atlas_srdf_folder)){
+		std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+		return false;}
+	    else
+	    {
+		coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
+		std::ostringstream robot_info;
+		coman_robot_model->printModelInfo(robot_info);
+		//ROS_INFO(robot_info.str().c_str());
+	    }
+	    
+	} 
     }
     
     if (!kdl_parser::treeFromUrdfModel(*coman_model, coman_tree)){
@@ -230,12 +265,29 @@ bool iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chai
 
 bool iDynUtils::setControlledKinematicChainsLinkIndex()
 {
-    bool r_wrist_index = setChainIndex("r_wrist",right_arm);
-    bool l_wrist_index = setChainIndex("l_wrist",left_arm);
-    bool r_sole_index = setChainIndex("r_sole",right_leg);
-    bool l_sole_index = setChainIndex("l_sole",left_leg);
-    bool waist_index = setChainIndex("Waist",torso);
-
+    bool r_wrist_index;
+    bool l_wrist_index;
+    bool r_sole_index;
+    bool l_sole_index;
+    bool waist_index;
+    
+    if(robot_name=="coman")
+    {
+	r_wrist_index = setChainIndex("r_wrist",right_arm);
+	l_wrist_index = setChainIndex("l_wrist",left_arm);
+	r_sole_index = setChainIndex("r_sole",right_leg);
+	l_sole_index = setChainIndex("l_sole",left_leg);
+	waist_index = setChainIndex("Waist",torso);
+    }
+    if(robot_name=="atlas")
+    {
+	r_wrist_index = setChainIndex("r_hand",right_arm);
+	l_wrist_index = setChainIndex("l_hand",left_arm);
+	r_sole_index = setChainIndex("r_foot",right_leg);
+	l_sole_index = setChainIndex("l_foot",left_leg);
+	waist_index = setChainIndex("pelvis",torso);      
+    }
+    
     if(r_wrist_index && l_wrist_index && r_sole_index && l_sole_index && waist_index)
         return true;
     return false;
