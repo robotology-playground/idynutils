@@ -62,7 +62,7 @@ public:
 class iDynUtils
 {
 public:
-    iDynUtils();
+    iDynUtils(std::string robot_name_="coman");
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
 
@@ -210,11 +210,35 @@ protected:
     KDL::Frame anchor_T_world;  // offset between inertial frame and anchor link (e.g., l_sole)
 
     void setJointNumbers(kinematic_chain& chain);
-    void setChainIndex(std::string endeffector_name,kinematic_chain& chain);
-    void setControlledKinematicChainsLinkIndex();
+
+    /**
+     * @brief setChainIndex set an end effector to a kinematic chain
+     * @param endeffector_name name of the ee
+     * @param chain chain to set the ee
+     * @return true if the name of the end effector is in the link list of iDyn3
+     */
+    bool setChainIndex(std::string endeffector_name,kinematic_chain& chain);
+
+    /**
+     * @brief setControlledKinematicChainsLinkIndex set end effectors name for all the controlled kinamtic chains
+     * @return true if all the kinematic chains have an end effector
+     */
+    bool setControlledKinematicChainsLinkIndex();
+
+
     void setControlledKinematicChainsJointNumbers();
-    void setJointNames();
-    void iDyn3Model();
+
+    /**
+     * @brief setJointNames get joint names from stored srdf
+     * @return return true if all the needed kinematic chains are found
+     */
+    bool setJointNames();
+
+    /**
+     * @brief iDyn3Model load coman urdf and srdf, setup iDynThree
+     * @return return true if the model is loaded in iDynThree and urdf/srdf are correctly found
+     */
+    bool iDyn3Model();
 
     /**
      * @brief worldT Transformation between world and base_link
@@ -227,7 +251,7 @@ protected:
      */
     yarp::sig::Vector g;
 
-
+    std::string robot_name;
 };
 
 #endif // IDYNUTILS_H

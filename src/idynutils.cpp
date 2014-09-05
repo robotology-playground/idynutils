@@ -10,13 +10,16 @@ using namespace yarp::math;
 // Here is the path to the URDF model
 const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
 const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
+const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
+const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
-
-iDynUtils::iDynUtils():
+iDynUtils::iDynUtils(std::string robot_name_):
     right_arm("right arm"),
     right_leg("right leg"),
     left_arm("left arm"),
-    left_leg("left leg"),torso("torso"),
+    left_leg("left leg"),
+    torso("torso"),
+    robot_name(robot_name_),
     g(3,0.0)
 {
     worldT.resize(4,4);
@@ -24,9 +27,21 @@ iDynUtils::iDynUtils():
 
     g[2] = 9.81;
 
-    iDyn3Model();
-    setJointNames();   
-    setControlledKinematicChainsLinkIndex();
+    bool iDyn3Model_loaded = iDyn3Model();
+    if(!iDyn3Model_loaded){
+        std::cout<<"Problem Loading iDyn3Model"<<std::endl;
+        assert(iDyn3Model_loaded);}
+
+    bool setJointNames_ok = setJointNames();
+    if(!setJointNames_ok){
+        std::cout<<"Problems Setting Joint names"<<std::endl;
+        assert(setJointNames_ok);}
+
+    bool setControlledKinematicChainsLinkIndex_ok = setControlledKinematicChainsLinkIndex();
+    if(!setControlledKinematicChainsLinkIndex_ok){
+        std::cout<<"Problems Setting KinematicChainsLinkIndex "<<std::endl;
+        assert(setControlledKinematicChainsLinkIndex_ok);
+    }
     setControlledKinematicChainsJointNumbers();
 
     zeros.resize(coman_iDyn3.getNrOfDOFs(),0.0);
@@ -36,7 +51,7 @@ const std::vector<std::string>& iDynUtils::getJointNames() const {
     return this->joint_names;
 }
 
-void iDynUtils::setJointNames()
+bool iDynUtils::setJointNames()
 {
     std::vector<std::string> temp_joint_names = this->coman_robot_model->getJointModelNames();
     this->joint_names.resize(coman_iDyn3.getNrOfDOFs(), "unknown_joint_name");
@@ -47,26 +62,51 @@ void iDynUtils::setJointNames()
             joint_names[jointIndex] = temp_joint_names[i];
     }
 
+    bool expected_left_arm = false;
+    bool expected_right_arm = false;
+    bool expected_left_leg = false;
+    bool expected_right_leg = false;
+    bool expected_torso = false;
+
     for(unsigned int i = 0; i < coman_robot_model->getJointModelGroupNames().size(); ++i)
     {
         std::string group = coman_robot_model->getJointModelGroupNames()[i];
         moveit::core::JointModelGroup *joint_group = coman_robot_model->getJointModelGroup(group);
         
-        if(group.compare(walkman::coman::left_arm) == 0)
+        if(group.compare(walkman::coman::left_arm) == 0){
             left_arm.joint_names = joint_group->getActiveJointModelNames();
+            expected_left_arm = true;}
         
-        if(group.compare(walkman::coman::right_arm) == 0)
+        if(group.compare(walkman::coman::right_arm) == 0){
             right_arm.joint_names = joint_group->getActiveJointModelNames();
+            expected_right_arm = true;}
         
-        if(group.compare(walkman::coman::left_leg) == 0)
+        if(group.compare(walkman::coman::left_leg) == 0){
             left_leg.joint_names = joint_group->getActiveJointModelNames();
+            expected_left_leg = true;}
         
-        if(group.compare(walkman::coman::right_leg) == 0)
+        if(group.compare(walkman::coman::right_leg) == 0){
             right_leg.joint_names = joint_group->getActiveJointModelNames();
+            expected_right_leg = true;}
         
-        if(group.compare(walkman::coman::torso) == 0)
+        if(group.compare(walkman::coman::torso) == 0){
             torso.joint_names = joint_group->getActiveJointModelNames();
+            expected_torso = true;}
     }
+
+    if(!expected_left_arm) std::cout<<walkman::coman::left_arm<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_right_arm) std::cout<<walkman::coman::right_arm<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_left_leg) std::cout<<walkman::coman::left_leg<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_right_leg) std::cout<<walkman::coman::right_leg<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_torso) std::cout<<walkman::coman::torso<<" joint group is missing in SRDF"<<std::endl;
+
+    if(expected_left_arm  &&
+       expected_left_leg  &&
+       expected_right_arm &&
+       expected_right_leg &&
+       expected_torso) return true;
+    return false;
+
     
     /*
     right_arm.joint_names.push_back("RShSag");
@@ -99,42 +139,78 @@ void iDynUtils::setJointNames()
     left_leg.joint_names.push_back("LAnkLat");
     left_leg.joint_names.push_back("LAnkSag");
     
-    torso.joint_names.push_back("WaistSag");
     torso.joint_names.push_back("WaistLat");
+    torso.joint_names.push_back("WaistSag");
     torso.joint_names.push_back("WaistYaw");*/
 }
 
 
-void iDynUtils::iDyn3Model()
+bool iDynUtils::iDyn3Model()
 {
     /// iDyn3 Model creation
     // Giving name to references for FT sensors and IMU
     std::vector<std::string> joint_sensor_names;
-    joint_sensor_names.push_back("l_ankle_joint");
-    joint_sensor_names.push_back("r_ankle_joint");
-    std::string waist_link_name = "Waist";
-    
+    std::string waist_link_name;
+
     coman_model.reset(new urdf::Model());
     
-    if (!coman_model->initFile(coman_model_folder))
-        std::cout<<"Failed to parse urdf robot model"<<std::endl;
-    else
+    std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
+    
+    if(robot_name=="coman")
     {
-        coman_srdf.reset(new srdf::Model());
-        if(!coman_srdf->initFile(*coman_model, coman_srdf_folder))
-            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
-        else
-        {
-            coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
-            std::ostringstream robot_info;
-            coman_robot_model->printModelInfo(robot_info);
-            //ROS_INFO(robot_info.str().c_str());
-        }
-        
+        joint_sensor_names.push_back("l_ankle_joint");
+        joint_sensor_names.push_back("r_ankle_joint");
+        waist_link_name = "Waist";
+    
+	if (!coman_model->initFile(coman_model_folder)){
+	    std::cout<<"Failed to parse urdf robot model"<<std::endl;
+	    return false;}
+	else
+	{
+	    coman_srdf.reset(new srdf::Model());
+	    if(!coman_srdf->initFile(*coman_model, coman_srdf_folder)){
+		std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+		return false;}
+	    else
+	    {
+		coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
+		std::ostringstream robot_info;
+		coman_robot_model->printModelInfo(robot_info);
+		//ROS_INFO(robot_info.str().c_str());
+	    }
+	    
+	}
     }
     
-    if (!kdl_parser::treeFromUrdfModel(*coman_model, coman_tree))
+    if(robot_name=="atlas")
+    {
+        joint_sensor_names.push_back("l_leg_akx");
+        joint_sensor_names.push_back("r_leg_akx");
+        waist_link_name = "pelvis";
+	
+	if (!coman_model->initFile(atlas_model_folder)){
+	    std::cout<<"Failed to parse urdf robot model"<<std::endl;
+	    return false;}
+	else
+	{
+	    coman_srdf.reset(new srdf::Model());
+	    if(!coman_srdf->initFile(*coman_model, atlas_srdf_folder)){
+		std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+		return false;}
+	    else
+	    {
+		coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
+		std::ostringstream robot_info;
+		coman_robot_model->printModelInfo(robot_info);
+		//ROS_INFO(robot_info.str().c_str());
+	    }
+	    
+	} 
+    }
+    
+    if (!kdl_parser::treeFromUrdfModel(*coman_model, coman_tree)){
         std::cout<<"Failed to construct kdl tree"<<std::endl;
+        return false;}
     
     // Here the iDyn3 model of the robot is generated
     coman_iDyn3.constructor(coman_tree, joint_sensor_names, waist_link_name);
@@ -174,23 +250,47 @@ void iDynUtils::iDyn3Model()
     
     std::cout<<"#DOFS: "<<coman_iDyn3.getNrOfDOFs()<<std::endl;
     std::cout<<"#Links: "<<coman_iDyn3.getNrOfLinks()<<std::endl;
+    return true;
 }
 
-void iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chain)
+bool iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chain)
 {
     chain.end_effector_name=endeffector_name;
     chain.end_effector_index = coman_iDyn3.getLinkIndex(chain.end_effector_name);
-    if(chain.end_effector_index == -1)
+    if(chain.end_effector_index == -1){
         std::cout << "Failed to get link index for "<<chain.chain_name<< std::endl;
+        return false;}
+    return true;
 }
 
-void iDynUtils::setControlledKinematicChainsLinkIndex()
+bool iDynUtils::setControlledKinematicChainsLinkIndex()
 {
-    setChainIndex("r_wrist",right_arm);
-    setChainIndex("l_wrist",left_arm);
-    setChainIndex("r_sole",right_leg);
-    setChainIndex("l_sole",left_leg);
-    setChainIndex("Waist",torso);    
+    bool r_wrist_index;
+    bool l_wrist_index;
+    bool r_sole_index;
+    bool l_sole_index;
+    bool waist_index;
+    
+    if(robot_name=="coman")
+    {
+	r_wrist_index = setChainIndex("r_wrist",right_arm);
+	l_wrist_index = setChainIndex("l_wrist",left_arm);
+	r_sole_index = setChainIndex("r_sole",right_leg);
+	l_sole_index = setChainIndex("l_sole",left_leg);
+	waist_index = setChainIndex("Waist",torso);
+    }
+    if(robot_name=="atlas")
+    {
+	r_wrist_index = setChainIndex("r_hand",right_arm);
+	l_wrist_index = setChainIndex("l_hand",left_arm);
+	r_sole_index = setChainIndex("r_sole",right_leg);
+	l_sole_index = setChainIndex("l_sole",left_leg);
+	waist_index = setChainIndex("pelvis",torso);      
+    }
+    
+    if(r_wrist_index && l_wrist_index && r_sole_index && l_sole_index && waist_index)
+        return true;
+    return false;
 }
 
 void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radians,
@@ -235,8 +335,6 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
     worldT(1,3) = 0.0;
     coman_iDyn3.setWorldBasePose(worldT);
 
-    coman_iDyn3.computePositions();
-
     return anchor_T_world;
 }
 
@@ -251,7 +349,6 @@ void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string
                 );
 
     coman_iDyn3.setWorldBasePose(worldT);
-    coman_iDyn3.computePositions();
 }
 
 
@@ -333,14 +430,11 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.setDAng(dq_ref);
     coman_iDyn3.setD2Ang(ddq_ref);
     
-    coman_iDyn3.kinematicRNEA();
-
     if(set_world_pose) {
         if(anchor_name.length() == 0)
             this->initWorldPose(support_foot);
         else this->updateWorldPose();
-    } else
-        coman_iDyn3.computePositions();
+    }
 
     // This is the fake Inertial Measure
     g.zero();
@@ -353,6 +447,8 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
     yarp::sig::Vector o(3,0.0);
     coman_iDyn3.setInertialMeasure(o, o, g);
+
+    coman_iDyn3.kinematicRNEA();
 
     coman_iDyn3.dynamicRNEA();
 }
