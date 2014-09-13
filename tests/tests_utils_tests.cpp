@@ -34,6 +34,14 @@ TEST_F(testsTestsUtils, testGetRandomAngle)
     EXPECT_TRUE( (alpha >= -M_PI) && (alpha < M_PI));
 }
 
+TEST_F(testsTestsUtils, testDifferenceGetRandomAngle)
+{
+    double alpha = this->getRandomAngle();
+    double beta = this->getRandomAngle();
+
+    EXPECT_FALSE(alpha == beta);
+}
+
 TEST_F(testsTestsUtils, testLargeInversion)
 {
     yarp::sig::Matrix A(150, 150);
