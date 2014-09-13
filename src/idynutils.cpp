@@ -451,6 +451,8 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.kinematicRNEA();
 
     coman_iDyn3.dynamicRNEA();
+
+    coman_iDyn3.computePositions();
 }
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
