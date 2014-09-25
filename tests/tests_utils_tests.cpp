@@ -62,6 +62,16 @@ TEST_F(testsTestsUtils, testLargeInversion)
     std::cout<<"Time to invert A[150 x 150] is "<<t<<"[s]"<<std::endl;
 }
 
+TEST_F(testsTestsUtils, testGetRandomAngleBetweenMinMax)
+{
+    double min = -1.0 * fabs(getRandomAngle());
+    double max = fabs(getRandomAngle());
+
+    double angle = getRandomAngle(min, max);
+
+    EXPECT_TRUE(angle >= min && angle <= max);
+}
+
 }
 
 int main(int argc, char **argv) {
