@@ -14,6 +14,14 @@ public:
      */
     static double getRandomAngle();
 
+    /**
+     * @brief getRandomAngle return a random angle in [min, max]
+     * @param min >= -M_PI
+     * @param max <= M_PI
+     * @return random angle in [min, max]
+     */
+    static double getRandomAngle(const double min, const double max);
+
 };
 
 #endif
