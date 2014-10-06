@@ -40,6 +40,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     qdot_buffer.resize(joint_numbers);
     tau_buffer.resize(joint_numbers);
 
+    if (controlModeVocab==VOCAB3('d','i','o')) return;
     switch(controlModeVocab) {
         case VOCAB_CM_TORQUE:
         for(unsigned int i = 0; i < joint_numbers; ++i)
