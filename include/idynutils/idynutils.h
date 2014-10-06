@@ -64,7 +64,7 @@ class iDynUtils
 public:
     iDynUtils(std::string robot_name_="coman");
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
-    iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model
+    iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model THIS HAS TO BE RENAMED!!!
 
     /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
@@ -171,8 +171,8 @@ public:
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
 
     yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
-    boost::shared_ptr<urdf::Model> coman_model; // A URDF Model
-    robot_model::RobotModelPtr coman_robot_model; // A robot model
+    boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
+    robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
     const std::vector<std::string> &getJointNames() const;
     yarp::sig::Vector zeros;
@@ -201,7 +201,7 @@ public:
 
 protected:
     std::vector<std::string> joint_names;
-    KDL::Tree coman_tree; // A KDL Tree
+    KDL::Tree robot_kdl_tree; // A KDL Tree
 
     std::string anchor_name;    // last anchor used
     /**
@@ -223,7 +223,7 @@ protected:
      * @brief setControlledKinematicChainsLinkIndex set end effectors name for all the controlled kinamtic chains
      * @return true if all the kinematic chains have an end effector
      */
-    bool setControlledKinematicChainsLinkIndex();
+    //bool setControlledKinematicChainsLinkIndex();
 
 
     void setControlledKinematicChainsJointNumbers();
@@ -235,7 +235,24 @@ protected:
     bool setJointNames();
 
     /**
-     * @brief iDyn3Model load coman urdf and srdf, setup iDynThree
+     * @brief searches for a chain @chain_name into the @groups
+     * @return true if a group exists
+     * @param found_group the group with the name @chain_name
+     */
+    bool findGroupChain(const std::vector<std::string>& chain_list, const std::vector<srdf::Model::Group>& groups,std::string chain_name, int& group_index);
+    
+    /**
+     * @brief sets the joint names for a single chain
+     * 
+     * @param group the group in which the chain is defined
+     * @param k_chain the chain that will get the joint names
+     * @return true if the group had a chain defined
+     */
+    bool setChainJointNames(const srdf::Model::Group& group, kinematic_chain& k_chain);
+    
+    
+    /**
+     * @brief iDyn3Model load robot urdf and srdf, setup iDynThree
      * @return return true if the model is loaded in iDynThree and urdf/srdf are correctly found
      */
     bool iDyn3Model();
@@ -244,7 +261,7 @@ protected:
      * @brief worldT Transformation between world and base_link
      */
     yarp::sig::Matrix worldT;
-    boost::shared_ptr<srdf::Model> coman_srdf; // A SRDF description
+    boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
 
     /**
      * @brief g gravity vector
