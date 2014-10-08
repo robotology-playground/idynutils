@@ -116,16 +116,15 @@ yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
                                                    const double& step) {
     static yarp::sig::Vector gradient(x.size(),0.0);
     static yarp::sig::Vector deltas(x.size(),0.0);
-
+    const double h = step;
     for(unsigned int i = 0; i < gradient.size(); ++i)
     {
-        const double h = step;
         deltas[i] = h;
         double fun_a = fun.compute(x+deltas);
         double fun_b = fun.compute(x-deltas);
 
-        gradient[i] = (fun_a - fun_b)/(2*h);
-        deltas[i] = 0;
+        gradient[i] = (fun_a - fun_b)/(2.0*h);
+        deltas[i] = 0.0;
     }
 
     return gradient;
