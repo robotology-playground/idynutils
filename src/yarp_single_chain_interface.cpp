@@ -119,7 +119,7 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
     yarp::sig::Vector q_sent(q_d);
     if(_useSI) convertMotorCommandToSI(q_sent);
     if(!positionDirect->setPositions(q_sent.data()))
-        std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::cout;
+        std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
 
 }
 
