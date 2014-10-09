@@ -189,6 +189,22 @@ public:
     };
 
     /**
+     * @brief The GradientVector class pure virtual function used to describe functions for computeHessian method.
+     */
+    class GradientVector {
+        double _size;
+    public:
+        GradientVector(const double x_size) : _size(x_size) {}
+        /**
+         * @brief compute value of function in x
+         * @param x
+         * @return scalar
+         */
+        virtual yarp::sig::Vector compute(const yarp::sig::Vector &x) = 0;
+        double size() { return _size; }
+    };
+
+    /**
      * @brief computeGradient compute numerical gradient of a function using 2 points formula:
      *
      *           f(x+h) - f(x-h)
@@ -199,9 +215,24 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
-                                             CostFunction &fun,
-                                             const double &step = 1E-3);
+    static yarp::sig::Vector& computeGradient(const yarp::sig::Vector &x,
+                                              CostFunction &fun,
+                                              const double &step = 1E-3);
+
+    /**
+     * @brief computeGradient compute numerical gradient of a function using 2 points formula:
+     *
+     *           f(x+h) - f(x-h)
+     *   df(x)= ----------------
+     *                2h
+     * @param x points around gradient is compute
+     * @param fun function to derive
+     * @param step step of gradient
+     * @return vector of gradient
+     */
+    static yarp::sig::Matrix& computeHessian( const yarp::sig::Vector &x,
+                                              GradientVector &vec,
+                                              const double &step = 1E-3);
 };
 
 #endif
