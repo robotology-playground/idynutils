@@ -174,8 +174,8 @@ bool iDynUtils::iDyn3Model()
 	    else
 	    {
 		coman_robot_model.reset(new robot_model::RobotModel(coman_model, coman_srdf));
-		std::ostringstream robot_info;
-		coman_robot_model->printModelInfo(robot_info);
+        //std::ostringstream robot_info;
+        //coman_robot_model->printModelInfo(robot_info);
 		//ROS_INFO(robot_info.str().c_str());
 	    }
 	    
@@ -214,7 +214,7 @@ bool iDynUtils::iDyn3Model()
     
     // Here the iDyn3 model of the robot is generated
     coman_iDyn3.constructor(coman_tree, joint_sensor_names, waist_link_name);
-    std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
+
     
     int nJ = coman_iDyn3.getNrOfDOFs(); //29
     yarp::sig::Vector qMax; qMax.resize(nJ,0.0);
@@ -239,17 +239,15 @@ bool iDynUtils::iDyn3Model()
             tauMax[jIndex] = i->second->limits->effort;
         }
     }
-    std::cout<<"Setting torque MAX"<<std::endl;
-    
+
    coman_iDyn3.setJointTorqueBoundMax(tauMax);
     
     yarp::sig::Vector a; a = coman_iDyn3.getJointTorqueMax();
-    std::cout<<"MAX TAU: [ "<<a.toString()<<std::endl;
     
     std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
     
-    std::cout<<"#DOFS: "<<coman_iDyn3.getNrOfDOFs()<<std::endl;
-    std::cout<<"#Links: "<<coman_iDyn3.getNrOfLinks()<<std::endl;
+    //std::cout<<"#DOFS: "<<coman_iDyn3.getNrOfDOFs()<<std::endl;
+    //std::cout<<"#Links: "<<coman_iDyn3.getNrOfLinks()<<std::endl;
     return true;
 }
 
@@ -457,12 +455,12 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
-    std::cout<<chain.end_effector_name<<" joint indices: \n";
+    //std::cout<<chain.end_effector_name<<" joint indices: \n";
     for(auto joint_name: chain.joint_names){
-        std::cout<<coman_iDyn3.getDOFIndex(joint_name)<<" ";
+        //std::cout<<coman_iDyn3.getDOFIndex(joint_name)<<" ";
         chain.joint_numbers.push_back(coman_iDyn3.getDOFIndex(joint_name));
     }
-    std::cout<<std::endl;    
+    //std::cout<<std::endl;
 }
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
