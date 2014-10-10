@@ -111,22 +111,42 @@ void cartesian_utils::printKDLFrame(const KDL::Frame& T)
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
 }
 
-yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
-                                                   CostFunction& fun,
-                                                   const double& step) {
+yarp::sig::Vector& cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+                                                    CostFunction& fun,
+                                                    const double& step) {
     static yarp::sig::Vector gradient(x.size(),0.0);
     static yarp::sig::Vector deltas(x.size(),0.0);
-
+    const double h = step;
     for(unsigned int i = 0; i < gradient.size(); ++i)
     {
-        const double h = step;
         deltas[i] = h;
         double fun_a = fun.compute(x+deltas);
         double fun_b = fun.compute(x-deltas);
 
-        gradient[i] = (fun_a - fun_b)/(2*h);
-        deltas[i] = 0;
+        gradient[i] = (fun_a - fun_b)/(2.0*h);
+        deltas[i] = 0.0;
     }
 
     return gradient;
+}
+
+yarp::sig::Matrix& cartesian_utils::computeHessian(const yarp::sig::Vector &x,
+                                                   GradientVector& vec,
+                                                   const double& step) {
+    static yarp::sig::Matrix hessian(vec.size(),x.size());
+    static yarp::sig::Vector deltas(x.size(),0.0);
+    const double h = step;
+    for(unsigned int i = 0; i < vec.size(); ++i)
+    {
+        deltas[i] = h;
+        yarp::sig::Vector gradient_a = vec.compute(x+deltas);
+        yarp::sig::Vector gradient_b = vec.compute(x-deltas);
+        yarp::sig::Vector gradient(vec.size());
+        for(unsigned int j = 0; j < vec.size(); ++j)
+            gradient[j] = (gradient_a[j] - gradient_b[j])/(2.0*h);
+        hessian.setCol(i,gradient);
+        deltas[i] = 0.0;
+    }
+
+    return hessian;
 }
