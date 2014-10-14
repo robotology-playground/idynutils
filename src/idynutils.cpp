@@ -10,10 +10,10 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 // Here is the path to the URDF/SRDF model
-const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
-const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
-const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
-const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
+// const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
+// const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
+// const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
+// const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
 iDynUtils::iDynUtils(std::string robot_name_):
     right_arm(walkman::robot::right_arm),
@@ -29,6 +29,13 @@ iDynUtils::iDynUtils(std::string robot_name_):
 
     g[2] = 9.81;
 
+    std::string folder = std::string(robot_name_+"_folder");
+    std::string robot_folder = std::string(getenv(folder.c_str()));
+    
+    robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
+    
+    robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
+    
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
         std::cout<<"Problem Loading iDyn3Model"<<std::endl;
@@ -156,22 +163,9 @@ bool iDynUtils::iDyn3Model()
     std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
-    std::string model_folder, srdf_folder;
     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
-
-    if(robot_name=="coman")
-    {
-        model_folder=coman_model_folder;
-        srdf_folder=coman_srdf_folder;
-    }
     
-    if(robot_name=="atlas")
-    {
-	model_folder=atlas_model_folder;
-        srdf_folder=atlas_srdf_folder;
-    }
-    
-    if (!urdf_model->initFile(coman_model_folder))
+    if (!urdf_model->initFile(robot_urdf_folder))
     {
         std::cout<<"Failed to parse urdf robot model"<<std::endl;
         return false;
@@ -179,7 +173,7 @@ bool iDynUtils::iDyn3Model()
     else
     {
         robot_srdf.reset(new srdf::Model());
-        if(!robot_srdf->initFile(*urdf_model, coman_srdf_folder))
+        if(!robot_srdf->initFile(*urdf_model, robot_srdf_folder))
         {
             std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
             return false;

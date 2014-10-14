@@ -269,6 +269,8 @@ protected:
     yarp::sig::Vector g;
 
     std::string robot_name;
+    std::string robot_urdf_folder;
+    std::string robot_srdf_folder;
 };
 
 #endif // IDYNUTILS_H
