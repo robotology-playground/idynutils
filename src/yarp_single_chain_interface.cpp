@@ -1,6 +1,7 @@
 #include "drc_shared/yarp_single_chain_interface.h"
 
 using namespace walkman::drc;
+using namespace yarp::dev;
 
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
                                                          std::string module_prefix_with_no_slash,
@@ -21,12 +22,12 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     {
         bool temp=true;
         temp=temp&&polyDriver.view(encodersMotor);
-        temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(controlMode);
+        temp=temp&&polyDriver.view(interactionMode);
         temp=temp&&polyDriver.view(positionControl);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
-	temp=temp&&polyDriver.view(velocityControl);
+        temp=temp&&polyDriver.view(velocityControl);
         internal_isAvailable = temp;
     }
     if (!internal_isAvailable)
@@ -50,20 +51,30 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         case VOCAB_CM_IMPEDANCE_POS:
         for(unsigned int i = 0; i < joint_numbers; ++i)
         {
-            controlMode->setImpedancePositionMode(i);
+            controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
+            interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
         }
         break;
         case VOCAB_CM_VELOCITY:
         for(unsigned int i = 0; i < joint_numbers; ++i)
         {
-            controlMode->setVelocityMode(i);
+            controlMode->setControlMode(i, VOCAB_CM_VELOCITY);
+            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+        }
+        break;
+        case VOCAB_CM_POSITION_DIRECT:
+        for(unsigned int i = 0; i < joint_numbers; ++i)
+        {
+            controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
+            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
         }
         break;
     case VOCAB_CM_POSITION:
     default:
         for(unsigned int i = 0; i < joint_numbers; ++i)
         {
-            controlMode->setPositionMode(i);
+            controlMode->setControlMode(i, VOCAB_CM_POSITION);
+            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
         }
         break;
     }

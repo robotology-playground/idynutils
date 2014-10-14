@@ -8,6 +8,7 @@
 #include <math.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/dev/IInteractionMode.h>
 
 namespace walkman{
     namespace coman{
@@ -75,8 +76,8 @@ public:
     bool& isAvailable;
 
     yarp::dev::IEncodersTimed *encodersMotor;
-    yarp::dev::IPositionDirect *positionDirect;
-    yarp::dev::IControlMode *controlMode;
+    yarp::dev::IControlMode2 *controlMode;
+    yarp::dev::IInteractionMode *interactionMode;
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
