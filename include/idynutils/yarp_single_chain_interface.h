@@ -11,13 +11,20 @@
 #include <yarp/dev/IInteractionMode.h>
 
 
+
+/**
+ * These strings are supposed to be found into the SRDF of any robot we are working with
+ */
 namespace walkman{
-    namespace coman{
+    namespace robot{
         static const std::string left_arm = "left_arm";
         static const std::string right_arm = "right_arm";
         static const std::string left_leg = "left_leg";
         static const std::string right_leg = "right_leg";
         static const std::string torso = "torso";
+        static const std::string chains = "chains";
+        static const std::string sensors = "sensors";
+        static const std::string base = "base";
     }
 }
 
