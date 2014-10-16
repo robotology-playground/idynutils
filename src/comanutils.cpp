@@ -6,11 +6,11 @@ using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
-    right_arm("right_arm", moduleName, controlModeVocab, true),
-    right_leg("right_leg", moduleName, controlModeVocab, true),
-    left_arm("left_arm", moduleName, controlModeVocab, true),
-    left_leg("left_leg", moduleName, controlModeVocab, true),
-    torso("torso", moduleName, controlModeVocab, true)
+    right_arm("right_arm", moduleName, "coman", controlModeVocab, true),
+    right_leg("right_leg", moduleName, "coman", controlModeVocab, true),
+    left_arm("left_arm", moduleName, "coman", controlModeVocab, true),
+    left_leg("left_leg", moduleName, "coman", controlModeVocab, true),
+    torso("torso", moduleName, "coman", controlModeVocab, true)
 {
     this->number_of_joints = idynutils.coman_iDyn3.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
