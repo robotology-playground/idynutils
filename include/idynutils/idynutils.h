@@ -68,12 +68,22 @@ public:
 
     /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
-     * @param q_chain vector of joint values
-     * @param q_out vector where you want ot put q_chain
+     * @param q_chain vector of joint values in robot order
+     * @param q_out whole body vector of joint values in model order
      * @param chain joints to update using q_chain in q_out
      */
     void fromRobotToIDyn(const yarp::sig::Vector& q_chain,
                          yarp::sig::Vector& q_out,
+                         kinematic_chain& chain);
+
+    /**
+     * @brief fromIDynToRobot update q_chain values in q_out using joint numbers of chain.
+     * @param q input whole body joint values vector in model order
+     * @param q_chain_out vector of joint values for each chain in robot order
+     * @param chain joints to update using q_chain in q_out
+     */
+    void fromIDynToRobot(const yarp::sig::Vector& q,
+                         yarp::sig::Vector& q_chain_out,
                          kinematic_chain& chain);
 
     /**

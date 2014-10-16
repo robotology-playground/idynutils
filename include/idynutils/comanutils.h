@@ -23,30 +23,135 @@
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
+/**
+ * @brief The ComanUtils class eases whole body control for the coman robot.
+ */
 class ComanUtils
 {
 public:
+    /**
+     * @brief ComanUtils
+     * @param moduleName the name of the module which uses the facility
+     * @param controlModeVocab the control mode for the whole robot. Defaults to position control
+     */
     ComanUtils(const std::string moduleName,
                const int controlModeVocab = VOCAB_CM_POSITION);
+
+    /**
+     * @brief ComanUtils
+     * @param moduleName the name of the module which uses the facility
+     * @param controlModeVocabMap a map <chain_name, control_mode_vocab> that specifies control mode for each robot chain
+     */
+    ComanUtils(const std::string moduleName,
+               std::map<std::string,const int> &controlModeVocabMap);
 
     walkman::drc::yarp_single_chain_interface right_arm, left_arm;
     walkman::drc::yarp_single_chain_interface torso;
     walkman::drc::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
 
+    /**
+     * @brief sense returns position, velocities, torques sensed by the robot
+     * @param q
+     * @param qdot
+     * @param tau
+     */
     void sense(yarp::sig::Vector& q,
                yarp::sig::Vector& qdot,
                yarp::sig::Vector& tau);
 
+    /**
+     * @brief sensePosition returns the position of the robot's joints
+     * @return
+     */
     yarp::sig::Vector& sensePosition();
+
+    /**
+     * @brief senseVelocity returns the velocities of the robot's joints
+     * @return
+     */
     yarp::sig::Vector& senseVelocity();
+
+    /**
+     * @brief senseTorque returns the torques of the robot's joints
+     * @return
+     */
     yarp::sig::Vector& senseTorque();
 
+    /**
+     * @brief move send potision commands to all the robot joints. Works only when the robot is in joint poisition control mode.
+     * @param q the desired joint position vector
+     */
+    void move(const yarp::sig::Vector &q);
+
+//    /**
+//     * @brief move send inputs to all robot joints. The type of input depends on the control mode.
+//     * @param u the joint input.  It can imply a position command or a torque command depending on the joint control mode used.
+//     */
+//    void move(std::map<std::string,yarp::sig::Vector&> &u);
+
+//    /**
+//     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
+//     * @param q the desired joint position vector
+//     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     */
+//    void move(yarp::sig::Vector &q,
+//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+
+//    /**
+//     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
+//     * @param q the desired joint position vector
+//     * @param kq a map <chain_name, kq> of joint stiffness references to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     */
+//    void move(yarp::sig::Vector &q,
+//              std::map<std::string,yarp::sig::Vector&> &kq_map,
+//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+
+//    /**
+//     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
+//     * @param q the desired joint position vector
+//     * @param kq a map <chain_name, kq> of joint stiffness references to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     * @param kd a map <chain_name, kd> of joint damping references to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
+//     * Chains that accept a torque offset should be controlled in joint impedance mode.
+//     */
+//    void move(yarp::sig::Vector &q,
+//              std::map<std::string,yarp::sig::Vector&> &kq_map,
+//              std::map<std::string,yarp::sig::Vector&> &kd_map,
+//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+
+
+    /**
+     * @brief getNumberOfJoints gets the robot number of joints
+     * @return the number of joints
+     */
     const unsigned int& getNumberOfJoints() const;
+
+    /**
+     * @brief getJointNames returns a vector of joints, in model order
+     * @return a vector of joints, in model order
+     */
     const std::vector<std::string> &getJointNames() const;
 
 private:
     unsigned int number_of_joints;
+
+    /// @brief q_commanded_left_arm q sent to the left arm, in robot joint ordering
+    yarp::sig::Vector q_commanded_left_arm;
+    /// @brief q_commanded_right_arm q sento to the right arm, in robot joint ordering
+    yarp::sig::Vector q_commanded_right_arm;
+    /// @brief q_commanded_left_leg q sento to the left leg, in robot joint ordering
+    yarp::sig::Vector q_commanded_left_leg;
+    /// @brief q_commanded_right_leg q sento to the right leg, in robot joint ordering
+    yarp::sig::Vector q_commanded_right_leg;
+    /// @brief q_commanded_torso q sento to the torso, in robot joint ordering
+    yarp::sig::Vector q_commanded_torso;
 
     yarp::sig::Vector q_sensed;
 
@@ -72,11 +177,18 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
 
-    void fromRobotToIdyn(yarp::sig::Vector& _right_arm,
-                         yarp::sig::Vector& _left_arm,
-                         yarp::sig::Vector& _torso,
-                         yarp::sig::Vector& _right_leg,
-                         yarp::sig::Vector& _left_leg,
+    void fromIdynToRobot(const yarp::sig::Vector& _q,
+                           yarp::sig::Vector& _right_arm,
+                           yarp::sig::Vector& _left_arm,
+                           yarp::sig::Vector& _torso,
+                           yarp::sig::Vector& _right_leg,
+                           yarp::sig::Vector& _left_leg);
+
+    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+                         const yarp::sig::Vector &_left_arm,
+                         const yarp::sig::Vector &_torso,
+                         const yarp::sig::Vector &_right_leg,
+                         const yarp::sig::Vector &_left_leg,
                          yarp::sig::Vector& _q);
 
 
