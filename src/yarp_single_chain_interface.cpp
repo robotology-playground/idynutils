@@ -5,12 +5,15 @@ using namespace yarp::dev;
 
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
                                                          std::string module_prefix_with_no_slash,
+                                                         std::string robot_name,
                                                          bool useSI,
                                                          const int controlModeVocab):
     module_prefix(module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
-    _useSI(useSI)
+    _useSI(useSI),
+    _controlMode(controlModeVocab),
+    _robot_name(robot_name)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -18,13 +21,14 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         std::cout<<"ERROR: do not insert / into module prefix"<<std::endl;
         return;
     }
-    if(createPolyDriver(kinematic_chain.c_str(), polyDriver))
+    if(createPolyDriver(kinematic_chain.c_str(), _robot_name.c_str(), polyDriver))
     {
         bool temp=true;
         temp=temp&&polyDriver.view(encodersMotor);
         temp=temp&&polyDriver.view(controlMode);
         temp=temp&&polyDriver.view(interactionMode);
         temp=temp&&polyDriver.view(positionControl);
+        temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
         temp=temp&&polyDriver.view(velocityControl);
@@ -43,40 +47,58 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
 
     switch(controlModeVocab) {
         case VOCAB_CM_TORQUE:
-        for(unsigned int i = 0; i < joint_numbers; ++i)
-        {
-            controlMode->setTorqueMode(i);
-        }
-        break;
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_TORQUE"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setTorqueMode(i);
+                _controlMode = VOCAB_CM_TORQUE;
+            }
+            break;
         case VOCAB_CM_IMPEDANCE_POS:
-        for(unsigned int i = 0; i < joint_numbers; ++i)
-        {
-            controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
-            interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-        }
-        break;
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
+                interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+                _controlMode = VOCAB_CM_IMPEDANCE_POS;
+            }
+            break;
         case VOCAB_CM_VELOCITY:
-        for(unsigned int i = 0; i < joint_numbers; ++i)
-        {
-            controlMode->setControlMode(i, VOCAB_CM_VELOCITY);
-            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-        }
-        break;
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_VELOCITY"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setControlMode(i, VOCAB_CM_VELOCITY);
+                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+                _controlMode = VOCAB_CM_VELOCITY;
+            }
+            break;
         case VOCAB_CM_POSITION_DIRECT:
-        for(unsigned int i = 0; i < joint_numbers; ++i)
-        {
-            controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
-            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-        }
-        break;
-    case VOCAB_CM_POSITION:
-    default:
-        for(unsigned int i = 0; i < joint_numbers; ++i)
-        {
-            controlMode->setControlMode(i, VOCAB_CM_POSITION);
-            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-        }
-        break;
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION_DIRECT"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
+                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+                _controlMode = VOCAB_CM_POSITION_DIRECT;
+            }
+            break;
+        case VOCAB_CM_POSITION:
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setControlMode(i, VOCAB_CM_POSITION);
+                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+                _controlMode = VOCAB_CM_POSITION;
+            }
+            break;
+        case VOCAB_CM_IDLE:
+        default:
+            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IDLE"<<std::endl;
+            for(unsigned int i = 0; i < joint_numbers; ++i)
+            {
+                controlMode->setControlMode(i, VOCAB_CM_IDLE);
+                _controlMode = VOCAB_CM_IDLE;
+            }
+
     }
     
 }
@@ -126,12 +148,36 @@ void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
     if(_useSI) convertEncoderToSI(q_sensed);
 }
 
-void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d) {
-    yarp::sig::Vector q_sent(q_d);
-    if(_useSI) convertMotorCommandToSI(q_sent);
-    if(!positionDirect->setPositions(q_sent.data()))
-        std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
+void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
+{
+    yarp::sig::Vector u_sent(u_d);
 
+    // We assume that all the joints in the kinemati chain are controlled
+    // in the same way, so I check only the control mode of the first one.
+    controlMode->getControlMode(0, &_controlMode);
+
+    switch (_controlMode)
+    {
+        case VOCAB_CM_POSITION_DIRECT:
+        case VOCAB_CM_IMPEDANCE_POS:
+            if(_useSI) convertMotorCommandToSI(u_sent);
+            if(!positionDirect->setPositions(u_sent.data()))
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
+            break;
+        case VOCAB_CM_POSITION:
+            if(_useSI) convertMotorCommandToSI(u_sent);
+            if(!positionControl->positionMove(u_sent.data()))
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Position Ctrl"<<std::endl;
+            break;
+        case VOCAB_CM_TORQUE:
+            if(!torqueControl->setRefTorques(u_sent.data()))
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
+            break;
+        case VOCAB_CM_IDLE:
+        default:
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
+            break;
+    }
 }
 
 const int& yarp_single_chain_interface::getNumberOfJoints()
@@ -143,10 +189,10 @@ const std::string& yarp_single_chain_interface::getChainName(){
     return kinematic_chain;
 }
 
-bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, yarp::dev::PolyDriver& polyDriver)
+bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver& polyDriver)
 {
     yarp::os::Property options;
-    options.put("robot", "coman");
+    options.put("robot", robot_name);
     options.put("device", "remote_controlboard");
 
     yarp::os::ConstString s;
@@ -155,7 +201,7 @@ bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_
     options.put("local", s.c_str());
 
     yarp::os::ConstString ss;
-    ss = "/coman/" + kinematic_chain;
+    ss = "/" + robot_name + "/" + kinematic_chain;
     options.put("remote", ss.c_str());
 
     polyDriver.open(options);
