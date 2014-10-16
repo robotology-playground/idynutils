@@ -75,6 +75,13 @@ public:
     const int& getNumberOfJoints();
     const std::string &getChainName();
 
+    bool setPositionMode();
+    bool setPositionDirectMode();
+    bool setTorqueMode();
+    bool setIdleMode();
+    bool setImpedanceMode();
+
+    int getControlMode(){return _controlMode;}
     ~yarp_single_chain_interface();
 
 private:
@@ -95,6 +102,8 @@ private:
     void convertEncoderToSI(yarp::sig::Vector& vector);
     void convertMotorCommandToSI(yarp::sig::Vector& vector);
     yarp::sig::Vector convertMotorCommandToSI(const yarp::sig::Vector& vector);
+
+    int computeControlMode();
 public:
     bool& isAvailable;
 
@@ -105,7 +114,6 @@ public:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
-    yarp::dev::IVelocityControl *velocityControl;
 
 };
 

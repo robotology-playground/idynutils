@@ -44,7 +44,6 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
-        temp=temp&&polyDriver.view(velocityControl);
         internal_isAvailable = temp;
     }
     if (!internal_isAvailable)
@@ -62,59 +61,93 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     switch(controlModeVocab) {
         case VOCAB_CM_TORQUE:
             std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_TORQUE"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setTorqueMode(i);
-                _controlMode = VOCAB_CM_TORQUE;
-            }
+            if(!setTorqueMode())
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_TORQUE"<<std::endl;
             break;
         case VOCAB_CM_IMPEDANCE_POS:
             std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
-                interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-                _controlMode = VOCAB_CM_IMPEDANCE_POS;
-            }
-            break;
-        case VOCAB_CM_VELOCITY:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_VELOCITY"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setControlMode(i, VOCAB_CM_VELOCITY);
-                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-                _controlMode = VOCAB_CM_VELOCITY;
-            }
+            if(!setImpedanceMode())
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
             break;
         case VOCAB_CM_POSITION_DIRECT:
             std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION_DIRECT"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT);
-                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-                _controlMode = VOCAB_CM_POSITION_DIRECT;
-            }
+            if(!setPositionDirectMode())
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION_DIRECT"<<std::endl;
             break;
         case VOCAB_CM_POSITION:
             std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setControlMode(i, VOCAB_CM_POSITION);
-                interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-                _controlMode = VOCAB_CM_POSITION;
-            }
+            if(!setPositionMode())
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION"<<std::endl;
             break;
         case VOCAB_CM_IDLE:
         default:
             std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IDLE"<<std::endl;
-            for(unsigned int i = 0; i < joint_numbers; ++i)
-            {
-                controlMode->setControlMode(i, VOCAB_CM_IDLE);
-                _controlMode = VOCAB_CM_IDLE;
-            }
+            if(!setIdleMode())
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_IDLE"<<std::endl;
 
     }
     
+}
+
+bool yarp_single_chain_interface::setIdleMode()
+{
+    bool check = true;
+    for(unsigned int i = 0; i < joint_numbers; ++i)
+        check = check && controlMode->setControlMode(i, VOCAB_CM_IDLE);
+
+    if(check)
+        _controlMode = VOCAB_CM_IDLE;
+    return check;
+}
+
+bool yarp_single_chain_interface::setTorqueMode()
+{
+    bool check = true;
+    for(unsigned int i = 0; i < joint_numbers; ++i)
+        check = check && controlMode->setTorqueMode(i);
+
+    if(check)
+        _controlMode = VOCAB_CM_TORQUE;
+    return check;
+}
+
+bool yarp_single_chain_interface::setPositionMode()
+{
+    bool check = true;
+    for(unsigned int i = 0; i < joint_numbers; ++i)
+    {
+        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION) &&
+            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+    }
+    if(check)
+        _controlMode = VOCAB_CM_POSITION;
+    return check;
+}
+
+bool yarp_single_chain_interface::setImpedanceMode()
+{
+    bool check = true;
+    for(unsigned int i = 0; i < joint_numbers; ++i)
+    {
+        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
+            interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+    }
+    if(check)
+        _controlMode = VOCAB_CM_IMPEDANCE_POS;
+    return check;
+}
+
+bool yarp_single_chain_interface::setPositionDirectMode()
+{
+    bool check = true;
+    for(unsigned int i = 0; i < joint_numbers; ++i)
+    {
+        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
+            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
+    }
+    if(check)
+        _controlMode = VOCAB_CM_POSITION_DIRECT;
+    return check;
 }
 
 yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
@@ -168,7 +201,7 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
 
     // We assume that all the joints in the kinemati chain are controlled
     // in the same way, so I check only the control mode of the first one.
-    controlMode->getControlMode(0, &_controlMode);
+    _controlMode = computeControlMode();
 
     switch (_controlMode)
     {
@@ -192,6 +225,20 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
             break;
     }
+}
+
+int yarp_single_chain_interface::computeControlMode()
+{
+    int ctrlMode;
+    controlMode->getControlMode(0, &ctrlMode);
+
+    yarp::dev::InteractionModeEnum intMode;
+    interactionMode->getInteractionMode(0, &intMode);
+
+    if(intMode == VOCAB_IM_COMPLIANT)
+        return VOCAB_CM_IMPEDANCE_POS;
+    else
+        return ctrlMode;
 }
 
 const int& yarp_single_chain_interface::getNumberOfJoints()
