@@ -6,11 +6,11 @@ using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
-    right_arm("right_arm", moduleName, controlModeVocab, true),
-    right_leg("right_leg", moduleName, controlModeVocab, true),
-    left_arm("left_arm", moduleName, controlModeVocab, true),
-    left_leg("left_leg", moduleName, controlModeVocab, true),
-    torso("torso", moduleName, controlModeVocab, true)
+    right_arm("right_arm", moduleName, "coman", controlModeVocab, true),
+    right_leg("right_leg", moduleName, "coman", controlModeVocab, true),
+    left_arm("left_arm", moduleName, "coman", controlModeVocab, true),
+    left_leg("left_leg", moduleName, "coman", controlModeVocab, true),
+    torso("torso", moduleName, "coman", controlModeVocab, true)
 {
     this->number_of_joints = idynutils.coman_iDyn3.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
@@ -26,6 +26,22 @@ const unsigned int& ComanUtils::getNumberOfJoints() const
 const std::vector<std::string> &ComanUtils::getJointNames() const
 {
     return idynutils.getJointNames();
+}
+
+void ComanUtils::move(const yarp::sig::Vector &_q) {
+
+    fromIdynToRobot(_q,
+                    q_commanded_right_arm,
+                    q_commanded_left_arm,
+                    q_commanded_torso,
+                    q_commanded_right_leg,
+                    q_commanded_left_leg);
+
+    torso.move(q_commanded_torso);
+    left_arm.move(q_commanded_left_arm);
+    right_arm.move(q_commanded_right_arm);
+    left_leg.move(q_commanded_left_leg);
+    right_leg.move(q_commanded_right_leg);
 }
 
 void ComanUtils::sense(yarp::sig::Vector &q,
@@ -91,11 +107,26 @@ yarp::sig::Vector &ComanUtils::senseTorque()
     return tau_sensed;
 }
 
-void ComanUtils::fromRobotToIdyn(yarp::sig::Vector &_right_arm,
+
+void ComanUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
+                                 yarp::sig::Vector &_right_arm,
                                  yarp::sig::Vector &_left_arm,
                                  yarp::sig::Vector &_torso,
                                  yarp::sig::Vector &_right_leg,
-                                 yarp::sig::Vector &_left_leg,
+                                 yarp::sig::Vector &_left_leg)
+{
+    idynutils.fromIDynToRobot(_q, _right_arm, idynutils.right_arm);
+    idynutils.fromIDynToRobot(_q, _left_arm, idynutils.left_arm);
+    idynutils.fromIDynToRobot(_q, _torso, idynutils.torso);
+    idynutils.fromIDynToRobot(_q, _right_leg, idynutils.right_leg);
+    idynutils.fromIDynToRobot(_q, _left_leg, idynutils.left_leg);
+}
+
+void ComanUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+                                 const yarp::sig::Vector &_left_arm,
+                                 const yarp::sig::Vector &_torso,
+                                 const yarp::sig::Vector &_right_leg,
+                                 const yarp::sig::Vector &_left_leg,
                                  yarp::sig::Vector &_q)
 {
     idynutils.fromRobotToIDyn(_right_arm, _q, idynutils.right_arm);

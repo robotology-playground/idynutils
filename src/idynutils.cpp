@@ -265,13 +265,23 @@ bool iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chai
     return true;
 }
 
-void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain_radians,
+void iDynUtils::fromRobotToIDyn(const yarp::sig::Vector& q_chain,
                                 yarp::sig::Vector& q_out,
                                 kinematic_chain& chain)
 {
     for(unsigned int i = 0; i < chain.joint_numbers.size(); ++i)
     {
-        q_out[chain.joint_numbers[i]] = q_chain_radians[i];
+        q_out[chain.joint_numbers[i]] = q_chain[i];
+    }
+}
+
+void iDynUtils::fromIDynToRobot(const yarp::sig::Vector& q,
+                                yarp::sig::Vector& q_chain_out,
+                                kinematic_chain& chain)
+{
+    for(unsigned int i = 0; i < chain.joint_numbers.size(); ++i)
+    {
+        q_chain_out[i] = q[chain.joint_numbers[i]];
     }
 }
 

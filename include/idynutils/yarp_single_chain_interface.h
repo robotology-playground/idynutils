@@ -8,6 +8,8 @@
 #include <math.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/dev/IInteractionMode.h>
+
 
 
 /**
@@ -29,19 +31,25 @@ namespace walkman{
 namespace walkman{
     namespace drc{
 
+/**
+ * @brief The yarp_single_chain_interface class
+ */
 class yarp_single_chain_interface
 {
 public:
     /**
      * @brief yarp_single_chain_interface is a simple interface for control of kinematic chains
      * @param kinematic_chain the name of the kinematic chain as defined in the robot srdf
+     * @param robot_name the name of the robot, will be used to open polydrivers
      * @param module_prefix_with_no_slash the module name
      * @param useSI does the sense() and move() use SI units? defaults to false
+     * @param controlModeVocab is the controlMode used to initialize the interface, default is IDLE
      */
     yarp_single_chain_interface(std::string kinematic_chain,
                                 std::string module_prefix_with_no_slash,
+                                std::string robot_name,
                                 bool useSI = false,
-                                const int controlModeVocab = VOCAB_CM_POSITION
+                                const int controlModeVocab = VOCAB_CM_IDLE
                                 );
     virtual yarp::sig::Vector sense();
     virtual void sense(yarp::sig::Vector& q_sensed);
@@ -55,7 +63,7 @@ public:
     yarp::sig::Vector senseTorque();
     void senseTorque(yarp::sig::Vector &tau_sensed);
 
-    virtual void move(const yarp::sig::Vector& q_d);
+    virtual void move(const yarp::sig::Vector& u_d);
 
     const int& getNumberOfJoints();
     const std::string &getChainName();
@@ -64,7 +72,7 @@ public:
 
 private:
 
-    bool createPolyDriver ( const std::string &kinematic_chain, yarp::dev::PolyDriver &polyDriver );
+    bool createPolyDriver ( const std::string &kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver &polyDriver );
     std::string kinematic_chain;
     int joint_numbers;
     std::string module_prefix;
@@ -74,6 +82,8 @@ private:
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
     bool _useSI;
+    int _controlMode;
+    std::string _robot_name;
 
     void convertEncoderToSI(yarp::sig::Vector& vector);
     void convertMotorCommandToSI(yarp::sig::Vector& vector);
@@ -82,9 +92,10 @@ public:
     bool& isAvailable;
 
     yarp::dev::IEncodersTimed *encodersMotor;
-    yarp::dev::IPositionDirect *positionDirect;
-    yarp::dev::IControlMode *controlMode;
+    yarp::dev::IControlMode2 *controlMode;
+    yarp::dev::IInteractionMode *interactionMode;
     yarp::dev::IPositionControl2 *positionControl;
+    yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
     yarp::dev::IVelocityControl *velocityControl;
