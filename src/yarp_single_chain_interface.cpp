@@ -3,19 +3,6 @@
 using namespace walkman::drc;
 using namespace yarp::dev;
 
-
-yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
-                                                         std::string module_prefix_with_no_slash,
-                                                         bool useSI,
-                                                         const int controlModeVocab):
-                                                         yarp_single_chain_interface(kinematic_chain,
-                                                             module_prefix_with_no_slash,
-                                                             "coman",useSI,controlModeVocab
-                                                        )
-{
-#warning ("Warning: DO NOT USE this constructor (yarp_single_chain_interface)")
-}
-
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
                                                          std::string module_prefix_with_no_slash,
                                                          std::string robot_name,
