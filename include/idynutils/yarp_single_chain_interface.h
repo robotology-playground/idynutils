@@ -51,6 +51,13 @@ public:
                                 bool useSI = false,
                                 const int controlModeVocab = VOCAB_CM_IDLE
                                 );
+    
+    yarp_single_chain_interface(std::string kinematic_chain,
+                                std::string module_prefix_with_no_slash,
+                                bool useSI = false,
+                                const int controlModeVocab = VOCAB_CM_IDLE
+    );
+    
     virtual yarp::sig::Vector sense();
     virtual void sense(yarp::sig::Vector& q_sensed);
 
