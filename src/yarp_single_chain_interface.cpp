@@ -8,7 +8,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
                                                          std::string robot_name,
                                                          bool useSI,
                                                          const int controlModeVocab):
-    module_prefix(module_prefix_with_no_slash),
+    module_prefix(robot_name + "/" + module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
     _useSI(useSI),
