@@ -10,7 +10,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/dev/IInteractionMode.h>
 
-
+#define VOCAB_CM_NONE VOCAB3('d','i','o')
 
 /**
  * These strings are supposed to be found into the SRDF of any robot we are working with
