@@ -84,8 +84,10 @@ bool yarp_single_chain_interface::setIdleMode()
 
     if(check) {
         _controlMode = VOCAB_CM_IDLE;
-	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
+        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
     }
+    else
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
     return check;
 }
 
@@ -93,12 +95,14 @@ bool yarp_single_chain_interface::setTorqueMode()
 {
     bool check = true;
     for(unsigned int i = 0; i < joint_numbers; ++i)
-        check = check && controlMode->setTorqueMode(i);
+        check = check && controlMode->setControlMode(i, VOCAB_CM_TORQUE);
 
     if(check) {
         _controlMode = VOCAB_CM_TORQUE;
-	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
+        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
     }
+    else
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
     return check;
 }
 
@@ -112,8 +116,10 @@ bool yarp_single_chain_interface::setPositionMode()
     }
     if(check) {
         _controlMode = VOCAB_CM_POSITION;
-	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
+        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
     }
+    else
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
     return check;
 }
 
@@ -127,8 +133,10 @@ bool yarp_single_chain_interface::setImpedanceMode()
     }
     if(check) {
         _controlMode = VOCAB_CM_IMPEDANCE_POS;
-	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
+        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
     }
+    else
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
     return check;
 }
 
@@ -142,8 +150,10 @@ bool yarp_single_chain_interface::setPositionDirectMode()
     }
     if(check) {
         _controlMode = VOCAB_CM_POSITION_DIRECT;
-	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
+        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
     }
+    else
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
     return check;
 }
 
