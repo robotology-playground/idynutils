@@ -47,30 +47,30 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     if (controlModeVocab==VOCAB3('d','i','o')) return;
     switch(controlModeVocab) {
         case VOCAB_CM_TORQUE:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_TORQUE"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_TORQUE"<<std::endl;
             if(!setTorqueMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_TORQUE"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_TORQUE"<<std::endl;
             break;
         case VOCAB_CM_IMPEDANCE_POS:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
             if(!setImpedanceMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
             break;
         case VOCAB_CM_POSITION_DIRECT:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION_DIRECT"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION_DIRECT"<<std::endl;
             if(!setPositionDirectMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION_DIRECT"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION_DIRECT"<<std::endl;
             break;
         case VOCAB_CM_POSITION:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION"<<std::endl;
             if(!setPositionMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_POSITION"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION"<<std::endl;
             break;
         case VOCAB_CM_IDLE:
         default:
-            std::cout<<"Initializing "<<kinematic_chain<<"with VOCAB_CM_IDLE"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_IDLE"<<std::endl;
             if(!setIdleMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<"with VOCAB_CM_IDLE"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_IDLE"<<std::endl;
 
     }
     
@@ -82,8 +82,10 @@ bool yarp_single_chain_interface::setIdleMode()
     for(unsigned int i = 0; i < joint_numbers; ++i)
         check = check && controlMode->setControlMode(i, VOCAB_CM_IDLE);
 
-    if(check)
+    if(check) {
         _controlMode = VOCAB_CM_IDLE;
+	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
+    }
     return check;
 }
 
@@ -93,8 +95,10 @@ bool yarp_single_chain_interface::setTorqueMode()
     for(unsigned int i = 0; i < joint_numbers; ++i)
         check = check && controlMode->setTorqueMode(i);
 
-    if(check)
+    if(check) {
         _controlMode = VOCAB_CM_TORQUE;
+	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
+    }
     return check;
 }
 
@@ -106,8 +110,10 @@ bool yarp_single_chain_interface::setPositionMode()
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
     }
-    if(check)
+    if(check) {
         _controlMode = VOCAB_CM_POSITION;
+	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
+    }
     return check;
 }
 
@@ -119,8 +125,10 @@ bool yarp_single_chain_interface::setImpedanceMode()
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
     }
-    if(check)
+    if(check) {
         _controlMode = VOCAB_CM_IMPEDANCE_POS;
+	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
+    }
     return check;
 }
 
@@ -132,8 +140,10 @@ bool yarp_single_chain_interface::setPositionDirectMode()
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
     }
-    if(check)
+    if(check) {
         _controlMode = VOCAB_CM_POSITION_DIRECT;
+	std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
+    }
     return check;
 }
 
