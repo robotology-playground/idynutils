@@ -15,9 +15,28 @@
 class yarp_ft_interface
 {
 public:
-    yarp_ft_interface(std::string kinematic_chain);
+    /**
+     * @brief yarp_ft_interface
+     * @param kinematic_chain the name of the kinematic chain where the ft resides, as specified in the sdf
+     * (assuming there is a ft sensor at the distal link of a kinematic chain)
+     * @param robot_name the name of the robot, will be used to open polydrivers
+     * @param module_prefix_with_no_slash the module name
+     */
+    yarp_ft_interface(std::string kinematic_chain,
+                      std::string module_prefix_with_no_slash,
+                      std::string robot_name);
+
+    /**
+     * @brief sense reads the sensed 6d wrench from the ft yarp port
+     * @return the sensed wrench
+     */
     yarp::sig::Vector sense();
-    void sense(yarp::sig::Vector& q_sensed);
+
+    /**
+     * @brief sense reads the sensed 6d wrench from the ft yarp port
+     * @param wrench_sensed the sensed wrench
+     */
+    void sense(yarp::sig::Vector& wrench_sensed);
     
     
 private:
