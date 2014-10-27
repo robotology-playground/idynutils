@@ -100,7 +100,7 @@ private:
 
     int computeControlMode();
 public:
-    bool& isAvailable;
+    const bool& isAvailable;
 
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IControlMode2 *controlMode;
