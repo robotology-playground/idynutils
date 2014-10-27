@@ -2,6 +2,9 @@
 #include <drc_shared/idynutils.h>
 #include <drc_shared/cartesian_utils.h>
 #include <drc_shared/tests_utils.h>
+#include <yarp/math/Math.h>
+
+using namespace yarp::math;
 
 namespace {
 
@@ -292,6 +295,67 @@ TEST_F(testIDynUtils, testSetChainIndex)
     EXPECT_TRUE(this->setChainIndex(this->left_arm.end_effector_name, this->left_arm));
     std::string fake_name = "sossio";
     EXPECT_FALSE(this->setChainIndex(fake_name, this->left_arm));
+}
+
+TEST_F(testIDynUtils, testWorld)
+{
+    iDynUtils idynutils1;
+    iDynUtils idynutils2;
+    idynutils2.coman_iDyn3.setFloatingBaseLink(idynutils2.left_leg.index);
+
+    yarp::sig::Vector q(idynutils1.coman_iDyn3.getNrOfDOFs(), 0.0);
+    for(unsigned int i = 0; i < q.size(); ++i)
+        q[i] = tests_utils::getRandomAngle();
+
+    idynutils1.updateiDyn3Model(q, true);
+    idynutils2.updateiDyn3Model(q, true);
+
+    yarp::sig::Matrix w_T_bl = idynutils1.coman_iDyn3.getWorldBasePose();
+    EXPECT_EQ(idynutils1.coman_iDyn3.getLinkIndex("Waist"), 0);
+    yarp::sig::Matrix bl_T_lf = idynutils1.coman_iDyn3.getPosition(0, idynutils1.left_leg.index);
+    yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
+
+    yarp::sig::Matrix w_T_bl2 = idynutils2.coman_iDyn3.getWorldBasePose();
+    EXPECT_EQ(idynutils2.coman_iDyn3.getLinkIndex("Waist"), 0);
+
+    for(unsigned int i = 0; i < 4; ++i)
+    {
+        for(unsigned int j = 0; j < 4; ++j)
+        {
+            EXPECT_NEAR(w_T_lf(i,j), w_T_bl2(i,j), 1E-15);
+        }
+    }
+
+    yarp::sig::Matrix w_T_rh = idynutils1.coman_iDyn3.getPosition(idynutils1.right_arm.index);
+    yarp::sig::Matrix w_T_rh2 = idynutils2.coman_iDyn3.getPosition(idynutils2.right_arm.index);
+
+    for(unsigned int i = 0; i < 4; ++i)
+    {
+        for(unsigned int j = 0; j < 4; ++j)
+        {
+            EXPECT_NEAR(w_T_rh(i,j), w_T_rh2(i,j), 1E-15);
+        }
+    }
+
+    q.zero();
+    idynutils1.updateiDyn3Model(q,true);
+    idynutils2.updateiDyn3Model(q,true);
+    yarp::sig::Vector w_T_CoM = idynutils1.coman_iDyn3.getCOM();
+    yarp::sig::Vector w_T_CoM2 = idynutils2.coman_iDyn3.getCOM();
+    yarp::sig::Matrix w_T_lh = idynutils1.coman_iDyn3.getPosition(idynutils1.left_arm.index);
+    yarp::sig::Matrix w_T_lh2 = idynutils2.coman_iDyn3.getPosition(idynutils2.left_arm.index);
+
+    for(unsigned int i = 0; i < 4; ++i)
+    {
+        for(unsigned int j = 0; j < 4; ++j)
+        {
+            EXPECT_NEAR(w_T_lh(i,j), w_T_lh2(i,j), 1E-15);
+        }
+    }
+
+    for(unsigned int i = 0; i < 3; ++i)
+        EXPECT_NEAR(w_T_CoM(i), w_T_CoM2(i), 1E-15);
+
 }
 
 TEST_F(testIDynUtils, testComputeFloatingBaseProjectorFeetInContact)
