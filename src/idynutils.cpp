@@ -309,6 +309,11 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
 
     worldT(0,3) = 0.0;
     worldT(1,3) = 0.0;
+
+    if(coman_iDyn3.getFloatingBaseLink() != 0) {
+        worldT = worldT*coman_iDyn3.getPosition(0,coman_iDyn3.getFloatingBaseLink());
+    }
+
     coman_iDyn3.setWorldBasePose(worldT);
 
     return anchor_T_world;
@@ -316,13 +321,15 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
 
 void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor)
 {
-    KDL::Frame worldT_KDL;
-    cartesian_utils::fromYARPMatrixtoKDLFrame(worldT, worldT_KDL);
-    worldT =    KDLtoYarp_position(
-                    anchor_T_world.Inverse()
-                    *
-                    coman_iDyn3.getPositionKDL(coman_iDyn3.getLinkIndex(anchor),0)
-                );
+    if(coman_iDyn3.getLinkIndex(anchor) != coman_iDyn3.getFloatingBaseLink()) {
+        worldT =    KDLtoYarp_position(
+                        anchor_T_world.Inverse()
+                        *
+                        coman_iDyn3.getPositionKDL(coman_iDyn3.getLinkIndex(anchor),coman_iDyn3.getFloatingBaseLink())
+                    );
+    } else {
+        worldT = KDLtoYarp_position(anchor_T_world.Inverse());
+    }
 
     coman_iDyn3.setWorldBasePose(worldT);
 }
