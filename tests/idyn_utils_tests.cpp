@@ -318,6 +318,9 @@ TEST_F(testIDynUtils, testWorld)
     yarp::sig::Matrix w_T_bl2 = idynutils2.coman_iDyn3.getWorldBasePose();
     EXPECT_EQ(idynutils2.coman_iDyn3.getLinkIndex("Waist"), 0);
 
+    std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
+    std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
+
     for(unsigned int i = 0; i < 4; ++i)
     {
         for(unsigned int j = 0; j < 4; ++j)
