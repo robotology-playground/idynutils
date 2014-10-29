@@ -281,8 +281,26 @@ void iDynUtils::fromIDynToRobot(const yarp::sig::Vector& q,
 
 void iDynUtils::initWorldPose(const std::string& anchor)
 {
+    // saving old values of Ang,DAng,D2Ang
+    yarp::sig::Vector Ang,DAng,D2Ang;
+    Ang = coman_iDyn3.getAng();
+    DAng = coman_iDyn3.getDAng();
+    D2Ang = coman_iDyn3.getD2Ang();
+
+    // setting joints to default configuration
+    coman_iDyn3.setAng(zeros);
+    coman_iDyn3.setDAng(zeros);
+    coman_iDyn3.setD2Ang(zeros);
+    coman_iDyn3.kinematicRNEA();
+    coman_iDyn3.computePositions();
+
     this->anchor_name = anchor;
     this->anchor_T_world = this->setWorldPose(anchor);
+
+    // restoring old values for Ang,DAng,D2Ang
+    coman_iDyn3.setAng(Ang);
+    coman_iDyn3.setDAng(DAng);
+    coman_iDyn3.setD2Ang(D2Ang);
 }
 
 void iDynUtils::updateWorldPose()
@@ -412,11 +430,13 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     coman_iDyn3.setAng(q);
     coman_iDyn3.setDAng(dq_ref);
     coman_iDyn3.setD2Ang(ddq_ref);
-    
+
+    // setting the world pose
+
     if(set_world_pose) {
         if(anchor_name.length() == 0)
             this->initWorldPose(support_foot);
-        else this->updateWorldPose();
+        this->updateWorldPose();
     }
 
     // This is the fake Inertial Measure
@@ -426,7 +446,7 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     // get the rotational part of worldT (w_R_b),
     // compute the inverse (b_R_w = w_R_b^T) and multiply by w_g
     // to obtain g expressed in base link coordinates, b_g
-    g = worldT.submatrix(0,2,0,2).transposed() * g;
+    g = (worldT * coman_iDyn3.getPosition(0,coman_iDyn3.getFloatingBaseLink())).submatrix(0,2,0,2).transposed() * g;
 
     yarp::sig::Vector o(3,0.0);
     coman_iDyn3.setInertialMeasure(o, o, g);
