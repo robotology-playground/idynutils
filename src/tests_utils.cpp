@@ -91,5 +91,16 @@ KDL::Frame tests_utils::getRandomFrame(const double lengthMin, const double leng
     return f;
 }
 
-
+bool tests_utils::startYarpServer()
+{
+    int exit_ = system("yarpserver --write&");
+    if (exit_ == -1) return false;
+    return true;
+}
+bool tests_utils::stopYarpServer()
+{
+    int exit_ = system("killall yarpserver&");
+    if (exit_ == -1) return false;
+    return true;
+}
 
