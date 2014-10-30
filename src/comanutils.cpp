@@ -6,11 +6,21 @@ using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
-    right_arm("right_arm", moduleName, "coman", controlModeVocab, true),
-    right_leg("right_leg", moduleName, "coman", controlModeVocab, true),
-    left_arm("left_arm", moduleName, "coman", controlModeVocab, true),
-    left_leg("left_leg", moduleName, "coman", controlModeVocab, true),
-    torso("torso", moduleName, "coman", controlModeVocab, true)
+    right_arm("right_arm", moduleName, "coman", true, controlModeVocab),
+    right_leg("right_leg", moduleName, "coman", true, controlModeVocab),
+    left_arm("left_arm", moduleName, "coman", true, controlModeVocab),
+    left_leg("left_leg", moduleName, "coman", true, controlModeVocab),
+    torso("torso", moduleName, "coman", true, controlModeVocab),
+    q_sensed_right_arm( right_arm.getNumberOfJoints() ),
+    q_sensed_left_arm( left_arm.getNumberOfJoints() ),
+    q_sensed_torso( torso.getNumberOfJoints() ),
+    q_sensed_right_leg( right_leg.getNumberOfJoints() ),
+    q_sensed_left_leg( left_leg.getNumberOfJoints() ),
+    q_commanded_right_arm( right_arm.getNumberOfJoints() ),
+    q_commanded_left_arm( left_arm.getNumberOfJoints() ),
+    q_commanded_torso( torso.getNumberOfJoints() ),
+    q_commanded_right_leg( right_leg.getNumberOfJoints() ),
+    q_commanded_left_leg( left_leg.getNumberOfJoints() )
 {
     this->number_of_joints = idynutils.coman_iDyn3.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);

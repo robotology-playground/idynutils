@@ -138,6 +138,20 @@ public:
      * @return a vector of joints, in model order
      */
     const std::vector<std::string> &getJointNames() const;
+    
+    void fromIdynToRobot(const yarp::sig::Vector& _q,
+                           yarp::sig::Vector& _right_arm,
+                           yarp::sig::Vector& _left_arm,
+                           yarp::sig::Vector& _torso,
+                           yarp::sig::Vector& _right_leg,
+                           yarp::sig::Vector& _left_leg);
+
+    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+                         const yarp::sig::Vector &_left_arm,
+                         const yarp::sig::Vector &_torso,
+                         const yarp::sig::Vector &_right_leg,
+                         const yarp::sig::Vector &_left_leg,
+                         yarp::sig::Vector& _q);
 
 private:
     unsigned int number_of_joints;
@@ -176,20 +190,6 @@ private:
     yarp::sig::Vector tau_sensed_left_leg;
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
-
-    void fromIdynToRobot(const yarp::sig::Vector& _q,
-                           yarp::sig::Vector& _right_arm,
-                           yarp::sig::Vector& _left_arm,
-                           yarp::sig::Vector& _torso,
-                           yarp::sig::Vector& _right_leg,
-                           yarp::sig::Vector& _left_leg);
-
-    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
-                         const yarp::sig::Vector &_left_arm,
-                         const yarp::sig::Vector &_torso,
-                         const yarp::sig::Vector &_right_leg,
-                         const yarp::sig::Vector &_left_leg,
-                         yarp::sig::Vector& _q);
 
 
 };
