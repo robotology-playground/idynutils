@@ -8,7 +8,7 @@ ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
     right_hand(walkman::robot::right_hand, moduleName, "coman", true, controlModeVocab),
     right_arm(walkman::robot::right_arm, moduleName, "coman", true, controlModeVocab),
-    right_leg(walkman::robot::left_leg, moduleName, "coman", true, controlModeVocab),
+    right_leg(walkman::robot::right_leg, moduleName, "coman", true, controlModeVocab),
     left_hand(walkman::robot::left_hand, moduleName, "coman", true, controlModeVocab),
     left_arm(walkman::robot::left_arm, moduleName, "coman", true, controlModeVocab),
     left_leg(walkman::robot::left_leg, moduleName, "coman", true, controlModeVocab),
