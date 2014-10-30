@@ -7,6 +7,7 @@
 #include <kdl/frames.hpp>
 #include <yarp/sig/Vector.h>
 
+
 class tests_utils
 {
 public:
@@ -74,6 +75,10 @@ public:
      */
     static KDL::Frame getRandomFrame(const double lengthMin, const double lengthMax,
                                      const double rotMin, const double rotMax);
+
+    static bool startYarpServer();
+
+    static bool stopYarpServer();
 
 };
 

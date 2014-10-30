@@ -170,6 +170,39 @@ TEST_F(testsTestsUtils, testInitializeIfNeeded)
     EXPECT_FALSE(b1 == b2);
 }
 
+TEST_F(testsTestsUtils, testStartStopYarpServer)
+{
+    EXPECT_TRUE(tests_utils::startYarpServer());
+
+    yarp::os::Network yarp_network;
+    unsigned int number_of_trials = 1000;
+    bool check = false;
+    for(unsigned int i = 0; i < number_of_trials; ++i)
+    {
+        if(!yarp_network.checkNetwork())
+            std::cout<<"Checking Yarp Network..."<<std::endl;
+        else
+        {
+            check = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(check);
+
+    EXPECT_TRUE(tests_utils::stopYarpServer());
+    for(unsigned int i = 0; i < number_of_trials; ++i)
+    {
+        if(yarp_network.checkNetwork())
+            std::cout<<"Checking Yarp Network shut down..."<<std::endl;
+        else
+        {
+            check = false;
+            break;
+        }
+    }
+    EXPECT_FALSE(check);
+}
+
 }
 
 int main(int argc, char **argv) {
