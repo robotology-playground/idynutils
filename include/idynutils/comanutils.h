@@ -45,10 +45,17 @@ public:
     ComanUtils(const std::string moduleName,
                std::map<std::string,const int> &controlModeVocabMap);
 
+    walkman::drc::yarp_single_chain_interface right_hand, left_hand;
     walkman::drc::yarp_single_chain_interface right_arm, left_arm;
     walkman::drc::yarp_single_chain_interface torso;
     walkman::drc::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
+
+    /**
+     * @brief hasHands check whether thboth hands are available
+     * @return true if connection to both hands is successful
+     */
+    bool hasHands();
 
     /**
      * @brief sense returns position, velocities, torques sensed by the robot
@@ -79,10 +86,29 @@ public:
     yarp::sig::Vector& senseTorque();
 
     /**
-     * @brief move send potision commands to all the robot joints. Works only when the robot is in joint poisition control mode.
+     * @brief sensePosition returns the position of the robot's joints
+     * @param q_left_hand a vector where the left hand position will be stored
+     * @param q_right_hand a vector where the right hand position will be stored
+     * @return true if hands are available
+     */
+    bool senseHandsPosition(yarp::sig::Vector &q_left_hand,
+                            yarp::sig::Vector &q_right_hand);
+
+
+    /**
+     * @brief move send potision commands to all the robot joints (except the hands). Works only when the robot is in joint poisition control mode.
      * @param q the desired joint position vector
      */
     void move(const yarp::sig::Vector &q);
+
+    /**
+     * @brief move send potision commands to the robot hands.
+     * @param q_left_hand the desired joint position vector for the left hand
+     * @param q_right_hand the desired joint position vector for the right hand
+     * @return true if hands are available
+     */
+    bool moveHands(const yarp::sig::Vector &q_left_hand,
+                   const yarp::sig::Vector &q_right_hand);
 
 //    /**
 //     * @brief move send inputs to all robot joints. The type of input depends on the control mode.
@@ -155,7 +181,10 @@ public:
 
 private:
     unsigned int number_of_joints;
-
+    /// @brief q_commanded_right_arm q sento to the right hand, in robot joint ordering
+    yarp::sig::Vector q_commanded_right_hand;
+    /// @brief q_commanded_left_arm q sent to the left hand, in robot joint ordering
+    yarp::sig::Vector q_commanded_left_hand;
     /// @brief q_commanded_left_arm q sent to the left arm, in robot joint ordering
     yarp::sig::Vector q_commanded_left_arm;
     /// @brief q_commanded_right_arm q sento to the right arm, in robot joint ordering
@@ -169,6 +198,8 @@ private:
 
     yarp::sig::Vector q_sensed;
 
+    yarp::sig::Vector q_sensed_left_hand;
+    yarp::sig::Vector q_sensed_right_hand;
     yarp::sig::Vector q_sensed_left_arm;
     yarp::sig::Vector q_sensed_right_arm;
     yarp::sig::Vector q_sensed_left_leg;
@@ -190,8 +221,6 @@ private:
     yarp::sig::Vector tau_sensed_left_leg;
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
-
-
 };
 
 #endif // COMANUTILS_H

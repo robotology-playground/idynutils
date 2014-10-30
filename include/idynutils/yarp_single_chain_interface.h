@@ -17,6 +17,8 @@
  */
 namespace walkman{
     namespace robot{
+        static const std::string left_hand = "left_hand";
+        static const std::string right_hand = "right_hand";
         static const std::string left_arm = "left_arm";
         static const std::string right_arm = "right_arm";
         static const std::string left_leg = "left_leg";

@@ -6,16 +6,22 @@ using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName,
                        const int controlModeVocab):
-    right_arm("right_arm", moduleName, "coman", true, controlModeVocab),
-    right_leg("right_leg", moduleName, "coman", true, controlModeVocab),
-    left_arm("left_arm", moduleName, "coman", true, controlModeVocab),
-    left_leg("left_leg", moduleName, "coman", true, controlModeVocab),
-    torso("torso", moduleName, "coman", true, controlModeVocab),
+    right_hand(walkman::robot::right_hand, moduleName, "coman", true, controlModeVocab),
+    right_arm(walkman::robot::right_arm, moduleName, "coman", true, controlModeVocab),
+    right_leg(walkman::robot::left_leg, moduleName, "coman", true, controlModeVocab),
+    left_hand(walkman::robot::left_hand, moduleName, "coman", true, controlModeVocab),
+    left_arm(walkman::robot::left_arm, moduleName, "coman", true, controlModeVocab),
+    left_leg(walkman::robot::left_leg, moduleName, "coman", true, controlModeVocab),
+    torso(walkman::robot::torso, moduleName, "coman", true, controlModeVocab),
+    q_sensed_right_hand( 1 ),
+    q_sensed_left_hand( 1 ),
     q_sensed_right_arm( right_arm.getNumberOfJoints() ),
     q_sensed_left_arm( left_arm.getNumberOfJoints() ),
     q_sensed_torso( torso.getNumberOfJoints() ),
     q_sensed_right_leg( right_leg.getNumberOfJoints() ),
     q_sensed_left_leg( left_leg.getNumberOfJoints() ),
+    q_commanded_right_hand( 1 ),
+    q_commanded_left_hand( 1 ),
     q_commanded_right_arm( right_arm.getNumberOfJoints() ),
     q_commanded_left_arm( left_arm.getNumberOfJoints() ),
     q_commanded_torso( torso.getNumberOfJoints() ),
@@ -26,6 +32,11 @@ ComanUtils::ComanUtils(const std::string moduleName,
     q_sensed.resize(this->number_of_joints,0.0);
     qdot_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
+}
+
+bool ComanUtils::hasHands()
+{
+    return left_hand.isAvailable && right_hand.isAvailable;
 }
 
 const unsigned int& ComanUtils::getNumberOfJoints() const
@@ -52,6 +63,21 @@ void ComanUtils::move(const yarp::sig::Vector &_q) {
     right_arm.move(q_commanded_right_arm);
     left_leg.move(q_commanded_left_leg);
     right_leg.move(q_commanded_right_leg);
+}
+
+bool ComanUtils::moveHands(const yarp::sig::Vector &q_left_hand,
+                           const yarp::sig::Vector &q_right_hand)
+{
+    q_commanded_left_hand = q_left_hand;
+    q_commanded_right_hand = q_right_hand;
+
+    if(left_hand.isAvailable)
+        left_hand.move(q_commanded_left_hand);
+
+    if(right_hand.isAvailable)
+        right_hand.move(q_commanded_right_hand);
+
+    return hasHands();
 }
 
 void ComanUtils::sense(yarp::sig::Vector &q,
@@ -115,6 +141,22 @@ yarp::sig::Vector &ComanUtils::senseTorque()
                     tau_sensed);
 
     return tau_sensed;
+}
+
+bool ComanUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
+                                    yarp::sig::Vector &q_right_hand)
+{
+    if(left_hand.isAvailable) {
+        left_hand.sensePosition(q_sensed_left_hand);
+        q_left_hand = q_sensed_left_hand;
+    }
+
+    if(right_hand.isAvailable) {
+        right_hand.move(q_sensed_right_hand);
+        q_right_hand = q_sensed_right_hand;
+    }
+
+    return hasHands();
 }
 
 
