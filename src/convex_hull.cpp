@@ -161,9 +161,9 @@ void convex_hull::getSupportPolygonPoints(iDynUtils &robot,
     for(unsigned int i = 0; i < names.size(); ++i)
     {
         // get points in world frame
-        waist_T_point = robot.coman_iDyn3.getPositionKDL(robot.coman_iDyn3.getLinkIndex(names[i]));
+        waist_T_point = robot.iDyn3_model.getPositionKDL(robot.iDyn3_model.getLinkIndex(names[i]));
         // get CoM in the world frame
-        YarptoKDL(robot.coman_iDyn3.getCOM(), waist_T_CoM.p);
+        YarptoKDL(robot.iDyn3_model.getCOM(), waist_T_CoM.p);
 
         CoM_T_point = waist_T_CoM.Inverse() * waist_T_point;
         points.push_back(CoM_T_point.p);
