@@ -53,32 +53,158 @@ public:
                                 bool useSI = false,
                                 const int controlModeVocab = VOCAB_CM_IDLE
                                 );
-    
-    
+
+    /**
+     * @brief sense returns joint positions
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
     virtual yarp::sig::Vector sense();
+
+    /**
+     * @brief sense returns joint positions
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
     virtual void sense(yarp::sig::Vector& q_sensed);
 
+    /**
+     * @brief sensePosition returns joint positions
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
     yarp::sig::Vector sensePosition();
+
+    /**
+     * @brief sensePosition returns joint positions
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
     void sensePosition(yarp::sig::Vector &q_sensed);
 
+    /**
+     * @brief senseVelocity returns joint velocities
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[\frac{rad}{s}]\f$ if useSI is true
+     * \f$[\frac{deg}{s}]\f$ is useSI is false
+     */
     yarp::sig::Vector senseVelocity();
+
+    /**
+     * @brief senseVelocity returns joint velocities
+     * @param velocity_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[\frac{rad}{s}]\f$ if useSI is true
+     * \f$[\frac{deg}{s}]\f$ is useSI is false
+     */
     void senseVelocity(yarp::sig::Vector &velocity_sensed);
 
+    /**
+     * @brief senseTorque returns joint torques
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[\frac{rad}{s}]\f$ if useSI is true
+     * \f$[\frac{deg}{s}]\f$ is useSI is false
+     */
     yarp::sig::Vector senseTorque();
+
+    /**
+     * @brief senseTorque returns joint torques
+     * @param tau_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[\frac{N}]\f$
+     */
     void senseTorque(yarp::sig::Vector &tau_sensed);
 
+    /**
+     * @brief move moves all joints of the chain
+     * @param u_d is a \f$R^{n_\text{chain\_joints}}\f$ which is in
+     * \f$[rad]\f$ if useSI is true and control mode is position or position direct
+     * \f$[deg]\f$ is useSI is false and control mode is position or position direct
+     * \f$[N]\f$ is control mode is torque
+     */
     virtual void move(const yarp::sig::Vector& u_d);
 
-    const int& getNumberOfJoints();
-    const std::string &getChainName();
+    /**
+     * @brief setReferenceSpeed set a desired reference speed vector for all joints in the chain
+     * when moving using position mode
+     * @param maximum_velocity a reference velocity vector \f$R^{n_\text{chain\_joints}}\f$ which is
+     * in \f$\frac{rad}{s}\f$ is useSI is true
+     * in \f$\frac{deg}{s}\f$ is useSI is true
+     * @return true if the chain is in position mode and
+     * we are able to set reference velocity for all joints in the chain
+     */
+    bool setReferenceSpeeds(const yarp::sig::Vector& maximum_velocity);
+
+    /**
+     * @brief setReferenceSpeed set a desired reference speed for all joints in the chain
+     * when moving using position mode
+     * @param maximum_velocity a reference velocity which is
+     * in \f$\frac{rad}{s}\f$ is useSI is true
+     * in \f$\frac{deg}{s}\f$ is useSI is true
+     * @return true if the chain is in position mode and
+     * we are able to set reference velocity for all joints in the chain
+     */
+    bool setReferenceSpeed(const double& maximum_velocity);
+
+    /**
+     * @brief setImpedance sets joint impedance for all joints in the chain
+     * @param Kq a \f$R^{n_\text{chain\_joints}}\f$ desired joint stiffness vector
+     * in \f$\frac{Nm}{\text{rad}}\f$ if useSI is set to true,
+     * in \f$\frac{Nm}{\text{deg}}\f$ othwerwise
+     * @param Dq a \f$R^{n_\text{chain\_joints}}\f$ desired joint damping vector
+     * in \f$\frac{Nm}{\text{rad}}\f$ if useSI is set to true,
+     * in \f$\frac{Nm}{\text{deg}}\f$ othwerwise
+     * @return true if the chain is in impedance mode and we are able
+     * to set impedance for all joins
+     */
+    bool setImpedance(const yarp::sig::Vector& Kq,
+                      const yarp::sig::Vector& Dq);
+
+    /**
+     * @brief getImpedance gets joint impedance for all joints in the chain
+     * @param Kq a \f$R^{n_\text{chain\_joints}}\f$ actual joint stiffness vector
+     * in \f$\frac{Nm}{\text{rad}}\f$ if useSI is set to true,
+     * in \f$\frac{Nm}{\text{deg}}\f$ othwerwise
+     * @param Dq a \f$R^{n_\text{chain\_joints}}\f$ actual joint damping vector
+     * in \f$\frac{Nm}{\text{rad}}\f$ if useSI is set to true,
+     * in \f$\frac{Nm}{\text{deg}}\f$ othwerwise
+     * @return true if the chain is in impedance mode and we are able
+     * to get impedance for all joins
+     */
+    bool getImpedance(yarp::sig::Vector& Kq,
+                      yarp::sig::Vector& Dq);
+
+
+    const int& getNumberOfJoints() const;
+
+    const std::string &getChainName() const;
 
     bool setPositionMode();
+
+    bool isInPositionMode() const;
+
     bool setPositionDirectMode();
+
+    bool  isInPositionDirectMode() const;
+
     bool setTorqueMode();
+
+    bool isInTorqueMode() const;
+
     bool setIdleMode();
+
+    bool isInIdleMode() const;
+
     bool setImpedanceMode();
 
-    int getControlMode(){return _controlMode;}
+    bool isInImpedanceMode() const;
+
+    const int getControlMode() const;
+
+    bool useSI() const;
+
     ~yarp_single_chain_interface();
 
 private:
@@ -97,8 +223,10 @@ private:
     std::string _robot_name;
 
     void convertEncoderToSI(yarp::sig::Vector& vector);
-    void convertMotorCommandToSI(yarp::sig::Vector& vector);
-    yarp::sig::Vector convertMotorCommandToSI(const yarp::sig::Vector& vector);
+    void convertMotorCommandFromSI(yarp::sig::Vector& vector);
+    yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
+    double convertMotorCommandFromSI(const double& in) const;
+
 
     int computeControlMode();
 public:

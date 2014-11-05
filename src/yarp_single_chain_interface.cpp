@@ -1,4 +1,6 @@
 #include "drc_shared/yarp_single_chain_interface.h"
+#include <algorithm>
+#include <assert.h>
 
 using namespace walkman::drc;
 using namespace yarp::dev;
@@ -76,6 +78,102 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     
 }
 
+
+bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& maximum_velocity )
+{
+    yarp::sig::Vector maximum_velocity_deg;
+
+    // get joints number
+    int joint_number = this->getNumberOfJoints();
+
+    assert(maximum_velocity.size() == joint_number);
+    if(this->getControlMode() != VOCAB_CM_POSITION) {
+        std::cout << "Tryng to set Reference Speed for chain " << this->getChainName()
+                  << "which is not in Position mode" << std::endl;
+        return false;
+    }
+
+    if(_useSI) convertMotorCommandFromSI(maximum_velocity);
+    else maximum_velocity_deg = maximum_velocity;
+
+    // set the speed references
+    /*bool set_success = true;
+    for( int i = 0; i < joint_number && set_success; i++ ) {
+        ref_speed_vec[i] = ref_speed;
+        set_success = positionControl->setRefSpeeds( i, maximum_velocity_deg[i] );
+    }*/
+    bool success;
+    success = positionControl->setRefSpeeds( maximum_velocity_deg.data() );
+    // success if the ref speed is setted in every joints of the chain
+    return success;
+}
+
+bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_velocity )
+{
+    // get joints number
+    int num_joints = this->getNumberOfJoints();
+
+    // set the speed references
+    yarp::sig::Vector maximum_velocities = yarp::sig::Vector( num_joints,
+                                                              maximum_velocity );
+
+    return this->setReferenceSpeeds(maximum_velocities);
+}
+
+bool walkman::drc::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vector &Dq)
+{
+    // get joints number
+    int joint_number = std::min(Kq.size(),
+                                Dq.size());
+
+    assert(joint_number == this->getNumberOfJoints());
+    if(this->getControlMode() != VOCAB_CM_IMPEDANCE_POS) {
+        std::cout << "Tryng to set Impedance for chain " << this->getChainName()
+                  << "which is not in Impedance mode" << std::endl;
+        return false;
+    }
+
+    bool set_success = true;
+    for(unsigned int i = 0; i < joint_number; ++i) {
+        double Kqi;
+        double Dqi;
+        if(_useSI) {
+            Kqi = convertMotorCommandFromSI(Kq[i]);
+            Dqi = convertMotorCommandFromSI(Dq[i]);
+        } else {
+            Kqi = Kq[i];
+            Dqi = Dq[i];
+        }
+
+            set_success = set_success && impedancePositionControl->setImpedance(i, Kqi, Dqi);
+    }
+    return set_success;
+}
+
+bool walkman::drc::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, yarp::sig::Vector &Dq)
+{
+    // get joints number
+    int joint_number = this->getNumberOfJoints();
+
+    if(Kq.size() < joint_number)
+        Kq.resize(this->getNumberOfJoints());
+    if(Dq.size() > joint_number)
+        Dq.resize(this->getNumberOfJoints());
+
+    bool set_success = true;
+    for(unsigned int i = 0; i < joint_number; ++i) {
+        set_success = set_success && impedancePositionControl->getImpedance(i, &Kq[i], &Dq[i]);
+    }
+
+    if(_useSI) {
+        convertEncoderToSI(Kq);
+        convertEncoderToSI(Dq);
+    }
+
+    return set_success && (this->getControlMode() == VOCAB_CM_IMPEDANCE_POS);
+}
+
+
 bool yarp_single_chain_interface::setIdleMode()
 {
     bool check = true;
@@ -91,6 +189,11 @@ bool yarp_single_chain_interface::setIdleMode()
     return check;
 }
 
+bool walkman::drc::yarp_single_chain_interface::isInIdleMode() const
+{
+    return this->getControlMode() == VOCAB_CM_IDLE;
+}
+
 bool yarp_single_chain_interface::setTorqueMode()
 {
     bool check = true;
@@ -104,6 +207,11 @@ bool yarp_single_chain_interface::setTorqueMode()
     else
         std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
     return check;
+}
+
+bool walkman::drc::yarp_single_chain_interface::isInTorqueMode() const
+{
+    return this->getControlMode() == VOCAB_CM_TORQUE;
 }
 
 bool yarp_single_chain_interface::setPositionMode()
@@ -123,6 +231,11 @@ bool yarp_single_chain_interface::setPositionMode()
     return check;
 }
 
+bool walkman::drc::yarp_single_chain_interface::isInPositionMode() const
+{
+    return this->getControlMode() == VOCAB_CM_POSITION;
+}
+
 bool yarp_single_chain_interface::setImpedanceMode()
 {
     bool check = true;
@@ -140,6 +253,21 @@ bool yarp_single_chain_interface::setImpedanceMode()
     return check;
 }
 
+bool walkman::drc::yarp_single_chain_interface::isInImpedanceMode() const
+{
+    return this->getControlMode() == VOCAB_CM_IMPEDANCE_POS;
+}
+
+const int walkman::drc::yarp_single_chain_interface::getControlMode() const
+{
+    return _controlMode;
+}
+
+bool walkman::drc::yarp_single_chain_interface::useSI() const
+{
+    return _useSI;
+}
+
 bool yarp_single_chain_interface::setPositionDirectMode()
 {
     bool check = true;
@@ -155,6 +283,11 @@ bool yarp_single_chain_interface::setPositionDirectMode()
     else
         std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
     return check;
+}
+
+bool walkman::drc::yarp_single_chain_interface::isInPositionDirectMode() const
+{
+    return this->getControlMode() == VOCAB_CM_POSITION_DIRECT;
 }
 
 yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
@@ -214,12 +347,12 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     {
         case VOCAB_CM_POSITION_DIRECT:
         case VOCAB_CM_IMPEDANCE_POS:
-            if(_useSI) convertMotorCommandToSI(u_sent);
+            if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionDirect->setPositions(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
             break;
         case VOCAB_CM_POSITION:
-            if(_useSI) convertMotorCommandToSI(u_sent);
+            if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionControl->positionMove(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Position Ctrl"<<std::endl;
             break;
@@ -248,12 +381,13 @@ int yarp_single_chain_interface::computeControlMode()
         return ctrlMode;
 }
 
-const int& yarp_single_chain_interface::getNumberOfJoints()
+const int& yarp_single_chain_interface::getNumberOfJoints() const
 {
     return this->joint_numbers;
 }
 
-const std::string& yarp_single_chain_interface::getChainName(){
+const std::string& yarp_single_chain_interface::getChainName() const
+{
     return kinematic_chain;
 }
 
@@ -297,18 +431,23 @@ inline void yarp_single_chain_interface::convertEncoderToSI(yarp::sig::Vector &v
     }
 }
 
-inline void yarp_single_chain_interface::convertMotorCommandToSI(yarp::sig::Vector &vector)
+inline void yarp_single_chain_interface::convertMotorCommandFromSI(yarp::sig::Vector &vector)
 {
     for(unsigned int i = 0; i < vector.size(); ++i) {
         vector[i] *= 180.0 / M_PI;
     }
 }
 
-inline yarp::sig::Vector yarp_single_chain_interface::convertMotorCommandToSI(const yarp::sig::Vector &vector_in)
+inline yarp::sig::Vector yarp_single_chain_interface::convertMotorCommandFromSI(const yarp::sig::Vector &vector_in)
 {
     yarp::sig::Vector vector_out(vector_in);
     for(unsigned int i = 0; i < vector_out.size(); ++i) {
         vector_out[i] *= 180.0 / M_PI;
     }
     return vector_out;
+}
+
+inline double yarp_single_chain_interface::convertMotorCommandFromSI(const double& in) const
+{
+    return in * 180.0 / M_PI;
 }

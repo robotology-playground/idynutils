@@ -29,21 +29,19 @@
 class ComanUtils
 {
 public:
-    /**
-     * @brief ComanUtils
-     * @param moduleName the name of the module which uses the facility
-     * @param controlModeVocab the control mode for the whole robot. Defaults to position control
-     */
-    ComanUtils(const std::string moduleName,
-               const int controlModeVocab = VOCAB_CM_POSITION);
+    typedef std::pair<yarp::sig::Vector, yarp::sig::Vector> Impedance;
+    typedef std::map<std::string,  Impedance> ImpedanceMap;
+    typedef std::map<std::string,  yarp::sig::Vector> VelocityMap;
 
     /**
-     * @brief ComanUtils
+     * @brief ComanUtils creates interfaces for all kinematic chains.
+     * At creation control mode is not changed. Use the methods
+     * setTorqueMode, setPositionDirectMode, setPositionMode, setImpedanceControlMode
+     * to switch control mode on all chains, or call the chain methods to
+     * switch mode for each kinematic chain.
      * @param moduleName the name of the module which uses the facility
-     * @param controlModeVocabMap a map <chain_name, control_mode_vocab> that specifies control mode for each robot chain
      */
-    ComanUtils(const std::string moduleName,
-               std::map<std::string,const int> &controlModeVocabMap);
+    ComanUtils(const std::string moduleName);
 
     walkman::drc::yarp_single_chain_interface right_hand, left_hand;
     walkman::drc::yarp_single_chain_interface right_arm, left_arm;
@@ -114,7 +112,7 @@ public:
 //     * @brief move send inputs to all robot joints. The type of input depends on the control mode.
 //     * @param u the joint input.  It can imply a position command or a torque command depending on the joint control mode used.
 //     */
-//    void move(std::map<std::string,yarp::sig::Vector&> &u);
+//    void move(const std::map<std::string,yarp::sig::Vector&> &u);
 
 //    /**
 //     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
@@ -122,8 +120,8 @@ public:
 //     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
 //     * Chains that accept a torque offset should be controlled in joint impedance mode.
 //     */
-//    void move(yarp::sig::Vector &q,
-//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+//    void move(const yarp::sig::Vector &q,
+//              const std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
 
 //    /**
 //     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
@@ -133,9 +131,9 @@ public:
 //     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
 //     * Chains that accept a torque offset should be controlled in joint impedance mode.
 //     */
-//    void move(yarp::sig::Vector &q,
-//              std::map<std::string,yarp::sig::Vector&> &kq_map,
-//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+//    void move(const yarp::sig::Vector &q,
+//              const std::map<std::string,yarp::sig::Vector&> &kq_map,
+//              const std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
 
 //    /**
 //     * @brief move send potision commands and torque offsets to all the robot joints. Works when the robot is in joint impedance or position control mode.
@@ -147,11 +145,79 @@ public:
 //     * @param torqueOffset_map a map <chain_name, offset_torques> of torque offsets to send to the robot.
 //     * Chains that accept a torque offset should be controlled in joint impedance mode.
 //     */
-//    void move(yarp::sig::Vector &q,
-//              std::map<std::string,yarp::sig::Vector&> &kq_map,
-//              std::map<std::string,yarp::sig::Vector&> &kd_map,
-//              std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
+//    void move(const yarp::sig::Vector &q,
+//              const std::map<std::string,yarp::sig::Vector&> &kq_map,
+//              const std::map<std::string,yarp::sig::Vector&> &kd_map,
+//              const std::map<std::string,yarp::sig::Vector&> &torqueOffset_map);
 
+    /**
+     * @brief setReferenceSpeeds sets the reference joint speeds used in position mode when moving, for all joints exluding hands
+     * @param maximum_velocity the maximum velocity vector, a \f$R^{n_{robot\_joints}}\f$ in \f$[\frac{rad}{s}]\f$
+     * @return true if all chains are in position mode and we are able to
+     * succesfully set the reference velocity for position move
+     * for all joints including hands
+     */
+    bool setReferenceSpeeds(const yarp::sig::Vector& maximum_velocity);
+
+    /**
+     * @brief setReferenceSpeeds sets the reference joint speeds used in position mode when moving
+     * @param maximum_velocity_map a map<chain_name, chain_velocity_vector>
+     * with chain_velocity vector a \f$R^{n_{chain\_joints}}\f$ in \f$[\frac{rad}{s}]\f$
+     * @return true if all desired chains are in position mode and we are
+     * able to set desired reference velocity to all desired chains
+     */
+    bool setReferenceSpeeds(const VelocityMap& maximum_velocity_map);
+
+    /**
+     * @brief setReferenceSpeed sets reference speed for position mode move, for all joints including hands
+     * @param maximum_velocity the maximum velocity for all joints in \f$[\frac{rad}{s}]\f$
+     * @return true if all chains are in position mode and we are able to
+     * succesfully set the reference velocity for position move
+     * for all joints including hands
+     */
+    bool setReferenceSpeed(const double& maximum_velocity);
+
+    /**
+     * @brief setImpedance sets stiffness for all joints except hands
+     * @param Kq a \f$R^{n_\text{robot\_joints}}\f$ vector in \f$\frac{Nm}{\text{rad}}\f$,
+     * the desired joint stiffness for all joints except hands
+     * @param Dq \f$R^{n_\text{robot\_joints}}\f$ vector in \f$\frac{Nms}{\text{rad}}\f$,
+     * the desired joint damping for all joints except hands
+     * @return true if the whole robot is in impedance control mode and
+     * we are able to set the desired impedance for all joints except hands
+     */
+    bool setImpedance(const yarp::sig::Vector& Kq, const yarp::sig::Vector& Dq);
+
+    /**
+     * @brief getImpedance returns stiffness for all joints except hands
+     * @param Kq a \f$R^{n_\text{robot\_joints}}\f$ vector in \f$\frac{Nm}{\text{rad}}\f$,
+     * the actual joint stiffness for all joints except hands
+     * @param Dq \f$R^{n_\text{robot\_joints}}\f$ vector in \f$\frac{Nms}{\text{rad}}\f$,
+     * the actual joint damping for all joints except hands
+     * @return true if the whole robot is in impedance control mode and
+     * we are able to get impedance for all joints except hands
+     */
+    bool getImpedance(yarp::sig::Vector& Kq, yarp::sig::Vector& Dq);
+
+    /**
+     * @brief setImpedance set stifness for chains defined in the impedance map
+     * @param impedance_map a map<chain_name, pair<chain_stiffness_vector, chain_damping_vector>>,
+     * with chain_stiffness_vector a \f$R^{n_\text{chain\_joints}}\f$ vector in \f$\frac{Nm}{\text{rad}}\f$
+     * and chain_damping_vector a \f$R^{n_\text{chain\_joints}}\f$ vector in \f$\frac{Nms}{\text{rad}}\f$
+     * @return true if all desired chains are in impedance mode and we are
+     * able to set desired stiffness to all desired chains
+     */
+    bool setImpedance(const ImpedanceMap& impedance_map);
+
+    /**
+     * @brief getImpedance returns a map<chain_name, pair<chain_stiffness_vector, chain_damping_vector>>
+     * @param impedance_map a map<chain_name, pair<chain_stiffness_vector, chain_damping_vector>>
+     * with chain_stiffness_vector a \f$R^{n_\text{chain\_joints}}\f$ vector in \f$\frac{Nm}{\text{rad}}\f$
+     * and chain_damping_vector a \f$R^{n_\text{chain\_joints}}\f$ vector in \f$\frac{Nms}{\text{rad}}\f$
+     * @return true if at least a chain is in impedance control mode and we are able to
+     * succesfully obtain impedance from it
+     */
+    bool getImpedance(ImpedanceMap& impedance_map);
 
     /**
      * @brief getNumberOfJoints gets the robot number of joints
@@ -178,6 +244,48 @@ public:
                          const yarp::sig::Vector &_right_leg,
                          const yarp::sig::Vector &_left_leg,
                          yarp::sig::Vector& _q);
+
+    /**
+     * @brief setPositionMode sets position mode for all kinematic chains
+     * @return true if setPositionMode for all chains is successfull
+     */
+    bool setPositionMode();
+
+    /**
+     * @brief getPositionMode checks the control mode for all kinematic chains is position
+     * @return true if all chains are in position mode
+     */
+    bool isInPositionMode();
+
+    /**
+     * @brief setPositionDirectMode sets position direct mode for all kinematic chains
+     * @return true if set PositionDirectMode() for all chains is successfull
+     */
+    bool setPositionDirectMode();
+
+    /**
+     * @brief setTorqueMode sets torque mode on all chains except hands
+     * @return true if setPositionDirectMode() on hands and setTorqueMode() on all other chains is succesfull
+     */
+    bool setTorqueMode();
+
+    /**
+     * @brief setIdleMode sets idle mode for all chains
+     * @return true if setIdleMode() is succesfull on all chains
+     */
+    bool setIdleMode();
+
+    /**
+     * @brief setImpedanceMode sets impedance control mode for all chains except hands
+     * @return true if setPositionDirectMode() on hands and setImpedanceMode() on all other chains is succesfull
+     */
+    bool setImpedanceMode();
+
+    /**
+     * @brief isImpedanceMode checks the control mode of the whole robot except hands is impedance
+     * @return true if all robot chains except hands are in impedance mode
+     */
+    bool isInImpedanceMode();
 
 private:
     unsigned int number_of_joints;
@@ -221,6 +329,12 @@ private:
     yarp::sig::Vector tau_sensed_left_leg;
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
+
+    walkman::drc::yarp_single_chain_interface* const getChainByName(const std::string chain_name);
+
+    bool bodyIsInPositionMode();
+
+    bool handsAreInPositionMode();
 };
 
 #endif // COMANUTILS_H
