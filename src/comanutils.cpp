@@ -28,7 +28,7 @@ ComanUtils::ComanUtils(const std::string moduleName,
     q_commanded_right_leg( right_leg.getNumberOfJoints() ),
     q_commanded_left_leg( left_leg.getNumberOfJoints() )
 {
-    this->number_of_joints = idynutils.coman_iDyn3.getNrOfDOFs();
+    this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
     qdot_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);

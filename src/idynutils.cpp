@@ -48,7 +48,7 @@ iDynUtils::iDynUtils(std::string robot_name_):
 
     setControlledKinematicChainsJointNumbers();
 
-    zeros.resize(coman_iDyn3.getNrOfDOFs(),0.0);
+    zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
 }
 
 const std::vector<std::string>& iDynUtils::getJointNames() const {
@@ -80,7 +80,7 @@ bool iDynUtils::findGroupChain(const std::vector<std::string>& chain_list, const
 
 bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_chain& k_chain)
 {
-    const KDL::Tree& robot = coman_iDyn3.getKDLTree();
+    const KDL::Tree& robot = iDyn3_model.getKDLTree();
     if (group.chains_.size()==1)
     {
         auto chain=group.chains_[0];
@@ -105,11 +105,11 @@ bool iDynUtils::setJointNames()
 {
     
     std::vector<std::string> temp_joint_names = this->moveit_robot_model->getJointModelNames();
-    this->joint_names.resize(coman_iDyn3.getNrOfDOFs(), "unknown_joint_name");
+    this->joint_names.resize(iDyn3_model.getNrOfDOFs(), "unknown_joint_name");
     for(unsigned int i = 0; i < temp_joint_names.size(); ++i) {
-        int jointIndex = coman_iDyn3.getDOFIndex(temp_joint_names[i]);
+        int jointIndex = iDyn3_model.getDOFIndex(temp_joint_names[i]);
         if(jointIndex>=0 &&
-           jointIndex <= coman_iDyn3.getNrOfDOFs())
+           jointIndex <= iDyn3_model.getNrOfDOFs())
             joint_names[jointIndex] = temp_joint_names[i];
     }
 
@@ -208,28 +208,28 @@ bool iDynUtils::iDyn3Model()
         return false;}
     
     // Here the iDyn3 model of the robot is generated
-    coman_iDyn3.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
+    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
-    int nJ = coman_iDyn3.getNrOfDOFs(); //29
+    int nJ = iDyn3_model.getNrOfDOFs(); //29
     yarp::sig::Vector qMax; qMax.resize(nJ,0.0);
     yarp::sig::Vector qMin; qMin.resize(nJ,0.0);
     
     std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator i;
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
-        int jIndex = coman_iDyn3.getDOFIndex(i->first);
+        int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
             qMax[jIndex] = i->second->limits->upper;
             qMin[jIndex] = i->second->limits->lower;
         }
     }
     
-    coman_iDyn3.setJointBoundMax(qMax);
-    coman_iDyn3.setJointBoundMin(qMin);
+    iDyn3_model.setJointBoundMax(qMax);
+    iDyn3_model.setJointBoundMin(qMin);
     
     yarp::sig::Vector tauMax; tauMax.resize(nJ,1.0);
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
-        int jIndex = coman_iDyn3.getDOFIndex(i->first);
+        int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
             tauMax[jIndex] = i->second->limits->effort;
         }
@@ -237,14 +237,14 @@ bool iDynUtils::iDyn3Model()
     
     //std::cout<<"Setting torque MAX"<<std::endl;
 
-   coman_iDyn3.setJointTorqueBoundMax(tauMax);
+   iDyn3_model.setJointTorqueBoundMax(tauMax);
     
     yarp::sig::Vector a;
-    a = coman_iDyn3.getJointTorqueMax();
+    a = iDyn3_model.getJointTorqueMax();
     
     /*std::cout<<"MAX TAU: [ "<<a.toString()<<std::endl;
     std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
-    //std::cout<<"#Links: "<<coman_iDyn3.getNrOfLinks()<<std::endl;
+    //std::cout<<"#Links: "<<iDyn3_model.getNrOfLinks()<<std::endl;
     */
     return true;
 }
@@ -252,7 +252,7 @@ bool iDynUtils::iDyn3Model()
 bool iDynUtils::setChainIndex(std::string endeffector_name,kinematic_chain& chain)
 {
     chain.end_effector_name=endeffector_name;
-    chain.end_effector_index = coman_iDyn3.getLinkIndex(chain.end_effector_name);
+    chain.end_effector_index = iDyn3_model.getLinkIndex(chain.end_effector_name);
     if(chain.end_effector_index == -1){
         std::cout << "Failed to get link index for "<<chain.chain_name<< std::endl;
         return false;}
@@ -283,24 +283,24 @@ void iDynUtils::initWorldPose(const std::string& anchor)
 {
     // saving old values of Ang,DAng,D2Ang
     yarp::sig::Vector Ang,DAng,D2Ang;
-    Ang = coman_iDyn3.getAng();
-    DAng = coman_iDyn3.getDAng();
-    D2Ang = coman_iDyn3.getD2Ang();
+    Ang = iDyn3_model.getAng();
+    DAng = iDyn3_model.getDAng();
+    D2Ang = iDyn3_model.getD2Ang();
 
     // setting joints to default configuration
-    coman_iDyn3.setAng(zeros);
-    coman_iDyn3.setDAng(zeros);
-    coman_iDyn3.setD2Ang(zeros);
-    coman_iDyn3.kinematicRNEA();
-    coman_iDyn3.computePositions();
+    iDyn3_model.setAng(zeros);
+    iDyn3_model.setDAng(zeros);
+    iDyn3_model.setD2Ang(zeros);
+    iDyn3_model.kinematicRNEA();
+    iDyn3_model.computePositions();
 
     this->anchor_name = anchor;
     this->anchor_T_world = this->setWorldPose(anchor);
 
     // restoring old values for Ang,DAng,D2Ang
-    coman_iDyn3.setAng(Ang);
-    coman_iDyn3.setDAng(DAng);
-    coman_iDyn3.setD2Ang(D2Ang);
+    iDyn3_model.setAng(Ang);
+    iDyn3_model.setDAng(DAng);
+    iDyn3_model.setD2Ang(D2Ang);
 }
 
 void iDynUtils::updateWorldPose()
@@ -314,7 +314,7 @@ void iDynUtils::updateWorldPose()
 KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
 {
     // worldT = anchor_T_baselink
-    worldT = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex(anchor),0);
+    worldT = iDyn3_model.getPosition(iDyn3_model.getLinkIndex(anchor),0);
 
     // anchor_T_world is the offset between the anchor link and the inertial frame,
     //                which is in this case the projection of the base link
@@ -328,28 +328,28 @@ KDL::Frame iDynUtils::setWorldPose(const std::string& anchor)
     worldT(0,3) = 0.0;
     worldT(1,3) = 0.0;
 
-    if(coman_iDyn3.getFloatingBaseLink() != 0) {
-        worldT = worldT*coman_iDyn3.getPosition(0,coman_iDyn3.getFloatingBaseLink());
+    if(iDyn3_model.getFloatingBaseLink() != 0) {
+        worldT = worldT*iDyn3_model.getPosition(0,iDyn3_model.getFloatingBaseLink());
     }
 
-    coman_iDyn3.setWorldBasePose(worldT);
+    iDyn3_model.setWorldBasePose(worldT);
 
     return anchor_T_world;
 }
 
 void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor)
 {
-    if(coman_iDyn3.getLinkIndex(anchor) != coman_iDyn3.getFloatingBaseLink()) {
+    if(iDyn3_model.getLinkIndex(anchor) != iDyn3_model.getFloatingBaseLink()) {
         worldT =    KDLtoYarp_position(
                         anchor_T_world.Inverse()
                         *
-                        coman_iDyn3.getPositionKDL(coman_iDyn3.getLinkIndex(anchor),coman_iDyn3.getFloatingBaseLink())
+                        iDyn3_model.getPositionKDL(iDyn3_model.getLinkIndex(anchor),iDyn3_model.getFloatingBaseLink())
                     );
     } else {
         worldT = KDLtoYarp_position(anchor_T_world.Inverse());
     }
 
-    coman_iDyn3.setWorldBasePose(worldT);
+    iDyn3_model.setWorldBasePose(worldT);
 }
 
 
@@ -362,13 +362,13 @@ KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
     
 //     yarp::sig::Matrix worldT(4,4);
 //     worldT.eye();
-//     coman_iDyn3.setWorldBasePose(worldT);
+//     iDyn3_model.setWorldBasePose(worldT);
 //     yarp::sig::Vector foot_pose(3);
-//     foot_pose = coman_iDyn3.getPosition(coman_iDyn3.getLinkIndex("r_sole")).getCol(3).subVector(0,2);
+//     foot_pose = iDyn3_model.getPosition(iDyn3_model.getLinkIndex("r_sole")).getCol(3).subVector(0,2);
 //     worldT(2,3) = -foot_pose(2);
 //     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
-//     coman_iDyn3.setWorldBasePose(worldT);
-//     coman_iDyn3.computePositions();
+//     iDyn3_model.setWorldBasePose(worldT);
+//     iDyn3_model.computePositions();
     return setWorldPose(anchor);
 }
 
@@ -379,7 +379,7 @@ KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
  * updateiDyn3Model(q);
  * receiveTargetPosition(waist_target_position);
  *  KDL::Frame waist_target_position;
- *  KDL::Frame from_waist_to_end_effector = fromYARPMatrixtoKDLFrame(coman_iDyn3.getPosition(chain.index,true));
+ *  KDL::Frame from_waist_to_end_effector = fromYARPMatrixtoKDLFrame(iDyn3_model.getPosition(chain.index,true));
  *  KDL::Vector position_error=-from_waist_to_end_effector*waist_target_position;
  *  J=getSmallJacobian()
  *  q_dot=pinv(J)*(k*position_error) , k>0, q_dot.size=chain.size
@@ -389,7 +389,7 @@ KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
 yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,bool world_frame)
 {    
     yarp::sig::Matrix temp;
-    if(!coman_iDyn3.getRelativeJacobian(chain.end_effector_index,torso.end_effector_index,temp,world_frame))
+    if(!iDyn3_model.getRelativeJacobian(chain.end_effector_index,torso.end_effector_index,temp,world_frame))
         std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
     for(unsigned int i = temp.cols();i>0; i--)
     {
@@ -427,9 +427,9 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const std::string &support_foot)
 {
     // Here we set these values in our internal model
-    coman_iDyn3.setAng(q);
-    coman_iDyn3.setDAng(dq_ref);
-    coman_iDyn3.setD2Ang(ddq_ref);
+    iDyn3_model.setAng(q);
+    iDyn3_model.setDAng(dq_ref);
+    iDyn3_model.setD2Ang(ddq_ref);
 
     // setting the world pose
 
@@ -446,24 +446,24 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     // get the rotational part of worldT (w_R_b),
     // compute the inverse (b_R_w = w_R_b^T) and multiply by w_g
     // to obtain g expressed in base link coordinates, b_g
-    g = (worldT * coman_iDyn3.getPosition(0,coman_iDyn3.getFloatingBaseLink())).submatrix(0,2,0,2).transposed() * g;
+    g = (worldT * iDyn3_model.getPosition(0,iDyn3_model.getFloatingBaseLink())).submatrix(0,2,0,2).transposed() * g;
 
     yarp::sig::Vector o(3,0.0);
-    coman_iDyn3.setInertialMeasure(o, o, g);
+    iDyn3_model.setInertialMeasure(o, o, g);
 
-    coman_iDyn3.kinematicRNEA();
+    iDyn3_model.kinematicRNEA();
 
-    coman_iDyn3.dynamicRNEA();
+    iDyn3_model.dynamicRNEA();
 
-    coman_iDyn3.computePositions();
+    iDyn3_model.computePositions();
 }
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
     //std::cout<<chain.end_effector_name<<" joint indices: \n";
     for(auto joint_name: chain.joint_names){
-        //std::cout<<coman_iDyn3.getDOFIndex(joint_name)<<" ";
-        chain.joint_numbers.push_back(coman_iDyn3.getDOFIndex(joint_name));
+        //std::cout<<iDyn3_model.getDOFIndex(joint_name)<<" ";
+        chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(joint_name));
     }
 //    std::cout<<std::endl;
 }
@@ -483,12 +483,12 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     yarp::sig::Matrix J_contacts;
 
     if(contacts & CONTACT_LEFT_FOOT) {
-        this->coman_iDyn3.getJacobian(this->left_leg.end_effector_index, J_left_foot);
+        this->iDyn3_model.getJacobian(this->left_leg.end_effector_index, J_left_foot);
         J_contacts = J_left_foot;
     }
 
     if(contacts & CONTACT_RIGHT_FOOT) {
-        this->coman_iDyn3.getJacobian(this->right_leg.end_effector_index, J_right_foot);
+        this->iDyn3_model.getJacobian(this->right_leg.end_effector_index, J_right_foot);
         if(J_contacts.rows() == 0)
             J_contacts = J_right_foot;
         else
@@ -496,7 +496,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     }
 
     if(contacts & CONTACT_LEFT_HAND) {
-        this->coman_iDyn3.getJacobian(this->left_arm.end_effector_index, J_left_hand);
+        this->iDyn3_model.getJacobian(this->left_arm.end_effector_index, J_left_hand);
         if(J_contacts.rows() == 0)
             J_contacts = J_left_hand;
         else
@@ -504,7 +504,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     }
 
     if(contacts & CONTACT_RIGHT_HAND) {
-        this->coman_iDyn3.getJacobian(this->right_arm.end_effector_index, J_right_hand);
+        this->iDyn3_model.getJacobian(this->right_arm.end_effector_index, J_right_hand);
         if(J_contacts.rows() == 0)
             J_contacts = J_right_hand;
         else
@@ -516,7 +516,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
 }
 
 yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts) {
-    int nJ = this->coman_iDyn3.getNrOfDOFs();
+    int nJ = this->iDyn3_model.getNrOfDOFs();
     /**
      * @brief nullContacts is a R^{n+6xn+6} matrix that projects into
      *                     the null space of J_contacts

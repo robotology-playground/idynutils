@@ -31,7 +31,7 @@ protected:
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
 {
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector q_left_leg(this->left_leg.getNrOfDOFs(), 0.0);
 
     for(unsigned int i = 0; i < q_left_leg.size(); ++i)
@@ -57,7 +57,7 @@ TEST_F(testIDynUtils, testFromRobotToIDynThree)
 
 TEST_F(testIDynUtils, testUpdateIdyn3Model)
 {
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector dq(q);
     yarp::sig::Vector ddq(q);
 
@@ -72,16 +72,16 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
     }
 
     std::cout<<"World "<<std::endl; cartesian_utils::printHomogeneousTransform(this->worldT);std::cout<<std::endl;
-    yarp::sig::Matrix base_link_T_l_sole = this->coman_iDyn3.getPosition(this->coman_iDyn3.getLinkIndex("l_sole"));
+    yarp::sig::Matrix base_link_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
     std::cout<<"base_link_T_l_sole "<<std::endl; cartesian_utils::printHomogeneousTransform(base_link_T_l_sole);std::cout<<std::endl;
 
-    KDL::Frame base_link_T_l_ankle = this->coman_iDyn3.getPositionKDL(this->coman_iDyn3.getLinkIndex("l_ankle"));
+    KDL::Frame base_link_T_l_ankle = this->iDyn3_model.getPositionKDL(this->iDyn3_model.getLinkIndex("l_ankle"));
 
     /// In this case I update the world pose considering l_sole as my inertial frame
     this->updateiDyn3Model(q, dq, ddq, true);
 
     std::cout<<"World "<<std::endl; cartesian_utils::printHomogeneousTransform(this->worldT);std::cout<<std::endl;
-    yarp::sig::Matrix world_T_l_sole = this->coman_iDyn3.getPosition(this->coman_iDyn3.getLinkIndex("l_sole"));
+    yarp::sig::Matrix world_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
     std::cout<<"world_T_l_sole "<<std::endl; cartesian_utils::printHomogeneousTransform(world_T_l_sole);std::cout<<std::endl;
     std::cout<<"anchor_T_world "<<std::endl; cartesian_utils::printKDLFrame(this->anchor_T_world);std::cout<<std::endl;
 
@@ -98,7 +98,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
             EXPECT_DOUBLE_EQ(worldT(i,j), I(i,j));
     }
 
-    yarp::sig::Matrix world_link_T_l_sole = this->coman_iDyn3.getPosition(this->coman_iDyn3.getLinkIndex("l_sole"));
+    yarp::sig::Matrix world_link_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
     //Now poses are computed wrt the new set world
     EXPECT_DOUBLE_EQ(world_link_T_l_sole(0,3), 0.0);
     EXPECT_DOUBLE_EQ(world_link_T_l_sole(1,3), base_link_T_l_sole(1,3));
@@ -114,7 +114,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
     rotY.DoRotY(pitch);
     KDL::Frame T(rotY, KDL::Vector(0.0, 0.0, 0.0));
 
-    KDL::Frame l_ankle_T_l_sole = this->coman_iDyn3.getPositionKDL(this->coman_iDyn3.getLinkIndex("l_ankle"), this->coman_iDyn3.getLinkIndex("l_sole"));
+    KDL::Frame l_ankle_T_l_sole = this->iDyn3_model.getPositionKDL(this->iDyn3_model.getLinkIndex("l_ankle"), this->iDyn3_model.getLinkIndex("l_sole"));
     KDL::Frame rotated_l_ankle_T_base_link = T.Inverse() * base_link_T_l_ankle.Inverse();
     std::cout<<"rotated_l_ankle_T_base_link "<<std::endl; cartesian_utils::printKDLFrame(rotated_l_ankle_T_base_link);std::cout<<std::endl;
     KDL::Frame l_sole_T_base_link = l_ankle_T_l_sole.Inverse() * rotated_l_ankle_T_base_link;
@@ -137,7 +137,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
 {
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector dq(q);
     yarp::sig::Vector ddq(q);
 
@@ -154,7 +154,7 @@ TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
 
     EXPECT_TRUE(world_T_l_sole == this->anchor_T_world.Inverse());
 
-    KDL::Frame base_link_T_l_sole = this->coman_iDyn3.getPositionKDL(0, this->coman_iDyn3.getLinkIndex("l_sole"));
+    KDL::Frame base_link_T_l_sole = this->iDyn3_model.getPositionKDL(0, this->iDyn3_model.getLinkIndex("l_sole"));
     std::cout<<"base_link_T_l_sole"<<std::endl; cartesian_utils::printKDLFrame(base_link_T_l_sole); std::cout<<std::endl;
     KDL::Frame new_world = world_T_l_sole * base_link_T_l_sole.Inverse();
 
@@ -168,7 +168,7 @@ TEST_F(testIDynUtils, testGravityVector)
 {
     yarp::sig::Vector g(this->g);
 
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector dq(q);
     yarp::sig::Vector ddq(q);
 
@@ -198,7 +198,7 @@ TEST_F(testIDynUtils, testGenerarRotationGravityVector)
 {
     yarp::sig::Vector g(this->g);
 
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector dq(q);
     yarp::sig::Vector ddq(q);
 
@@ -215,13 +215,13 @@ TEST_F(testIDynUtils, testGenerarRotationGravityVector)
 
 TEST_F(testIDynUtils, testTauGravityID)
 {
-    yarp::sig::Vector q(this->coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
     yarp::sig::Vector dq(q);
     yarp::sig::Vector ddq(q);
 
     this->updateiDyn3Model(q, dq, ddq, true);
 
-    yarp::sig::Vector tau_g = this->coman_iDyn3.getTorques();
+    yarp::sig::Vector tau_g = this->iDyn3_model.getTorques();
     yarp::sig::Matrix world = this->worldT;
 
     yarp::sig::Vector q_left_leg(6, 0.0);
@@ -244,12 +244,12 @@ TEST_F(testIDynUtils, testTauGravityID)
     this->fromRobotToIDyn(q_right_leg, q, this->right_leg);
 
     this->updateiDyn3Model(q, dq, ddq, true);
-    yarp::sig::Vector tau_g2 = this->coman_iDyn3.getTorques();
+    yarp::sig::Vector tau_g2 = this->iDyn3_model.getTorques();
     yarp::sig::Matrix world2 = this->worldT;
 
     q.zero();
     this->updateiDyn3Model(q, dq, ddq, true);
-    yarp::sig::Vector tau_g3 = this->coman_iDyn3.getTorques();
+    yarp::sig::Vector tau_g3 = this->iDyn3_model.getTorques();
     yarp::sig::Matrix world3 = this->worldT;
 
     for(unsigned int i = 0; i < 3; ++i)
@@ -301,22 +301,22 @@ TEST_F(testIDynUtils, testWorld)
 {
     iDynUtils idynutils1;
     iDynUtils idynutils2;
-    idynutils2.coman_iDyn3.setFloatingBaseLink(idynutils2.left_leg.index);
+    idynutils2.iDyn3_model.setFloatingBaseLink(idynutils2.left_leg.index);
 
-    yarp::sig::Vector q(idynutils1.coman_iDyn3.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector q(idynutils1.iDyn3_model.getNrOfDOFs(), 0.0);
     for(unsigned int i = 0; i < q.size(); ++i)
         q[i] = tests_utils::getRandomAngle();
 
     idynutils1.updateiDyn3Model(q, true);
     idynutils2.updateiDyn3Model(q, true);
 
-    yarp::sig::Matrix w_T_bl = idynutils1.coman_iDyn3.getWorldBasePose();
-    EXPECT_EQ(idynutils1.coman_iDyn3.getLinkIndex("Waist"), 0);
-    yarp::sig::Matrix bl_T_lf = idynutils1.coman_iDyn3.getPosition(0, idynutils1.left_leg.index);
+    yarp::sig::Matrix w_T_bl = idynutils1.iDyn3_model.getWorldBasePose();
+    EXPECT_EQ(idynutils1.iDyn3_model.getLinkIndex("Waist"), 0);
+    yarp::sig::Matrix bl_T_lf = idynutils1.iDyn3_model.getPosition(0, idynutils1.left_leg.index);
     yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
 
-    yarp::sig::Matrix w_T_bl2 = idynutils2.coman_iDyn3.getWorldBasePose();
-    EXPECT_EQ(idynutils2.coman_iDyn3.getLinkIndex("Waist"), 0);
+    yarp::sig::Matrix w_T_bl2 = idynutils2.iDyn3_model.getWorldBasePose();
+    EXPECT_EQ(idynutils2.iDyn3_model.getLinkIndex("Waist"), 0);
 
     std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
     std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
@@ -329,8 +329,8 @@ TEST_F(testIDynUtils, testWorld)
         }
     }
 
-    yarp::sig::Matrix w_T_rh = idynutils1.coman_iDyn3.getPosition(idynutils1.right_arm.index);
-    yarp::sig::Matrix w_T_rh2 = idynutils2.coman_iDyn3.getPosition(idynutils2.right_arm.index);
+    yarp::sig::Matrix w_T_rh = idynutils1.iDyn3_model.getPosition(idynutils1.right_arm.index);
+    yarp::sig::Matrix w_T_rh2 = idynutils2.iDyn3_model.getPosition(idynutils2.right_arm.index);
 
     for(unsigned int i = 0; i < 4; ++i)
     {
@@ -343,10 +343,10 @@ TEST_F(testIDynUtils, testWorld)
     q.zero();
     idynutils1.updateiDyn3Model(q,true);
     idynutils2.updateiDyn3Model(q,true);
-    yarp::sig::Vector w_T_CoM = idynutils1.coman_iDyn3.getCOM();
-    yarp::sig::Vector w_T_CoM2 = idynutils2.coman_iDyn3.getCOM();
-    yarp::sig::Matrix w_T_lh = idynutils1.coman_iDyn3.getPosition(idynutils1.left_arm.index);
-    yarp::sig::Matrix w_T_lh2 = idynutils2.coman_iDyn3.getPosition(idynutils2.left_arm.index);
+    yarp::sig::Vector w_T_CoM = idynutils1.iDyn3_model.getCOM();
+    yarp::sig::Vector w_T_CoM2 = idynutils2.iDyn3_model.getCOM();
+    yarp::sig::Matrix w_T_lh = idynutils1.iDyn3_model.getPosition(idynutils1.left_arm.index);
+    yarp::sig::Matrix w_T_lh2 = idynutils2.iDyn3_model.getPosition(idynutils2.left_arm.index);
 
     for(unsigned int i = 0; i < 4; ++i)
     {

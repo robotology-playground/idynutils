@@ -64,7 +64,7 @@ class iDynUtils
 public:
     iDynUtils(std::string robot_name_="coman");
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
-    iCub::iDynTree::DynTree coman_iDyn3; // iDyn3 Model THIS HAS TO BE RENAMED!!!
+    iCub::iDynTree::DynTree iDyn3_model; // iDyn3 Model THIS HAS TO BE RENAMED!!!
 
     /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
