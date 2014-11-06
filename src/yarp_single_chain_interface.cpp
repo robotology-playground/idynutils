@@ -93,19 +93,18 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
         return false;
     }
 
-    if(_useSI) convertMotorCommandFromSI(maximum_velocity);
+    if(_useSI) maximum_velocity_deg = convertMotorCommandFromSI(maximum_velocity);
     else maximum_velocity_deg = maximum_velocity;
 
+//    bool set_success = true;
+//    for( int i = 0; i < joint_number && set_success; i++ ) {
+//        ref_speed_vec[i] = ref_speed;
+//        set_success = set_success && positionControl->setRefSpeeds( i, maximum_velocity_deg[i] );
+//    }
+//    return set_success;
+
     // set the speed references
-    /*bool set_success = true;
-    for( int i = 0; i < joint_number && set_success; i++ ) {
-        ref_speed_vec[i] = ref_speed;
-        set_success = positionControl->setRefSpeeds( i, maximum_velocity_deg[i] );
-    }*/
-    bool success;
-    success = positionControl->setRefSpeeds( maximum_velocity_deg.data() );
-    // success if the ref speed is setted in every joints of the chain
-    return success;
+    return positionControl->setRefSpeeds( maximum_velocity_deg.data() );
 }
 
 bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_velocity )
