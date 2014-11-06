@@ -111,6 +111,12 @@ void cartesian_utils::printKDLFrame(const KDL::Frame& T)
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
 }
 
+void cartesian_utils::printKDLTwist(const KDL::Twist &v)
+{
+    std::cout<<"Linear Velocity: ["<<v.vel.x()<<" "<<v.vel.y()<<" "<<v.vel.z()<<" ] [m/sec]"<<std::endl;
+    std::cout<<"Angular Velocity: ["<<v.rot.x()<<" "<<v.rot.y()<<" "<<v.rot.z()<<" ] [rad/sec]"<<std::endl;
+}
+
 yarp::sig::Vector& cartesian_utils::computeGradient(const yarp::sig::Vector &x,
                                                     CostFunction& fun,
                                                     const double& step) {

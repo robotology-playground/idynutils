@@ -176,6 +176,12 @@ public:
     static void printKDLFrame(const KDL::Frame& T);
 
     /**
+     * @brief printKDLTwist print a KDL::Twist
+     * @param v KDL::Twist
+     */
+    static void printKDLTwist(const KDL::Twist& v);
+
+    /**
      * @brief The CostFunction class pure virtual function used to describe functions for computeGradient method.
      */
     class CostFunction {
