@@ -89,22 +89,21 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
     assert(maximum_velocity.size() == joint_number);
     if(this->getControlMode() != VOCAB_CM_POSITION) {
         std::cout << "Tryng to set Reference Speed for chain " << this->getChainName()
-                  << "which is not in Position mode" << std::endl;
+                  << " which is not in Position mode" << std::endl;
         return false;
     }
 
     if(_useSI) maximum_velocity_deg = convertMotorCommandFromSI(maximum_velocity);
     else maximum_velocity_deg = maximum_velocity;
 
-//    bool set_success = true;
-//    for( int i = 0; i < joint_number && set_success; i++ ) {
-//        ref_speed_vec[i] = ref_speed;
-//        set_success = set_success && positionControl->setRefSpeeds( i, maximum_velocity_deg[i] );
-//    }
-//    return set_success;
+    bool set_success = true;
+    for( int i = 0; i < joint_number && set_success; i++ ) {
+        set_success = set_success && positionControl->setRefSpeed( i, maximum_velocity_deg[i] );
+    }
+    return set_success;
 
-    // set the speed references
-    return positionControl->setRefSpeeds( maximum_velocity_deg.data() );
+//    // set the speed references
+//    return positionControl->setRefSpeeds( maximum_velocity_deg.data() );
 }
 
 bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_velocity )
