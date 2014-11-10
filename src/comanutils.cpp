@@ -319,7 +319,7 @@ bool ComanUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
     }
 
     if(right_hand.isAvailable) {
-        right_hand.move(q_sensed_right_hand);
+        right_hand.sensePosition(q_sensed_right_hand);
         q_right_hand = q_sensed_right_hand;
     }
 
