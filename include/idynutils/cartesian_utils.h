@@ -157,11 +157,25 @@ public:
     static void fromKDLFrameToYARPMatrix(const KDL::Frame& Ti, yarp::sig::Matrix& To);
 
     /**
+     * @brief fromKDLTwistToYARPVector convert a KDL::Twist in a yarp::sig::Vector
+     * @param vi KDL::Twist
+     * @param vo yarp::sig::Vector
+     */
+    static void fromKDLTwistToYARPVector(const KDL::Twist& vi, yarp::sig::Vector& vo);
+
+    /**
      * @brief fromYARPMatrixtoKDLFrame convert a yarp::sig::Matrix in a KDL::Frame
      * @param Ti yarp::sig::Matrix
      * @param To KDL::Frame
      */
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
+
+    /**
+     * @brief fromYARPVectortoKDLTwist convert a yarp::sig::Vector in a KDL::Twist
+     * @param vi yarp::sig::Vector
+     * @param vo KDL::Twist
+     */
+    static void fromYARPVectortoKDLTwist(const yarp::sig::Vector& vi, KDL::Twist& vo);
 
     /**
      * @brief printHomogeneousTransform print on terminal a yarp::sig::Matrix used as pose Homogeneous Transform [4x4]
@@ -180,6 +194,12 @@ public:
      * @param v KDL::Twist
      */
     static void printKDLTwist(const KDL::Twist& v);
+
+    /**
+     * @brief printVelocityVector print a yarp::sig::Vector of 6 elements used as linear and angular velocity [1x6]
+     * @param v yarp::sig::Vector [1x6]
+     */
+    static void printVelocityVector(const yarp::sig::Vector& v);
 
     /**
      * @brief The CostFunction class pure virtual function used to describe functions for computeGradient method.

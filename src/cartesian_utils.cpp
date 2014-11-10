@@ -77,12 +77,25 @@ void cartesian_utils::fromKDLFrameToYARPMatrix(const KDL::Frame &Ti, yarp::sig::
     To(2,0) = Ti.M.UnitX().z(); To(2,1) = Ti.M.UnitY().z(); To(2,2) = Ti.M.UnitZ().z(); To(2,3) = Ti.p.z();
 }
 
+void cartesian_utils::fromKDLTwistToYARPVector(const KDL::Twist& vi, yarp::sig::Vector& vo)
+{
+    vo.resize(6, 0.0);
+    vo[0] = vi.vel.x(); vo[1] = vi.vel.y(); vo[2] = vi.vel.z();
+    vo[3] = vi.rot.x(); vo[4] = vi.rot.y(); vo[5] = vi.rot.z();
+}
+
 void cartesian_utils::fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix &Ti, KDL::Frame &To)
 {
     To.p.data[0] = Ti(0,3); To.p.data[1] = Ti(1,3); To.p.data[2] = Ti(2,3);
     To.M.data[0] = Ti(0,0); To.M.data[1] = Ti(0,1); To.M.data[2] = Ti(0,2);
     To.M.data[3] = Ti(1,0); To.M.data[4] = Ti(1,1); To.M.data[5] = Ti(1,2);
     To.M.data[6] = Ti(2,0); To.M.data[7] = Ti(2,1); To.M.data[8] = Ti(2,2);
+}
+
+void cartesian_utils::fromYARPVectortoKDLTwist(const yarp::sig::Vector& vi, KDL::Twist& vo)
+{
+    vo.vel.data[0] = vi[0]; vo.vel.data[1] = vi[1]; vo.vel.data[2] = vi[2];
+    vo.rot.data[0] = vi[3]; vo.rot.data[1] = vi[4]; vo.rot.data[2] = vi[5];
 }
 
 void cartesian_utils::printHomogeneousTransform(const yarp::sig::Matrix &T)
@@ -115,6 +128,12 @@ void cartesian_utils::printKDLTwist(const KDL::Twist &v)
 {
     std::cout<<"Linear Velocity: ["<<v.vel.x()<<" "<<v.vel.y()<<" "<<v.vel.z()<<" ] [m/sec]"<<std::endl;
     std::cout<<"Angular Velocity: ["<<v.rot.x()<<" "<<v.rot.y()<<" "<<v.rot.z()<<" ] [rad/sec]"<<std::endl;
+}
+
+void cartesian_utils::printVelocityVector(const yarp::sig::Vector& v)
+{
+    std::cout<<"Linear Velocity: ["<<v[0]<<" "<<v[1]<<" "<<v[2]<<" ] [m/sec]"<<std::endl;
+    std::cout<<"Angular Velocity: ["<<v[3]<<" "<<v[4]<<" "<<v[5]<<" ] [rad/sec]"<<std::endl;
 }
 
 yarp::sig::Vector& cartesian_utils::computeGradient(const yarp::sig::Vector &x,
