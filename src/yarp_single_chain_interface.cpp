@@ -190,6 +190,34 @@ bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, y
     return set_success && (this->getControlMode() == VOCAB_CM_IMPEDANCE_POS);
 }
 
+bool walkman::yarp_single_chain_interface::getControlModes(std::vector<int> &controlModes)
+{
+    controlModes.reserve(this->getNumberOfJoints());
+    controlModes.assign(this->getNumberOfJoints(), 0);
+    return controlMode->getControlModes(controlModes.data());
+}
+
+std::vector<int> walkman::yarp_single_chain_interface::getControlModes()
+{
+    std::vector<int> controlModes;
+    this->getControlModes(controlModes);
+    return controlModes;
+}
+
+bool walkman::yarp_single_chain_interface::getInteractionModes(std::vector<InteractionModeEnum> &interactionModes)
+{
+    interactionModes.reserve(this->getNumberOfJoints());
+    interactionModes.assign(this->getNumberOfJoints(), (InteractionModeEnum)0);
+    return interactionMode->getInteractionModes(interactionModes.data());
+}
+
+std::vector<InteractionModeEnum> walkman::yarp_single_chain_interface::getInteractionModes()
+{
+    std::vector<InteractionModeEnum> interactionModes;
+    getInteractionModes(interactionModes);
+    return interactionModes;
+}
+
 
 bool yarp_single_chain_interface::setIdleMode()
 {

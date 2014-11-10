@@ -194,6 +194,33 @@ public:
     bool getImpedance(yarp::sig::Vector& Kq,
                       yarp::sig::Vector& Dq);
 
+    /**
+     * @brief getControlModes returns the control mode for each joint in the chain
+     * @param controlModes a vector of integers representing control modes for each joint
+     * @return true if able to succesfully read control mode for each joint
+     */
+    bool getControlModes(std::vector<int>& controlModes);
+
+    /**
+     * @brief getControlModes returns the control mode for each joint in the chain
+     * @return a vector of integers representing control modes for each joint
+     */
+    std::vector<int> getControlModes();
+
+    /**
+     * @brief getInteractionModes returns the interactino mode for each joint in the chain
+     * @param interactionModes a vector of InteractionModeEnum representing interaction mode for each joint
+     * @return true if able to sucesfully read interaction mode for each joint
+     */
+    bool getInteractionModes(std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
+
+    /**
+     * @brief getInteractionModes returns the interactino mode for each joint in the chain
+     * @return a vector of InteractionModeEnum representing interaction mode for each joint
+     */
+    std::vector<yarp::dev::InteractionModeEnum> getInteractionModes();
+
+
 
     const int& getNumberOfJoints() const;
 
