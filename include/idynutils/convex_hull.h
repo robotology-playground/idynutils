@@ -1,25 +1,27 @@
-#ifndef _CONVEX_HULL_H_
-#define _CONVEX_HULL_H_
-
 /*
  * Copyright (C) 2014 Walkman
  * Author: Alessio Rocchi, Enrico Mingo
  * email:  alessio.rocchi@iit.it, enrico.mingo@iit.it
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU Lesser General Public License, version 2 or any
- * later version published by the Free Software Foundation.
  *
- * A copy of the license can be found at
- * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "drc_shared/idynutils.h"
-#include "drc_shared/cartesian_utils.h"
+#ifndef _CONVEX_HULL_H_
+#define _CONVEX_HULL_H_
+
+#include <idynutils/idynutils.h>
+#include <idynutils/cartesian_utils.h>
 #include <moveit/robot_model/robot_model.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -34,7 +36,7 @@
 #include <pcl/surface/concave_hull.h>
 #include <yarp/sig/Vector.h>
 
-namespace drc_shared
+namespace idynutils
 {
 
 class convex_hull

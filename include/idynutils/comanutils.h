@@ -2,24 +2,26 @@
  * Copyright (C) 2014 Walkman
  * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
  * email:  mirko.ferrati@gmail.com, enrico.mingo@iit.it, alessio.rocchi@iit.it
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU Lesser General Public License, version 2 or any
- * later version published by the Free Software Foundation.
  *
- * A copy of the license can be found at
- * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
 #ifndef COMANUTILS_H
 #define COMANUTILS_H
 
-#include "drc_shared/yarp_single_chain_interface.h"
-#include "drc_shared/idynutils.h"
+#include <idynutils/yarp_single_chain_interface.h>
+#include <idynutils/idynutils.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
@@ -43,10 +45,10 @@ public:
      */
     ComanUtils(const std::string moduleName);
 
-    walkman::drc::yarp_single_chain_interface right_hand, left_hand;
-    walkman::drc::yarp_single_chain_interface right_arm, left_arm;
-    walkman::drc::yarp_single_chain_interface torso;
-    walkman::drc::yarp_single_chain_interface right_leg, left_leg;
+    walkman::yarp_single_chain_interface right_hand, left_hand;
+    walkman::yarp_single_chain_interface right_arm, left_arm;
+    walkman::yarp_single_chain_interface torso;
+    walkman::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
 
     /**
@@ -330,7 +332,7 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
 
-    walkman::drc::yarp_single_chain_interface* const getChainByName(const std::string chain_name);
+    walkman::yarp_single_chain_interface* const getChainByName(const std::string chain_name);
 
     bool bodyIsInPositionMode();
 

@@ -50,4 +50,4 @@ __author__ = ('Alessio Rocchi', 'Enrico Mingo')
 
 if __name__ == '__main__':
 
-    print('pydrc')
+    print('Welcome to pydynutils!')

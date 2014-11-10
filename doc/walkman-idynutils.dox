@@ -1,0 +1,14 @@
+/**
+\defgroup walkman_idynutils iDynUtils
+\ingroup walkman_libraries
+
+\author Mirko Ferrati <mirko.ferrati@gmail.com>, Enrico Mingo <enrico.mingo@iit.it>, Alessio Rocchi <alessio.rocchi@iit.it>
+\copyright Released under the terms of the GNU GPL v2.0
+
+\section walkman_idynutils_introduction Description
+
+A utility library to model and control robots with YARP bindings using iDynTree (http://github.com/robotology-playground/iDynTree).
+ 
+iDynUtils is developed under the European Project WALK-MAN: http://www.walk-man.eu/.
+An online verion of this documentation can be found at https://wiki.icub.org/walkman/dox/html/group__walkman__libraries.html
+*/

@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
+ * email:  mirko.ferrati@gmail.com, enrico.mingo@iit.it, alessio.rocchi@iit.it
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
 #ifndef YARP_SINGLE_CHAIN_INTERFACE_H
 #define YARP_SINGLE_CHAIN_INTERFACE_H
 #include <yarp/os/all.h>
@@ -31,7 +50,6 @@ namespace walkman{
 }
 
 namespace walkman{
-    namespace drc{
 
 /**
  * @brief The yarp_single_chain_interface class
@@ -207,6 +225,7 @@ public:
 
     ~yarp_single_chain_interface();
 
+    const bool& isAvailable;
 private:
 
     bool createPolyDriver ( const std::string &kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver &polyDriver );
@@ -229,8 +248,6 @@ private:
 
 
     int computeControlMode();
-public:
-    const bool& isAvailable;
 
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IControlMode2 *controlMode;
@@ -243,7 +260,6 @@ public:
 };
 
 
-}
 }
 
 

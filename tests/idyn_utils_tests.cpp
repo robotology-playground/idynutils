@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <drc_shared/idynutils.h>
-#include <drc_shared/cartesian_utils.h>
-#include <drc_shared/tests_utils.h>
+#include <idynutils/idynutils.h>
+#include <idynutils/cartesian_utils.h>
+#include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
 
 using namespace yarp::math;

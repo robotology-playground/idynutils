@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <drc_shared/tests_utils.h>
+#include <idynutils/tests_utils.h>
 #include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>

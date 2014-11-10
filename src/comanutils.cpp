@@ -1,5 +1,24 @@
-#include "drc_shared/comanutils.h"
-#include "drc_shared/idynutils.h"
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Alessio Rocchi
+ * email:  alessio.rocchi@iit.it
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
+#include <idynutils/comanutils.h>
+#include <idynutils/idynutils.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -113,7 +132,7 @@ bool ComanUtils::setReferenceSpeeds(const ComanUtils::VelocityMap &maximum_veloc
     int number_of_chains = 0;
 
     for(VelocityMap::const_iterator i = maximum_velocity_map.begin(); i != maximum_velocity_map.end(); ++i) {
-        walkman::drc::yarp_single_chain_interface * const chain = this->getChainByName(i->first);
+        walkman::yarp_single_chain_interface * const chain = this->getChainByName(i->first);
         if(chain != NULL) {
             ++number_of_chains;
             success = success && chain->setReferenceSpeeds(i->second);
@@ -175,7 +194,7 @@ bool ComanUtils::setImpedance(const std::map<std::string, std::pair<yarp::sig::V
     int number_of_chains = 0;
 
     for(ImpedanceMap::const_iterator i = impedance_map.begin(); i != impedance_map.end(); ++i) {
-        walkman::drc::yarp_single_chain_interface* chain = this->getChainByName(i->first);
+        walkman::yarp_single_chain_interface* chain = this->getChainByName(i->first);
         if(chain != NULL) {
             if(chain->getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
                 ++number_of_chains;
@@ -427,7 +446,7 @@ bool ComanUtils::isInImpedanceMode()
             left_leg.getControlMode() == VOCAB_CM_IMPEDANCE_POS;
 }
 
-walkman::drc::yarp_single_chain_interface* const ComanUtils::getChainByName(const std::string chain_name) {
+walkman::yarp_single_chain_interface* const ComanUtils::getChainByName(const std::string chain_name) {
     if(chain_name == walkman::robot::left_arm) return &left_arm;
     if(chain_name == walkman::robot::right_arm) return &right_arm;
     if(chain_name == walkman::robot::left_leg) return &left_leg;

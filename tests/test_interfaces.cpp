@@ -1,11 +1,9 @@
 #include <yarp/os/Network.h>
-#include <drc_shared/yarp_command_interface.hpp>
-#include <drc_shared/yarp_status_interface.h>
-#include <drc_shared/yarp_single_chain_interface.h>
-#include <drc_shared/yarp_ft_interface.h>
-#include <drc_shared/yarp_IMU_interface.h>
+#include <idynutils/yarp_single_chain_interface.h>
+#include <idynutils/yarp_ft_interface.h>
+#include <idynutils/yarp_IMU_interface.h>
 
-using namespace walkman::drc;
+using namespace walkman;
 
 int main(int argc, char* argv[])
 {
@@ -15,9 +13,6 @@ int main(int argc, char* argv[])
         return 0;}
         yarp.init();
  
-    yarp_command_interface a("test_module");
-    yarp_switch_interface b("test_module");
-    yarp_status_interface c("test_module");
     yarp_ft_interface d("right_arm","test_module","coman");
     yarp_single_chain_interface e("right_arm","test_module","coman");
 

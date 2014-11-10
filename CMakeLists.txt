@@ -1,6 +1,15 @@
-cmake_minimum_required(VERSION 2.8.11)
+# Copyright: (C) 2014 Walkman Consortium
+# Authors: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+cmake_minimum_required(VERSION 2.8.12)
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 OLD)
+    cmake_policy(SET CMP0005 NEW)
+    cmake_policy(SET CMP0017 NEW)
+endif(COMMAND cmake_policy)
 include(ExternalProject)
-project(drc_shared)
+PROJECT(idynutils)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -13,7 +22,7 @@ else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
@@ -24,171 +33,88 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
-FIND_PACKAGE(ICUB REQUIRED)
+FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
+                                            #features
+                                            filters
+                                            #kdtree
+                                            #io
+                                            #sample_consensus
+                                            #search
+                                            #segmentation
+                                            surface)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-)
-set(VARS_PREFIX "DRC_SHARED")
-                            
+INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
+                            ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+
+# for every file in sot_INCLUDES CMake already sets the property HEADER_FILE_ONLY
+file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
+file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
+
+ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
+                                src/comanutils.cpp
+                                src/convex_hull.cpp
+                                src/idynutils.cpp
+                                src/tests_utils.cpp
+                                src/yarp_ft_interface.cpp
+                                src/yarp_IMU_interface.cpp
+                                src/yarp_single_chain_interface.cpp
+                                ${idynutils_INCLUDES})
+
+TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES} ${kdl_codyco_LIBRARIES}
+                                        ${kdl_parser_LIBRARIES} ${moveit_core_LIBRARIES} 
+                                        ${orocos_kdl_LIBRARIES} ${srdfdom_LIBRARIES} 
+                                        ${urdf_LIBRARIES} ${YARP_LIBRARIES}
+                                        ${PCL_LIBRARIES})
+
+########################################################################
+# use YCM to export OpenSoT so taht it can be found using find_package #
+########################################################################
+
+set(VARS_PREFIX "IDYNUTILS")
+
+set(IDYNUTILS_MAJOR_VERSION 0)
+set(IDYNUTILS_MINOR_VERSION 0)
+set(IDYNUTILS_PATCH_VERSION 1)
+set(IDYNUTILS_VERSION ${IDYNUTILS_MAJOR_VERSION}.${IDYNUTILS_MINOR_VERSION}.${IDYNUTILS_PATCH_VERSION})
+
 find_package(YCM REQUIRED)
 include(YCMDefaultDirs)
 ycm_default_dirs(${VARS_PREFIX})
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs idynutils drc_utils tests_utils generic_module
-)
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+target_include_directories(idynutils PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                            "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
 
-# for every file in drc_INCLUDES CMake already sets the property HEADER_FILE_ONLY
-file(GLOB_RECURSE drc_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h)
+set_target_properties(idynutils PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+                                SOVERSION ${${VARS_PREFIX}_VERSION})
 
-# find PCL
-find_package(PCL 1.7 REQUIRED)
-add_definitions(${PCL_DEFINITIONS})
-include_directories(${PCL_INCLUDE_DIRS})
-
-# find YARP
-find_package(YARP 2.3.60)
-include_directories(${YARP_INCLUDE_DIRS})
-
-# find YARP
-find_package(paramHelp REQUIRED)
-include_directories(${paramHelp_INCLUDE_DIRS})
-
-
-add_subdirectory(src/MotorControlHelpers)
-
-## Declare drc_utils library for utils containing exotic shared libraries
-add_library(drc_utils SHARED
-    src/utils/convex_hull.cpp)
-
-add_library(tests_utils SHARED src/tests_utils.cpp)
-
-## Declare drc_shared library
-add_library(drc_shared SHARED
-  src/OccupancyGrid.cpp
-  src/utils/module_state_streamer.cpp
-  src/yarp_status_interface.cpp
-  src/yarp_ft_interface.cpp
-  src/yarp_IMU_interface.cpp
-  src/yarp_single_chain_interface.cpp
-  ${drc_INCLUDES}
-)
-
-add_library(idynutils SHARED src/idynutils.cpp
-                             src/comanutils.cpp
-                             src/yarp_single_chain_interface.cpp
-                             src/cartesian_utils.cpp)
- 
-add_library(planner_msgs
-  src/planner_msgs/flat_walk_cmd.cpp
-  src/planner_msgs/flat_walk_plan.cpp
-)
-
-add_library(generic_module SHARED src/generic.cpp
-                                  include/drc_shared/generic_module.hpp 
-                                  include/drc_shared/generic_thread.hpp)
-#set_target_properties(generic_module PROPERTIES LINKER_LANGUAGE CXX)
-
-target_link_libraries(drc_utils    ${PCL_LIBRARIES}
-                                   ${rosconsole_LIBRARIES})
-
-target_link_libraries(tests_utils  ${orocos_kdl_LIBRARIES})
-
-target_link_libraries(drc_shared   ${iDynTree_LIBRARIES})
-
-# examples
-add_executable(grabber_example src/examples/grabber_example.cpp)
-add_executable(module_state_streamer_example src/examples/module_state_streamer_example.cpp)
-target_link_libraries(module_state_streamer_example
-                      ${YARP_LIBRARIES}
-                      drc_shared
-                      drc_utils
-                      )
-                      
-target_link_libraries(grabber_example
-		      ${YARP_LIBRARIES}
-		      )
-
-target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod)
-
-target_link_libraries(generic_module ${YARP_LIBRARIES} ${paramHelp_LIBRARIES})
-
-
-install(TARGETS drc_shared planner_msgs idynutils drc_utils tests_utils generic_module
-  grabber_example module_state_streamer_example # examples, comment this if not needed
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-# set_target_properties(drc_shared PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
-#                                               SOVERSION ${${VARS_PREFIX}_VERSION}
-# #                                              PUBLIC_HEADER "${template_lib_HDRS}")
-# )
-
-target_include_directories(drc_shared PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
-                                               "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
-                   
-install(TARGETS drc_shared  
-        EXPORT drc_Shared
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
-        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_shared" COMPONENT dev)
-
-install(TARGETS drc_utils
-        EXPORT drc_Utils
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
-        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_utils" COMPONENT dev)
-
-install(TARGETS tests_utils
-        EXPORT tests_Utils
-        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
-        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
-        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/tests_utils" COMPONENT dev)
+install(DIRECTORY include/ 
+        DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING PATTERN "*.h*")
 
 install(TARGETS idynutils  
-        EXPORT idynUtils  
+        EXPORT idynutils
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}"   COMPONENT shlib
-        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/idynutils" COMPONENT dev)
-
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
         
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils tests_utils generic_module)
+#enabling it will add all OpenSoT dependencies as dependencies for third party users
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS idynutils)
 
 
 include(InstallBasicPackageFiles)
-
-install_basic_package_files(drc_Shared VARS_PREFIX ${VARS_PREFIX}
-                                       VERSION "1.0.0"
-                                       TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                       COMPATIBILITY SameMajorVersion
-
-)
+install_basic_package_files(idynutils   VARS_PREFIX ${VARS_PREFIX}
+                                        VERSION ${${VARS_PREFIX}_VERSION}
+                                        COMPATIBILITY SameMajorVersion
+                                        TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 include(AddUninstallTarget)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+add_subdirectory(doc)
+add_subdirectory(examples)
 
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
-
-#TESTING
-add_subdirectory(src/tests)
+#######################
+# Add Testing target  #
+#######################
+enable_testing()
+add_subdirectory(tests)

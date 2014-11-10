@@ -1,8 +1,27 @@
-#include "drc_shared/yarp_single_chain_interface.h"
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
+ * email:  mirko.ferrati@gmail.com, enrico.mingo@iit.it, alessio.rocchi@iit.it
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
+#include <idynutils/yarp_single_chain_interface.h>
 #include <algorithm>
 #include <assert.h>
 
-using namespace walkman::drc;
+using namespace walkman;
 using namespace yarp::dev;
 
 yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,
@@ -118,7 +137,7 @@ bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_veloc
     return this->setReferenceSpeeds(maximum_velocities);
 }
 
-bool walkman::drc::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vector &Dq)
+bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vector &Dq)
 {
     // get joints number
     int joint_number = std::min(Kq.size(),
@@ -148,7 +167,7 @@ bool walkman::drc::yarp_single_chain_interface::setImpedance(const yarp::sig::Ve
     return set_success;
 }
 
-bool walkman::drc::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, yarp::sig::Vector &Dq)
+bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, yarp::sig::Vector &Dq)
 {
     // get joints number
     int joint_number = this->getNumberOfJoints();
@@ -187,7 +206,7 @@ bool yarp_single_chain_interface::setIdleMode()
     return check;
 }
 
-bool walkman::drc::yarp_single_chain_interface::isInIdleMode() const
+bool walkman::yarp_single_chain_interface::isInIdleMode() const
 {
     return this->getControlMode() == VOCAB_CM_IDLE;
 }
@@ -207,7 +226,7 @@ bool yarp_single_chain_interface::setTorqueMode()
     return check;
 }
 
-bool walkman::drc::yarp_single_chain_interface::isInTorqueMode() const
+bool walkman::yarp_single_chain_interface::isInTorqueMode() const
 {
     return this->getControlMode() == VOCAB_CM_TORQUE;
 }
@@ -229,7 +248,7 @@ bool yarp_single_chain_interface::setPositionMode()
     return check;
 }
 
-bool walkman::drc::yarp_single_chain_interface::isInPositionMode() const
+bool walkman::yarp_single_chain_interface::isInPositionMode() const
 {
     return this->getControlMode() == VOCAB_CM_POSITION;
 }
@@ -251,17 +270,17 @@ bool yarp_single_chain_interface::setImpedanceMode()
     return check;
 }
 
-bool walkman::drc::yarp_single_chain_interface::isInImpedanceMode() const
+bool walkman::yarp_single_chain_interface::isInImpedanceMode() const
 {
     return this->getControlMode() == VOCAB_CM_IMPEDANCE_POS;
 }
 
-const int walkman::drc::yarp_single_chain_interface::getControlMode() const
+const int walkman::yarp_single_chain_interface::getControlMode() const
 {
     return _controlMode;
 }
 
-bool walkman::drc::yarp_single_chain_interface::useSI() const
+bool walkman::yarp_single_chain_interface::useSI() const
 {
     return _useSI;
 }
@@ -283,7 +302,7 @@ bool yarp_single_chain_interface::setPositionDirectMode()
     return check;
 }
 
-bool walkman::drc::yarp_single_chain_interface::isInPositionDirectMode() const
+bool walkman::yarp_single_chain_interface::isInPositionDirectMode() const
 {
     return this->getControlMode() == VOCAB_CM_POSITION_DIRECT;
 }
