@@ -439,7 +439,8 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
 
     // We assume that all the joints in the kinemati chain are controlled
     // in the same way, so I check only the control mode of the first one.
-    _controlMode = computeControlMode();
+//     _controlMode = computeControlMode();
+    assert(_controlMode == computeControlMode());
 
     switch (_controlMode)
     {
@@ -473,6 +474,9 @@ int yarp_single_chain_interface::computeControlMode()
     yarp::dev::InteractionModeEnum intMode;
     interactionMode->getInteractionMode(0, &intMode);
 
+    if(ctrlMode == VOCAB_CM_TORQUE)
+	return VOCAB_CM_TORQUE;
+    
     if(intMode == VOCAB_IM_COMPLIANT)
         return VOCAB_CM_IMPEDANCE_POS;
     else
