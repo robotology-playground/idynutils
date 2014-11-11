@@ -24,6 +24,7 @@
 #include <vector>
 #include <iostream>
 #include <mutex>
+#include <vector>
 #include <math.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
@@ -57,6 +58,23 @@ namespace walkman{
 class yarp_single_chain_interface
 {
 public:
+    /**
+     * @brief ControlType is a pair representing the new control schemes in YARP.
+     * Each joint control type is identified by a pair <Control Mode, Interaction Mode>
+     * which can be of the type < Position | Velocity | Torque | Idle, Compliant | Stiff >
+     * The getControlMethod(), setPositionDirectMode(), setPositionMode(), setImpedanceMode(),
+     * setIdleMode(), setTorqueMode(), and the relative isInPositionDirectMode(), isInPositionMode(),
+     * isInImpedanceMode(), isInIdleMode(), isInTorqueMode() are simple wrappers that check and set
+     * control types according to the old semantic, where only the five modes are available:
+     * - position
+     * - position direct (no trajectory interpolation between position references)
+     * - torque
+     * - impedance control
+     * - idle
+     */
+    typedef std::pair<int, yarp::dev::InteractionModeEnum> ControlType;
+    typedef std::vector<ControlType> ControlTypes;
+
     /**
      * @brief yarp_single_chain_interface is a simple interface for control of kinematic chains
      * @param kinematic_chain the name of the kinematic chain as defined in the robot srdf
@@ -195,31 +213,25 @@ public:
                       yarp::sig::Vector& Dq);
 
     /**
-     * @brief getControlModes returns the control mode for each joint in the chain
-     * @param controlModes a vector of integers representing control modes for each joint
-     * @return true if able to succesfully read control mode for each joint
+     * @brief getControlTypes returns the pair <control mode, interaction mode> for each joint in the chain
+     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
+     * @return true if able to succesfully read control mode and interaction mode for each joint
      */
-    bool getControlModes(std::vector<int>& controlModes);
+    bool getControlTypes(ControlTypes& controlTypes);
 
     /**
-     * @brief getControlModes returns the control mode for each joint in the chain
-     * @return a vector of integers representing control modes for each joint
+     * @brief setControlTypes sets the pair <control mode, interaction mode> for each joint in the chain
+     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
+     * @return true if able to succesfully write control mode and interaction mode for each joint
      */
-    std::vector<int> getControlModes();
+    bool setControlTypes(const ControlTypes& controlTypes);
 
-    /**
-     * @brief getInteractionModes returns the interactino mode for each joint in the chain
-     * @param interactionModes a vector of InteractionModeEnum representing interaction mode for each joint
-     * @return true if able to sucesfully read interaction mode for each joint
-     */
-    bool getInteractionModes(std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
+    ControlTypes controlTypesFromVectors(const std::vector<int>& controlModes,
+                                         const std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
 
-    /**
-     * @brief getInteractionModes returns the interactino mode for each joint in the chain
-     * @return a vector of InteractionModeEnum representing interaction mode for each joint
-     */
-    std::vector<yarp::dev::InteractionModeEnum> getInteractionModes();
-
+    void vectorsFromControlTypes(const ControlTypes& controlTypes,
+                                 std::vector<int>& controlModes,
+                                 std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
 
 
     const int& getNumberOfJoints() const;
@@ -253,11 +265,40 @@ public:
     ~yarp_single_chain_interface();
 
     const bool& isAvailable;
+
+protected:
+
+    /**
+     * @brief getControlModes returns the control mode for each joint in the chain
+     * @param controlModes a vector of integers representing control modes for each joint
+     * @return true if able to succesfully read control mode for each joint
+     */
+    bool getControlModes(std::vector<int>& controlModes);
+
+    /**
+     * @brief getControlModes returns the control mode for each joint in the chain
+     * @return a vector of integers representing control modes for each joint
+     */
+    std::vector<int> getControlModes();
+
+    /**
+     * @brief getInteractionModes returns the interactino mode for each joint in the chain
+     * @param interactionModes a vector of InteractionModeEnum representing interaction mode for each joint
+     * @return true if able to sucesfully read interaction mode for each joint
+     */
+    bool getInteractionModes(std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
+
+    /**
+     * @brief getInteractionModes returns the interactino mode for each joint in the chain
+     * @return a vector of InteractionModeEnum representing interaction mode for each joint
+     */
+    std::vector<yarp::dev::InteractionModeEnum> getInteractionModes();
+
 private:
 
     bool createPolyDriver ( const std::string &kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver &polyDriver );
     std::string kinematic_chain;
-    int joint_numbers;
+    int joints_number;
     std::string module_prefix;
     yarp::sig::Vector q_buffer;
     yarp::sig::Vector qdot_buffer;

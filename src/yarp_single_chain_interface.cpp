@@ -60,10 +60,10 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         return;
     }
     
-    encodersMotor->getAxes(&(this->joint_numbers));
-    q_buffer.resize(joint_numbers);
-    qdot_buffer.resize(joint_numbers);
-    tau_buffer.resize(joint_numbers);
+    encodersMotor->getAxes(&(this->joints_number));
+    q_buffer.resize(joints_number);
+    qdot_buffer.resize(joints_number);
+    tau_buffer.resize(joints_number);
 
     if (controlModeVocab == VOCAB_CM_NONE) return;
     switch(controlModeVocab) {
@@ -102,10 +102,7 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
 {
     yarp::sig::Vector maximum_velocity_deg;
 
-    // get joints number
-    int joint_number = this->getNumberOfJoints();
-
-    assert(maximum_velocity.size() == joint_number);
+    assert(maximum_velocity.size() == joints_number);
     if(this->getControlMode() != VOCAB_CM_POSITION) {
         std::cout << "Tryng to set Reference Speed for chain " << this->getChainName()
                   << " which is not in Position mode" << std::endl;
@@ -116,7 +113,7 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
     else maximum_velocity_deg = maximum_velocity;
 
     bool set_success = true;
-    for( int i = 0; i < joint_number && set_success; i++ ) {
+    for( int i = 0; i < joints_number && set_success; i++ ) {
         set_success = set_success && positionControl->setRefSpeed( i, maximum_velocity_deg[i] );
     }
     return set_success;
@@ -127,11 +124,8 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
 
 bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_velocity )
 {
-    // get joints number
-    int num_joints = this->getNumberOfJoints();
-
     // set the speed references
-    yarp::sig::Vector maximum_velocities = yarp::sig::Vector( num_joints,
+    yarp::sig::Vector maximum_velocities = yarp::sig::Vector( joints_number,
                                                               maximum_velocity );
 
     return this->setReferenceSpeeds(maximum_velocities);
@@ -140,10 +134,10 @@ bool yarp_single_chain_interface::setReferenceSpeed( const double& maximum_veloc
 bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vector &Dq)
 {
     // get joints number
-    int joint_number = std::min(Kq.size(),
+    int impedanceSize = std::min(Kq.size(),
                                 Dq.size());
 
-    assert(joint_number == this->getNumberOfJoints());
+    assert(impedanceSize == joints_number);
     if(this->getControlMode() != VOCAB_CM_IMPEDANCE_POS) {
         std::cout << "Tryng to set Impedance for chain " << this->getChainName()
                   << "which is not in Impedance mode" << std::endl;
@@ -151,7 +145,7 @@ bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector 
     }
 
     bool set_success = true;
-    for(unsigned int i = 0; i < joint_number; ++i) {
+    for(unsigned int i = 0; i < joints_number; ++i) {
         double Kqi;
         double Dqi;
         if(_useSI) {
@@ -169,16 +163,13 @@ bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector 
 
 bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, yarp::sig::Vector &Dq)
 {
-    // get joints number
-    int joint_number = this->getNumberOfJoints();
-
-    if(Kq.size() < joint_number)
-        Kq.resize(this->getNumberOfJoints());
-    if(Dq.size() > joint_number)
-        Dq.resize(this->getNumberOfJoints());
+    if(Kq.size() < joints_number)
+        Kq.resize(joints_number);
+    if(Dq.size() > joints_number)
+        Dq.resize(joints_number);
 
     bool set_success = true;
-    for(unsigned int i = 0; i < joint_number; ++i) {
+    for(unsigned int i = 0; i < joints_number; ++i) {
         set_success = set_success && impedancePositionControl->getImpedance(i, &Kq[i], &Dq[i]);
     }
 
@@ -190,10 +181,72 @@ bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, y
     return set_success && (this->getControlMode() == VOCAB_CM_IMPEDANCE_POS);
 }
 
+bool walkman::yarp_single_chain_interface::getControlTypes(walkman::yarp_single_chain_interface::ControlTypes &controlTypes)
+{
+    controlTypes.reserve(joints_number);
+    std::vector<int> controlModes;
+    std::vector<yarp::dev::InteractionModeEnum> interactionModes;
+    if( this->getControlModes(controlModes) &&
+        this->getInteractionModes(interactionModes)) {
+        controlTypes.reserve(joints_number);
+        for(unsigned int i = 0; i < joints_number; ++i) {
+            controlTypes[i].first = controlModes[i];
+            controlTypes[i].second = interactionModes[i];
+        }
+        return true;
+    } else return false;
+}
+
+bool walkman::yarp_single_chain_interface::setControlTypes(const walkman::yarp_single_chain_interface::ControlTypes &controlTypes)
+{
+    assert(controlTypes.size() == joints_number);
+    std::vector<int> controlModes(joints_number,0);
+    std::vector<yarp::dev::InteractionModeEnum> interactionModes(joints_number,
+                                                                 (yarp::dev::InteractionModeEnum)0);
+    for(unsigned int i = 0; i < joints_number; ++i) {
+        controlModes[i] = controlTypes[i].first;
+        interactionModes[i] = controlTypes[i].second;
+    }
+
+    return  controlMode->setControlModes(controlModes.data()) &&
+            interactionMode->setInteractionModes(interactionModes.data());
+}
+
+void walkman::yarp_single_chain_interface::vectorsFromControlTypes(const walkman::yarp_single_chain_interface::ControlTypes &controlTypes,
+                                                                   std::vector<int> &controlModes,
+                                                                   std::vector<yarp::dev::InteractionModeEnum> &interactionModes)
+{
+    assert(controlTypes.size() == joints_number);
+
+    controlModes.reserve(joints_number);
+    controlModes.assign(joints_number, 0);
+    interactionModes.reserve(joints_number);
+    interactionModes.assign(joints_number, (yarp::dev::InteractionModeEnum)0);
+
+    for(unsigned int i = 0; i < joints_number; ++i) {
+        controlModes[i] = controlTypes[i].first;
+        interactionModes[i] = controlTypes[i].second;
+    }
+
+    return;
+}
+
+walkman::yarp_single_chain_interface::ControlTypes walkman::yarp_single_chain_interface::controlTypesFromVectors(const std::vector<int> &controlModes,
+                                                                                                                 const std::vector<yarp::dev::InteractionModeEnum> &interactionModes)
+{
+    assert(controlModes.size() == interactionModes.size());
+    unsigned int controlTypesSize = controlModes.size();
+    ControlTypes controlTypes;
+    for(unsigned int i = 0; i < controlTypesSize; ++i) {
+        controlTypes.push_back(ControlType(controlModes[i],interactionModes[i]));
+    }
+    return controlTypes;
+}
+
 bool walkman::yarp_single_chain_interface::getControlModes(std::vector<int> &controlModes)
 {
-    controlModes.reserve(this->getNumberOfJoints());
-    controlModes.assign(this->getNumberOfJoints(), 0);
+    controlModes.reserve(joints_number);
+    controlModes.assign(joints_number, 0);
     return controlMode->getControlModes(controlModes.data());
 }
 
@@ -206,14 +259,14 @@ std::vector<int> walkman::yarp_single_chain_interface::getControlModes()
 
 bool walkman::yarp_single_chain_interface::getInteractionModes(std::vector<InteractionModeEnum> &interactionModes)
 {
-    interactionModes.reserve(this->getNumberOfJoints());
-    interactionModes.assign(this->getNumberOfJoints(), (InteractionModeEnum)0);
+    interactionModes.reserve(joints_number);
+    interactionModes.assign(joints_number, (yarp::dev::InteractionModeEnum)0);
     return interactionMode->getInteractionModes(interactionModes.data());
 }
 
-std::vector<InteractionModeEnum> walkman::yarp_single_chain_interface::getInteractionModes()
+std::vector<yarp::dev::InteractionModeEnum> walkman::yarp_single_chain_interface::getInteractionModes()
 {
-    std::vector<InteractionModeEnum> interactionModes;
+    std::vector<yarp::dev::InteractionModeEnum> interactionModes;
     getInteractionModes(interactionModes);
     return interactionModes;
 }
@@ -222,7 +275,7 @@ std::vector<InteractionModeEnum> walkman::yarp_single_chain_interface::getIntera
 bool yarp_single_chain_interface::setIdleMode()
 {
     bool check = true;
-    for(unsigned int i = 0; i < joint_numbers; ++i)
+    for(unsigned int i = 0; i < joints_number; ++i)
         check = check && controlMode->setControlMode(i, VOCAB_CM_IDLE);
 
     if(check) {
@@ -242,7 +295,7 @@ bool walkman::yarp_single_chain_interface::isInIdleMode() const
 bool yarp_single_chain_interface::setTorqueMode()
 {
     bool check = true;
-    for(unsigned int i = 0; i < joint_numbers; ++i)
+    for(unsigned int i = 0; i < joints_number; ++i)
         check = check && controlMode->setControlMode(i, VOCAB_CM_TORQUE);
 
     if(check) {
@@ -262,7 +315,7 @@ bool walkman::yarp_single_chain_interface::isInTorqueMode() const
 bool yarp_single_chain_interface::setPositionMode()
 {
     bool check = true;
-    for(unsigned int i = 0; i < joint_numbers; ++i)
+    for(unsigned int i = 0; i < joints_number; ++i)
     {
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
@@ -284,7 +337,7 @@ bool walkman::yarp_single_chain_interface::isInPositionMode() const
 bool yarp_single_chain_interface::setImpedanceMode()
 {
     bool check = true;
-    for(unsigned int i = 0; i < joint_numbers; ++i)
+    for(unsigned int i = 0; i < joints_number; ++i)
     {
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
@@ -316,7 +369,7 @@ bool walkman::yarp_single_chain_interface::useSI() const
 bool yarp_single_chain_interface::setPositionDirectMode()
 {
     bool check = true;
-    for(unsigned int i = 0; i < joint_numbers; ++i)
+    for(unsigned int i = 0; i < joints_number; ++i)
     {
         check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
@@ -341,8 +394,8 @@ yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
 }
 
 void yarp_single_chain_interface::senseTorque(yarp::sig::Vector& tau_sensed) {
-    if(tau_sensed.size() != this->joint_numbers)
-        tau_sensed.resize(this->joint_numbers);
+    if(tau_sensed.size() != this->joints_number)
+        tau_sensed.resize(this->joints_number);
     torqueControl->getTorques(tau_sensed.data());
 }
 
@@ -353,8 +406,8 @@ yarp::sig::Vector yarp_single_chain_interface::senseVelocity() {
 }
 
 void yarp_single_chain_interface::senseVelocity(yarp::sig::Vector& velocity_sensed) {
-    if(velocity_sensed.size() != this->joint_numbers)
-        velocity_sensed.resize(this->joint_numbers);
+    if(velocity_sensed.size() != this->joints_number)
+        velocity_sensed.resize(this->joints_number);
     encodersMotor->getEncoderSpeeds(velocity_sensed.data());
     if(_useSI) convertEncoderToSI(velocity_sensed);
 }
@@ -374,8 +427,8 @@ yarp::sig::Vector yarp_single_chain_interface::sense() {
 }
 
 void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
-    if(q_sensed.size() != this->joint_numbers)
-        q_sensed.resize(this->joint_numbers);
+    if(q_sensed.size() != this->joints_number)
+        q_sensed.resize(this->joints_number);
     encodersMotor->getEncoders(q_sensed.data());
     if(_useSI) convertEncoderToSI(q_sensed);
 }
@@ -428,7 +481,7 @@ int yarp_single_chain_interface::computeControlMode()
 
 const int& yarp_single_chain_interface::getNumberOfJoints() const
 {
-    return this->joint_numbers;
+    return this->joints_number;
 }
 
 const std::string& yarp_single_chain_interface::getChainName() const
