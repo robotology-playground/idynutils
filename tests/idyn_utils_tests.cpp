@@ -4,6 +4,8 @@
 #include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
 
+
+
 using namespace yarp::math;
 
 namespace {
@@ -11,7 +13,8 @@ namespace {
 class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
-    testIDynUtils()
+    testIDynUtils():
+        q(iDyn3_model.getNrOfDOFs(),0.0)
     {
 
     }
@@ -27,6 +30,27 @@ protected:
     virtual void TearDown() {
 
     }
+
+    void setGoodInitialPosition() {
+
+        yarp::sig::Vector leg(left_leg.getNrOfDOFs(), 0.0);
+        leg[0] = -25.0 * M_PI/180.0;
+        leg[3] =  50.0 * M_PI/180.0;
+        leg[5] = -25.0 * M_PI/180.0;
+        fromRobotToIDyn(leg, q, left_leg);
+        fromRobotToIDyn(leg, q, right_leg);
+        yarp::sig::Vector arm(left_arm.getNrOfDOFs(), 0.0);
+        arm[0] = 20.0 * M_PI/180.0;
+        arm[1] = 10.0 * M_PI/180.0;
+        arm[3] = -80.0 * M_PI/180.0;
+        fromRobotToIDyn(arm, q, left_arm);
+        arm[1] = -arm[1];
+        fromRobotToIDyn(arm, q, right_arm);
+
+        updateiDyn3Model(q,true);
+    }
+
+    yarp::sig::Vector q;
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -361,8 +385,48 @@ TEST_F(testIDynUtils, testWorld)
 
 }
 
-TEST_F(testIDynUtils, testComputeFloatingBaseProjectorFeetInContact)
+TEST_F(testIDynUtils, testAnchorSwitch)
 {
+    KDL::Frame w_T_b0 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"Initial World to base_link Transform:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b0);
+
+    setGoodInitialPosition();
+
+    KDL::Frame w_T_b1 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform before switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b1);
+
+    std::string new_anchor = "r_sole";
+    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
+    switchAnchor(new_anchor);
+
+    KDL::Frame w_T_b2 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform after switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b2);
+
+    EXPECT_TRUE(w_T_b1 == w_T_b2);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+
+    KDL::Frame w_T_b22 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform before switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b22);
+
+    std::string old_anchor = "l_sole";
+    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
+    switchAnchor(new_anchor);
+
+
+    KDL::Frame w_T_b12 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform after switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b12);
+
+    EXPECT_TRUE(w_T_b12 == w_T_b22);
+
+    //EXPECT_TRUE(w_T_b12 == w_T_b0);
 
 }
 

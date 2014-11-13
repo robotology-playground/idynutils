@@ -27,10 +27,16 @@
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
-
+/**
+ * @brief The kinematic_chain struct defines usefull objects related to a kinematic chain
+ */
 struct kinematic_chain
 {
 public:
+    /**
+     * @brief kinematic_chain constructor
+     * @param chain_name name associated to the kinematic chain
+     */
     kinematic_chain(std::string chain_name):chain_name(chain_name)
     {
 
@@ -52,21 +58,27 @@ public:
    * @brief end_effector_name is the name of the end effector
    */
   std::string end_effector_name;
+  /**
+   * @brief joint_names vector contains the name of DOFs in the kinematic chain
+   */
   std::vector<std::string> joint_names;
   /**
    * @brief end_effector_index index of the end effector
    */
   int end_effector_index; int &index = end_effector_index;
 
+  /**
+   * @brief joint_numbers a vector of joint IDs for this kinematic chain. All the joint IDs are unique for the whole body.
+   */
   std::vector<unsigned int> joint_numbers;
 };
 
 class iDynUtils
 {
 public:
-    iDynUtils(std::string robot_name_="coman");
+    iDynUtils(std::string robot_name_="coman", const std::string& anchor_name_ = "l_sole");
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
-    iCub::iDynTree::DynTree iDyn3_model; // iDyn3 Model THIS HAS TO BE RENAMED!!!
+    iCub::iDynTree::DynTree iDyn3_model;
 
     /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
@@ -96,8 +108,7 @@ public:
      * @TODO in the future we should use the IMU + rgbdslam + FK
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
-                          const bool set_world_pose = false,
-                          const std::string& support_foot = "l_sole");
+                          const bool set_world_pose = false);
 
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
@@ -109,8 +120,7 @@ public:
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const yarp::sig::Vector& dq,
-                          const bool set_world_pose = false,
-                          const std::string& support_foot = "l_sole");
+                          const bool set_world_pose = false);
 
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
@@ -127,8 +137,7 @@ public:
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const yarp::sig::Vector& dq_ref,
                           const yarp::sig::Vector& ddq_ref,
-                          const bool set_world_pose = false,
-                          const std::string& support_foot = "l_sole");
+                          const bool set_world_pose = false);
 
 
     /**
@@ -137,52 +146,9 @@ public:
      *                      base link position on that same plane
      * @param anchor        the anchor link
      */
-    void initWorldPose(const std::string &anchor = "l_sole");
+    void initWorldPose();
 
-    /**
-     * @brief updateWorldPose updates the world pose relative to the current robot state,
-     *        using anchor and offset calculated by the initWorldPose function
-     */
-    void updateWorldPose();
 
-    /**
-     * @brief *DEPRECATED* setWorldPose calls setWorldPose() after updating the iDyn3 model
-     * @param q the robot configuration
-     * @param dq_ref the robot velocities
-     * @param ddq_ref the robot accelerations
-     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
-     *                     This should be, in general, the support foot.
-     */
-    KDL::Frame setWorldPose(const yarp::sig::Vector& q,
-                            const yarp::sig::Vector& dq_ref,
-                            const yarp::sig::Vector& ddq_ref,
-                            const std::string& anchor = "l_sole");
-
-    /**
-     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
-     *                     which corresponds to the floating base configuration. This is done by taking a link,
-     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
-     *                     The x and y coordinates of the original frame remain unchanged.
-     *                     Returns anchor_T_world, the offset betweent the anchor link and the
-     *                     inertial frame
-     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
-     *               This should be, in general, the support foot.
-     */
-    KDL::Frame setWorldPose(const std::string& anchor = "l_sole");
-
-    /**
-     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
-     *                     which corresponds to the floating base configuration. This is done by taking a link,
-     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
-     *                     The x and y coordinates of the original frame remain unchanged.
-     * @param anchor_T_world the offset between the inertial frame and the anchor frame, expressed in the
-     *                       anchor frame
-     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
-     *               This should be, in general, the support foot.
-     */
-    void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
-
-    yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
@@ -211,6 +177,12 @@ public:
      */
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
 
+    /**
+     * @brief switchAnchor switch the anchor frame according to the new given anchor name
+     * @param new_anchor name
+     */
+    bool switchAnchor(const std::string& new_anchor);
+
 protected:
     std::vector<std::string> joint_names;
     KDL::Tree robot_kdl_tree; // A KDL Tree
@@ -224,19 +196,18 @@ protected:
     void setJointNumbers(kinematic_chain& chain);
 
     /**
+     * @brief updateWorldPose updates the world pose relative to the current robot state,
+     *        using anchor and offset calculated by the initWorldPose function
+     */
+    void updateWorldPose();
+
+    /**
      * @brief setChainIndex set an end effector to a kinematic chain
      * @param endeffector_name name of the ee
      * @param chain chain to set the ee
      * @return true if the name of the end effector is in the link list of iDyn3
      */
     bool setChainIndex(std::string endeffector_name,kinematic_chain& chain);
-
-    /**
-     * @brief setControlledKinematicChainsLinkIndex set end effectors name for all the controlled kinamtic chains
-     * @return true if all the kinematic chains have an end effector
-     */
-    //bool setControlledKinematicChainsLinkIndex();
-
 
     void setControlledKinematicChainsJointNumbers();
 
@@ -268,6 +239,31 @@ protected:
      * @return return true if the model is loaded in iDynThree and urdf/srdf are correctly found
      */
     bool iDyn3Model();
+
+    /**
+     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
+     *                     which corresponds to the floating base configuration. This is done by taking a link,
+     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
+     *                     The x and y coordinates of the original frame remain unchanged.
+     *                     Returns anchor_T_world, the offset betweent the anchor link and the
+     *                     inertial frame
+     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
+     *               This should be, in general, the support foot.
+     */
+    KDL::Frame setWorldPose(const std::string& anchor = "l_sole");
+
+    /**
+     * @brief setWorldPose updates the transformation bTw from the world frame {W} to the base link {B},
+     *                     which corresponds to the floating base configuration. This is done by taking a link,
+     *                     and computing the z-distance (in world frame) between the link frame and the base link frame.
+     *                     The x and y coordinates of the original frame remain unchanged.
+     * @param anchor_T_world the offset between the inertial frame and the anchor frame, expressed in the
+     *                       anchor frame
+     * @param anchor the link name wrt which we compute the z-offset. By default, l_sole.
+     *               This should be, in general, the support foot.
+     */
+    void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
+
 
     /**
      * @brief worldT Transformation between world and base_link
