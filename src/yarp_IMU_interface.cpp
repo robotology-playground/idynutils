@@ -46,7 +46,8 @@ yarp_IMU_interface::~yarp_IMU_interface()
 void yarp_IMU_interface::_sense()
 {
     yarp::os::Bottle* bottleData;
-    if( bottleData = imuReader.read())
+    bottleData = imuReader.read(false);
+    if( bottleData == NULL )
         if(bottleData->size() == 12)
             for(unsigned int i = 0; i < 12; ++i )
                 _output[i] = bottleData->get(i).asDouble();
