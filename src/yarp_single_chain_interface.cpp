@@ -183,12 +183,11 @@ bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, y
 
 bool walkman::yarp_single_chain_interface::getControlTypes(walkman::yarp_single_chain_interface::ControlTypes &controlTypes)
 {
-    controlTypes.reserve(joints_number);
     std::vector<int> controlModes;
     std::vector<yarp::dev::InteractionModeEnum> interactionModes;
     if( this->getControlModes(controlModes) &&
         this->getInteractionModes(interactionModes)) {
-        controlTypes.reserve(joints_number);
+        controlTypes.resize(joints_number);
         for(unsigned int i = 0; i < joints_number; ++i) {
             controlTypes[i].first = controlModes[i];
             controlTypes[i].second = interactionModes[i];
