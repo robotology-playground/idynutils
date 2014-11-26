@@ -310,6 +310,8 @@ private:
     std::string _robot_name;
 
     void convertEncoderToSI(yarp::sig::Vector& vector);
+    void convertImpedanceFromSI(yarp::sig::Vector &vector);
+    double convertImpedanceFromSI(const double& in) const;
     void convertMotorCommandFromSI(yarp::sig::Vector& vector);
     yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
     double convertMotorCommandFromSI(const double& in) const;
