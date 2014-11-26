@@ -40,7 +40,7 @@ public:
      * @brief getNrOfDOFs return # of dofs of the kinematic chain
      * @return # of dofs of the kinematic chain
      */
-    unsigned int getNrOfDOFs(){return joint_numbers.size();}
+    unsigned int getNrOfDOFs() const;
 
    /**
    * @brief chain_name is the name of the kinematic chain

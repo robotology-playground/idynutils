@@ -403,25 +403,26 @@ KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
  *  yarp_interface.moveSpeed(q_dot);
  */
 
-yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain,bool world_frame)
+yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain, bool world_frame)
 {    
-    yarp::sig::Matrix temp;
-    if(!iDyn3_model.getRelativeJacobian(chain.end_effector_index,torso.end_effector_index,temp,world_frame))
-        std::cout << "Error computing Jacobian for chain "<<chain.chain_name << std::endl;
-    for(unsigned int i = temp.cols();i>0; i--)
-    {
-        bool set_zero = true;
-        for(unsigned int j = 0; j <chain.joint_names.size(); ++j){
-            if(i-1 == chain.joint_numbers[j])
-            {
-                set_zero = false;
-                break;
-            }
-        }
-        if (set_zero)
-            temp.removeCols(i-1,1);
+    yarp::sig::Matrix J_chain(6, chain.getNrOfDOFs()); J_chain.zero();
+    yarp::sig::Matrix J_whole;
+
+    int waist = 0;
+
+    std::cout.flush();
+
+    if(!iDyn3_model.getRelativeJacobian(chain.end_effector_index, waist, J_whole, world_frame)) {
+        std::cout << "Error computing Jacobian for chain " << chain.chain_name << std::endl;
+        return J_chain;
     }
-    return temp;
+
+    for(unsigned int i = 0; i < chain.getNrOfDOFs(); i++)
+    {
+        J_chain.setCol(i, J_whole.getCol(chain.joint_numbers[i]));
+    }
+
+    return J_chain;
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
@@ -554,4 +555,9 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matri
     assert(floatingBaseProjector.rows() == nJ);
 
     return floatingBaseProjector;
+}
+
+
+unsigned int kinematic_chain::getNrOfDOFs() const {
+    return joint_numbers.size();
 }
