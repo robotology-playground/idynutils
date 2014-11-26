@@ -149,8 +149,8 @@ bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector 
         double Kqi;
         double Dqi;
         if(_useSI) {
-            Kqi = convertMotorCommandFromSI(Kq[i]);
-            Dqi = convertMotorCommandFromSI(Dq[i]);
+            Kqi = convertImpedanceFromSI(Kq[i]);
+            Dqi = convertImpedanceFromSI(Dq[i]);
         } else {
             Kqi = Kq[i];
             Dqi = Dq[i];
@@ -531,6 +531,18 @@ inline void yarp_single_chain_interface::convertEncoderToSI(yarp::sig::Vector &v
     for(unsigned int i = 0; i < vector.size(); ++i) {
         vector[i] *= M_PI / 180.0;
     }
+}
+
+inline void yarp_single_chain_interface::convertImpedanceFromSI(yarp::sig::Vector &vector)
+{
+    for(unsigned int i = 0; i < vector.size(); ++i) {
+        vector[i] *= M_PI / 180.0;
+    }
+}
+
+inline double yarp_single_chain_interface::convertImpedanceFromSI(const double& in) const
+{
+    return in * M_PI / 180.0;
 }
 
 inline void yarp_single_chain_interface::convertMotorCommandFromSI(yarp::sig::Vector &vector)
