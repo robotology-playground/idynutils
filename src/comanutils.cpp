@@ -24,13 +24,13 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName):
-    right_hand(walkman::robot::right_hand, moduleName, "coman", true, VOCAB_CM_NONE),
-    right_arm(walkman::robot::right_arm, moduleName, "coman", true, VOCAB_CM_NONE),
-    right_leg(walkman::robot::right_leg, moduleName, "coman", true, VOCAB_CM_NONE),
-    left_hand(walkman::robot::left_hand, moduleName, "coman", true, VOCAB_CM_NONE),
-    left_arm(walkman::robot::left_arm, moduleName, "coman", true, VOCAB_CM_NONE),
-    left_leg(walkman::robot::left_leg, moduleName, "coman", true, VOCAB_CM_NONE),
-    torso(walkman::robot::torso, moduleName, "coman", true, VOCAB_CM_NONE),
+right_hand(walkman::robot::right_hand, moduleName, "coman", true, WALKMAN_CM_NONE),
+    right_arm(walkman::robot::right_arm, moduleName, "coman", true, WALKMAN_CM_NONE),
+    right_leg(walkman::robot::right_leg, moduleName, "coman", true, WALKMAN_CM_NONE),
+    left_hand(walkman::robot::left_hand, moduleName, "coman", true, WALKMAN_CM_NONE),
+    left_arm(walkman::robot::left_arm, moduleName, "coman", true, WALKMAN_CM_NONE),
+    left_leg(walkman::robot::left_leg, moduleName, "coman", true, WALKMAN_CM_NONE),
+    torso(walkman::robot::torso, moduleName, "coman", true, WALKMAN_CM_NONE),
     q_sensed_right_hand( 1 ),
     q_sensed_left_hand( 1 ),
     q_sensed_right_arm( right_arm.getNumberOfJoints() ),

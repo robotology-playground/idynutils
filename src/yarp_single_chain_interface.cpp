@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <idynutils/yarp_single_chain_interface.h>
+#include "idynutils/yarp_single_chain_interface.h"
 #include <algorithm>
 #include <assert.h>
 
@@ -65,33 +65,33 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
 
-    if (controlModeVocab == VOCAB_CM_NONE) return;
+    if (controlModeVocab == WALKMAN_CM_NONE) return;
     switch(controlModeVocab) {
-        case VOCAB_CM_TORQUE:
-            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_TORQUE"<<std::endl;
+        case WALKMAN_CM_TORQUE:
+            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_TORQUE"<<std::endl;
             if(!setTorqueMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_TORQUE"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_TORQUE"<<std::endl;
             break;
-        case VOCAB_CM_IMPEDANCE_POS:
-            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
+        case WALKMAN_CM_IMPEDANCE_POS:
+            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_IMPEDANCE_POS"<<std::endl;
             if(!setImpedanceMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_IMPEDANCE_POS"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_IMPEDANCE_POS"<<std::endl;
             break;
-        case VOCAB_CM_POSITION_DIRECT:
-            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION_DIRECT"<<std::endl;
+        case WALKMAN_CM_POSITION_DIRECT:
+            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION_DIRECT"<<std::endl;
             if(!setPositionDirectMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION_DIRECT"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION_DIRECT"<<std::endl;
             break;
-        case VOCAB_CM_POSITION:
-            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION"<<std::endl;
+        case WALKMAN_CM_POSITION:
+            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION"<<std::endl;
             if(!setPositionMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_POSITION"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION"<<std::endl;
             break;
-        case VOCAB_CM_IDLE:
+        case WALKMAN_CM_IDLE:
         default:
-            std::cout<<"Initializing "<<kinematic_chain<<" with VOCAB_CM_IDLE"<<std::endl;
+            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_IDLE"<<std::endl;
             if(!setIdleMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with VOCAB_CM_IDLE"<<std::endl;
+                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_IDLE"<<std::endl;
 
     }
     
