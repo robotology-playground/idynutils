@@ -30,7 +30,13 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/dev/IInteractionMode.h>
 
-#define VOCAB_CM_NONE VOCAB3('d','i','o')
+#define WALKMAN_CM_NONE VOCAB3('d','i','o')
+#define WALKMAN_CM_TORQUE VOCAB4('c','a','n','e')
+#define WALKMAN_CM_POSITION_DIRECT VOCAB4('l','u','p','o')
+#define WALKMAN_CM_POSITION VOCAB4('s','u','c','a')
+#define WALKMAN_CM_IMPEDANCE_POS VOCAB4('g','e','s','u')
+#define WALKMAN_CM_IDLE VOCAB4('b','o','i','a')
+
 
 /**
  * These strings are supposed to be found into the SRDF of any robot we are working with
@@ -87,7 +93,7 @@ public:
                                 std::string module_prefix_with_no_slash,
                                 std::string robot_name,
                                 bool useSI = false,
-                                const int controlModeVocab = VOCAB_CM_IDLE
+                                const int controlModeVocab = WALKMAN_CM_IDLE
                                 );
 
     /**
@@ -222,7 +228,7 @@ public:
     /**
      * @brief setControlTypes sets the pair <control mode, interaction mode> for each joint in the chain
      * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
-     * @return true if able to succesfully write control mode and interaction mode for each joint
+     * @return true if able to successfully write control mode and interaction mode for each joint
      */
     bool setControlTypes(const ControlTypes& controlTypes);
 
@@ -282,7 +288,7 @@ protected:
     std::vector<int> getControlModes();
 
     /**
-     * @brief getInteractionModes returns the interactino mode for each joint in the chain
+     * @brief getInteractionModes returns the interaction mode for each joint in the chain
      * @param interactionModes a vector of InteractionModeEnum representing interaction mode for each joint
      * @return true if able to sucesfully read interaction mode for each joint
      */
