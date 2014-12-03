@@ -65,6 +65,83 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
 
+    
+    // initialize the map of the feasible control mode transitions
+    
+    // from NONE
+    std::vector<int> feasible_transition_from_none;
+    feasible_transition_from_none.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_none.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_none.push_back(WALKMAN_CM_POSITION);
+    feasible_transition_from_none.push_back(WALKMAN_CM_POSITION_DIRECT);
+    feasible_transition_from_none.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    feasible_transition_from_none.push_back(WALKMAN_CM_TORQUE);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_NONE] = feasible_transition_from_none;
+    
+    // from IDLE
+    std::vector<int> feasible_transition_from_idle;
+    feasible_transition_from_idle.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_idle.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_idle.push_back(WALKMAN_CM_POSITION);
+    feasible_transition_from_idle.push_back(WALKMAN_CM_POSITION_DIRECT);
+    feasible_transition_from_idle.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    feasible_transition_from_idle.push_back(WALKMAN_CM_TORQUE);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_IDLE] = feasible_transition_from_idle;
+    
+    // from POSITION
+    std::vector<int> feasible_transition_from_position;
+    feasible_transition_from_position.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_position.push_back(WALKMAN_CM_POSITION);
+    feasible_transition_from_position.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_position.push_back(WALKMAN_CM_POSITION_DIRECT);
+    feasible_transition_from_position.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    feasible_transition_from_position.push_back(WALKMAN_CM_TORQUE);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_POSITION] = feasible_transition_from_position;
+    
+    // from POSITION DIRECT
+    std::vector<int> feasible_transition_from_position_direct;
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_POSITION_DIRECT);
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_POSITION);
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    feasible_transition_from_position_direct.push_back(WALKMAN_CM_TORQUE);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_POSITION_DIRECT] = feasible_transition_from_position_direct;
+    
+    // from IMPEDANCE
+    std::vector<int> feasible_transition_from_impedance;
+    feasible_transition_from_impedance.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_impedance.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    feasible_transition_from_impedance.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_impedance.push_back(WALKMAN_CM_TORQUE);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_IMPEDANCE_POS] = feasible_transition_from_impedance;
+    
+    // from TORQUE
+    std::vector<int> feasible_transition_from_torque;
+    feasible_transition_from_torque.push_back(WALKMAN_CM_NONE);
+    feasible_transition_from_torque.push_back(WALKMAN_CM_TORQUE);
+    feasible_transition_from_torque.push_back(WALKMAN_CM_IDLE);
+    feasible_transition_from_torque.push_back(WALKMAN_CM_IMPEDANCE_POS);
+    // insert in the map
+    feasible_control_mode_transitions[WALKMAN_CM_TORQUE] = feasible_transition_from_torque;
+    
+    
+//     std::cout  << "*********** Printing Transition Map ***********" << std::endl;
+//     
+//     for (std::map<int, std::vector<int>>::iterator it=feasible_control_mode_transitions.begin(); it!=feasible_control_mode_transitions.end(); ++it) {
+// 	std::cout << it->first << " => " << '\n';
+// 	for( int i = 0; i < it->second.size(); ++i) 
+// 	    std::cout << it->second[i] << '\n';
+// 	std::cout << '\n';
+//     }
+    
+    
+    
     if (controlModeVocab == WALKMAN_CM_NONE) return;
     switch(controlModeVocab) {
         case WALKMAN_CM_TORQUE:
@@ -95,6 +172,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
 
     }
     
+   
 }
 
 
@@ -103,7 +181,7 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
     yarp::sig::Vector maximum_velocity_deg;
 
     assert(maximum_velocity.size() == joints_number);
-    if(this->getControlMode() != VOCAB_CM_POSITION) {
+    if(this->getControlMode() != WALKMAN_CM_POSITION) {
         std::cout << "Tryng to set Reference Speed for chain " << this->getChainName()
                   << " which is not in Position mode" << std::endl;
         return false;
@@ -138,7 +216,7 @@ bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector 
                                 Dq.size());
 
     assert(impedanceSize == joints_number);
-    if(this->getControlMode() != VOCAB_CM_IMPEDANCE_POS) {
+    if(this->getControlMode() != WALKMAN_CM_IMPEDANCE_POS) {
         std::cout << "Tryng to set Impedance for chain " << this->getChainName()
                   << "which is not in Impedance mode" << std::endl;
         return false;
@@ -178,7 +256,7 @@ bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, y
         convertEncoderToSI(Dq);
     }
 
-    return set_success && (this->getControlMode() == VOCAB_CM_IMPEDANCE_POS);
+    return set_success && (this->getControlMode() == WALKMAN_CM_IMPEDANCE_POS);
 }
 
 bool walkman::yarp_single_chain_interface::getControlTypes(walkman::yarp_single_chain_interface::ControlTypes &controlTypes)
@@ -273,46 +351,52 @@ std::vector<yarp::dev::InteractionModeEnum> walkman::yarp_single_chain_interface
 
 bool yarp_single_chain_interface::setIdleMode()
 {
+    if(!isTransitionFeasible(WALKMAN_CM_IDLE))	return false;
+    
     bool check = true;
     for(unsigned int i = 0; i < joints_number; ++i)
         check = check && controlMode->setControlMode(i, VOCAB_CM_IDLE);
 
     if(check) {
-        _controlMode = VOCAB_CM_IDLE;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
+        _controlMode = WALKMAN_CM_IDLE;
+        std::cout<< "Setting "<<kinematic_chain<<" to WALKMAN_CM_IDLE mode"<<std::endl;
     }
     else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to WALKMAN_CM_IDLE mode"<<std::endl;
     return check;
 }
 
 bool walkman::yarp_single_chain_interface::isInIdleMode() const
 {
-    return this->getControlMode() == VOCAB_CM_IDLE;
+    return this->getControlMode() == WALKMAN_CM_IDLE;
 }
 
 bool yarp_single_chain_interface::setTorqueMode()
 {
+    if(!isTransitionFeasible(WALKMAN_CM_TORQUE))	return false;
+    
     bool check = true;
     for(unsigned int i = 0; i < joints_number; ++i)
         check = check && controlMode->setControlMode(i, VOCAB_CM_TORQUE);
 
     if(check) {
-        _controlMode = VOCAB_CM_TORQUE;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
+        _controlMode = WALKMAN_CM_TORQUE;
+        std::cout<< "Setting "<<kinematic_chain<<" to WALKMAN_CM_TORQUE mode"<<std::endl;
     }
     else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to WALKMAN_CM_IDLE_CM_TORQUE mode"<<std::endl;
     return check;
 }
 
 bool walkman::yarp_single_chain_interface::isInTorqueMode() const
 {
-    return this->getControlMode() == VOCAB_CM_TORQUE;
+    return this->getControlMode() == WALKMAN_CM_TORQUE;
 }
 
 bool yarp_single_chain_interface::setPositionMode()
 {
+    if(!isTransitionFeasible(WALKMAN_CM_POSITION))	return false;
+        
     bool check = true;
     for(unsigned int i = 0; i < joints_number; ++i)
     {
@@ -320,21 +404,23 @@ bool yarp_single_chain_interface::setPositionMode()
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
     }
     if(check) {
-        _controlMode = VOCAB_CM_POSITION;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
+        _controlMode = WALKMAN_CM_POSITION;
+        std::cout<< "Setting "<<kinematic_chain<<" to WALKMAN_CM_POSITION mode"<<std::endl;
     }
     else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to WALKMAN_CM_POSITION mode"<<std::endl;
     return check;
 }
 
 bool walkman::yarp_single_chain_interface::isInPositionMode() const
 {
-    return this->getControlMode() == VOCAB_CM_POSITION;
+    return this->getControlMode() == WALKMAN_CM_POSITION;
 }
 
 bool yarp_single_chain_interface::setImpedanceMode()
 {
+    if(!isTransitionFeasible(WALKMAN_CM_IMPEDANCE_POS))	return false;
+        
     bool check = true;
     for(unsigned int i = 0; i < joints_number; ++i)
     {
@@ -342,17 +428,25 @@ bool yarp_single_chain_interface::setImpedanceMode()
             interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
     }
     if(check) {
-        _controlMode = VOCAB_CM_IMPEDANCE_POS;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
+        _controlMode = WALKMAN_CM_IMPEDANCE_POS;
+        std::cout<< "Setting "<<kinematic_chain<<" to WALKMAN_CM_IMPEDANCE_POS mode"<<std::endl;
     }
     else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to WALKMAN_CM_IMPEDANCE_POS mode"<<std::endl;
     return check;
 }
 
 bool walkman::yarp_single_chain_interface::isInImpedanceMode() const
 {
-    return this->getControlMode() == VOCAB_CM_IMPEDANCE_POS;
+    return this->getControlMode() == WALKMAN_CM_IMPEDANCE_POS;
+}
+
+bool walkman::yarp_single_chain_interface::isTransitionFeasible(const int desired_control_mode )
+{
+    std::vector<int> actual_feasible_transitions = feasible_control_mode_transitions[this->getControlMode()];
+    return (std::find(actual_feasible_transitions.begin(), 
+		      actual_feasible_transitions.end(), 
+		      desired_control_mode) != actual_feasible_transitions.end());
 }
 
 const int walkman::yarp_single_chain_interface::getControlMode() const
@@ -367,6 +461,8 @@ bool walkman::yarp_single_chain_interface::useSI() const
 
 bool yarp_single_chain_interface::setPositionDirectMode()
 {
+    if(!isTransitionFeasible(WALKMAN_CM_POSITION_DIRECT))	return false;
+        
     bool check = true;
     for(unsigned int i = 0; i < joints_number; ++i)
     {
@@ -374,17 +470,17 @@ bool yarp_single_chain_interface::setPositionDirectMode()
             interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
     }
     if(check) {
-        _controlMode = VOCAB_CM_POSITION_DIRECT;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
+        _controlMode = WALKMAN_CM_POSITION_DIRECT;
+        std::cout<< "Setting "<<kinematic_chain<<" to WALKMAN_CM_POSITION_DIRECT mode"<<std::endl;
     }
     else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
+        std::cout<< "ERROR setting "<<kinematic_chain<<" to WALKMAN_CM_POSITION_DIRECT mode"<<std::endl;
     return check;
 }
 
 bool walkman::yarp_single_chain_interface::isInPositionDirectMode() const
 {
-    return this->getControlMode() == VOCAB_CM_POSITION_DIRECT;
+    return this->getControlMode() == WALKMAN_CM_POSITION_DIRECT;
 }
 
 yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
@@ -439,26 +535,27 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     // We assume that all the joints in the kinemati chain are controlled
     // in the same way, so I check only the control mode of the first one.
 //     _controlMode = computeControlMode();
-    assert(_controlMode == computeControlMode());
+    
+//     assert(_controlMode == computeControlMode()); //TODO: check between old VOCAB_CM from computeControlMode() and new WALKMAN_CM in _controlMode
 
     switch (_controlMode)
     {
-        case VOCAB_CM_POSITION_DIRECT:
-        case VOCAB_CM_IMPEDANCE_POS:
+        case WALKMAN_CM_POSITION_DIRECT:
+        case WALKMAN_CM_IMPEDANCE_POS:
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionDirect->setPositions(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
             break;
-        case VOCAB_CM_POSITION:
+        case WALKMAN_CM_POSITION:
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionControl->positionMove(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Position Ctrl"<<std::endl;
             break;
-        case VOCAB_CM_TORQUE:
+        case WALKMAN_CM_TORQUE:
             if(!torqueControl->setRefTorques(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
             break;
-        case VOCAB_CM_IDLE:
+        case WALKMAN_CM_IDLE:
         default:
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
             break;

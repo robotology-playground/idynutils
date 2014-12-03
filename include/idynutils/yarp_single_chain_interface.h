@@ -25,6 +25,7 @@
 #include <iostream>
 #include <mutex>
 #include <vector>
+#include <map>
 #include <math.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
@@ -263,6 +264,8 @@ public:
     bool setImpedanceMode();
 
     bool isInImpedanceMode() const;
+    
+    bool isTransitionFeasible(const int desired_control_mode );
 
     const int getControlMode() const;
 
@@ -322,6 +325,7 @@ private:
     yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
     double convertMotorCommandFromSI(const double& in) const;
 
+    std::map<int, std::vector<int>> feasible_control_mode_transitions;
 
     int computeControlMode();
 
