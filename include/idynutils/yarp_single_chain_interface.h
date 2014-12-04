@@ -31,14 +31,6 @@
 #include <yarp/dev/IInteractionMode.h>
 #include <idynutils/ControlType.hpp>
 
-#define WALKMAN_CM_NONE VOCAB3('d','i','o')
-#define WALKMAN_CM_TORQUE VOCAB4('c','a','n','e')
-#define WALKMAN_CM_POSITION_DIRECT VOCAB4('l','u','p','o')
-#define WALKMAN_CM_POSITION VOCAB4('s','u','c','a')
-#define WALKMAN_CM_IMPEDANCE_POS VOCAB4('g','e','s','u')
-#define WALKMAN_CM_IDLE VOCAB4('b','o','i','a')
-
-
 /**
  * These strings are supposed to be found into the SRDF of any robot we are working with
  */
@@ -65,22 +57,7 @@ namespace walkman{
 class yarp_single_chain_interface
 {
 public:
-    /**
-     * @brief ControlType is a pair representing the new control schemes in YARP.
-     * Each joint control type is identified by a pair <Control Mode, Interaction Mode>
-     * which can be of the type < Position | Velocity | Torque | Idle, Compliant | Stiff >
-     * The getControlMethod(), setPositionDirectMode(), setPositionMode(), setImpedanceMode(),
-     * setIdleMode(), setTorqueMode(), and the relative isInPositionDirectMode(), isInPositionMode(),
-     * isInImpedanceMode(), isInIdleMode(), isInTorqueMode() are simple wrappers that check and set
-     * control types according to the old semantic, where only the five modes are available:
-     * - position
-     * - position direct (no trajectory interpolation between position references)
-     * - torque
-     * - impedance control
-     * - idle
-     */
-    typedef std::pair<int, yarp::dev::InteractionModeEnum> ControlType;
-    typedef std::vector<ControlType> ControlTypes;
+    typedef std::vector<walkman::ControlType> ControlTypes;
 
     /**
      * @brief yarp_single_chain_interface is a simple interface for control of kinematic chains
@@ -94,7 +71,7 @@ public:
                                 std::string module_prefix_with_no_slash,
                                 std::string robot_name,
                                 bool useSI = false,
-                                const int controlModeVocab = WALKMAN_CM_IDLE
+                                const ControlType& controlType = walkman::controlTypes::idle
                                 );
 
     /**
@@ -219,20 +196,6 @@ public:
     bool getImpedance(yarp::sig::Vector& Kq,
                       yarp::sig::Vector& Dq);
 
-    /**
-     * @brief getControlTypes returns the pair <control mode, interaction mode> for each joint in the chain
-     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
-     * @return true if able to succesfully read control mode and interaction mode for each joint
-     */
-    bool getControlTypes(ControlTypes& controlTypes);
-
-    /**
-     * @brief setControlTypes sets the pair <control mode, interaction mode> for each joint in the chain
-     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
-     * @return true if able to successfully write control mode and interaction mode for each joint
-     */
-    bool setControlTypes(const ControlTypes& controlTypes);
-
     ControlTypes controlTypesFromVectors(const std::vector<int>& controlModes,
                                          const std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
 
@@ -253,33 +216,31 @@ public:
     bool setControlType(const walkman::ControlType& controlType);
 
     /**
-     * @brief getControlType returns the current control type for this kinematic chain
-     * @param controlType the control type actually set for this kinematic chain
-     * @return true if able to query a control type on the kinemait chain
+     * @brief getControlType returns the current control type for this kinematic chain.
+     * Throws an exception in case there is an error getting the control type
+     * @return controlType the control type actually set for this kinematic chain
      */
-    bool getControlType(walkman::ControlType& controlType);
+    walkman::ControlType getControlType() throw();
 
     bool setPositionMode();
 
-    bool isInPositionMode() const;
+    bool isInPositionMode();
 
     bool setPositionDirectMode();
 
-    bool  isInPositionDirectMode() const;
+    bool  isInPositionDirectMode();
 
     bool setTorqueMode();
 
-    bool isInTorqueMode() const;
+    bool isInTorqueMode();
 
     bool setIdleMode();
 
-    bool isInIdleMode() const;
+    bool isInIdleMode();
 
     bool setImpedanceMode();
 
-    bool isInImpedanceMode() const;
-
-    const int getControlMode() const;
+    bool isInImpedanceMode();
 
     bool useSI() const;
 
@@ -288,6 +249,14 @@ public:
     const bool& isAvailable;
 
 protected:
+
+
+    /**
+     * @brief getControlType returns the current control type for this kinematic chain
+     * @param controlType the control type actually set for this kinematic chain
+     * @return true if able to query a control type on the kinemait chain
+     */
+    bool getControlType(walkman::ControlType& controlType);
 
     /**
      * @brief getControlModes returns the control mode for each joint in the chain
@@ -315,6 +284,20 @@ protected:
      */
     std::vector<yarp::dev::InteractionModeEnum> getInteractionModes();
 
+    /**
+     * @brief getControlTypes returns the pair <control mode, interaction mode> for each joint in the chain
+     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
+     * @return true if able to succesfully read control mode and interaction mode for each joint
+     */
+    bool getControlTypes(ControlTypes& controlTypes);
+
+    /**
+     * @brief setControlTypes sets the pair <control mode, interaction mode> for each joint in the chain
+     * @param controlTypes a vector of pairs <integer, InteractionModeEnum> representing control type for each joint
+     * @return true if able to successfully write control mode and interaction mode for each joint
+     */
+    bool setControlTypes(const ControlTypes& controlTypes);
+
 private:
 
     bool createPolyDriver ( const std::string &kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver &polyDriver );
@@ -336,9 +319,6 @@ private:
     void convertMotorCommandFromSI(yarp::sig::Vector& vector);
     yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
     double convertMotorCommandFromSI(const double& in) const;
-
-
-    int computeControlMode();
 
     yarp::dev::IEncodersTimed *encodersMotor;
     yarp::dev::IControlMode2 *controlMode;

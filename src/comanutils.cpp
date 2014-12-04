@@ -24,13 +24,13 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName):
-right_hand(walkman::robot::right_hand, moduleName, "coman", true, WALKMAN_CM_NONE),
-    right_arm(walkman::robot::right_arm, moduleName, "coman", true, WALKMAN_CM_NONE),
-    right_leg(walkman::robot::right_leg, moduleName, "coman", true, WALKMAN_CM_NONE),
-    left_hand(walkman::robot::left_hand, moduleName, "coman", true, WALKMAN_CM_NONE),
-    left_arm(walkman::robot::left_arm, moduleName, "coman", true, WALKMAN_CM_NONE),
-    left_leg(walkman::robot::left_leg, moduleName, "coman", true, WALKMAN_CM_NONE),
-    torso(walkman::robot::torso, moduleName, "coman", true, WALKMAN_CM_NONE),
+right_hand(walkman::robot::right_hand, moduleName, "coman", true, walkman::controlTypes::none),
+    right_arm(walkman::robot::right_arm, moduleName, "coman", true, walkman::controlTypes::none),
+    right_leg(walkman::robot::right_leg, moduleName, "coman", true, walkman::controlTypes::none),
+    left_hand(walkman::robot::left_hand, moduleName, "coman", true, walkman::controlTypes::none),
+    left_arm(walkman::robot::left_arm, moduleName, "coman", true, walkman::controlTypes::none),
+    left_leg(walkman::robot::left_leg, moduleName, "coman", true, walkman::controlTypes::none),
+    torso(walkman::robot::torso, moduleName, "coman", true, walkman::controlTypes::none),
     q_sensed_right_hand( 1 ),
     q_sensed_left_hand( 1 ),
     q_sensed_right_arm( right_arm.getNumberOfJoints() ),
@@ -196,7 +196,7 @@ bool ComanUtils::setImpedance(const std::map<std::string, std::pair<yarp::sig::V
     for(ImpedanceMap::const_iterator i = impedance_map.begin(); i != impedance_map.end(); ++i) {
         walkman::yarp_single_chain_interface* chain = this->getChainByName(i->first);
         if(chain != NULL) {
-            if(chain->getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+            if(chain->isInImpedanceMode()) {
                 ++number_of_chains;
                 success = success && chain->setImpedance(i->second.first,
                                                          i->second.second);
@@ -214,49 +214,49 @@ bool ComanUtils::getImpedance(std::map<std::string, std::pair<yarp::sig::Vector,
     bool atLeastAChainInImpedanceMode = false;
     impedance_map.clear();
 
-    if(torso.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(torso.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         torso.getImpedance(Kq,Dq);
         impedance_map[torso.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(right_arm.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(right_arm.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         right_arm.getImpedance(Kq,Dq);
         impedance_map[right_arm.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(left_arm.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(left_arm.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         left_arm.getImpedance(Kq,Dq);
         impedance_map[left_arm.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(right_leg.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(right_leg.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         right_leg.getImpedance(Kq,Dq);
         impedance_map[right_leg.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(left_leg.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(left_leg.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         left_leg.getImpedance(Kq,Dq);
         impedance_map[left_leg.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(right_hand.isAvailable && right_hand.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(right_hand.isAvailable && right_hand.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         right_hand.getImpedance(Kq,Dq);
         impedance_map[right_hand.getChainName()] = Impedance(Kq,Dq);
         atLeastAChainInImpedanceMode = true;
     }
 
-    if(left_hand.isAvailable && left_hand.getControlMode() == VOCAB_CM_IMPEDANCE_POS) {
+    if(left_hand.isAvailable && left_hand.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
         left_hand.getImpedance(Kq,Dq);
         impedance_map[left_hand.getChainName()] = Impedance(Kq,Dq);
@@ -439,11 +439,11 @@ bool ComanUtils::setImpedanceMode()
 
 bool ComanUtils::isInImpedanceMode()
 {
-    return  torso.getControlMode() == VOCAB_CM_IMPEDANCE_POS &&
-            right_arm.getControlMode() == VOCAB_CM_IMPEDANCE_POS &&
-            left_arm.getControlMode() == VOCAB_CM_IMPEDANCE_POS &&
-            right_leg.getControlMode() == VOCAB_CM_IMPEDANCE_POS &&
-            left_leg.getControlMode() == VOCAB_CM_IMPEDANCE_POS;
+    return  torso.isInImpedanceMode() &&
+            right_arm.isInImpedanceMode() &&
+            left_arm.isInImpedanceMode() &&
+            right_leg.isInImpedanceMode() &&
+            left_leg.isInImpedanceMode();
 }
 
 walkman::yarp_single_chain_interface* const ComanUtils::getChainByName(const std::string chain_name) {
@@ -459,15 +459,15 @@ walkman::yarp_single_chain_interface* const ComanUtils::getChainByName(const std
 
 bool ComanUtils::bodyIsInPositionMode()
 {
-    return  torso.getControlMode() == VOCAB_CM_POSITION &&
-            right_arm.getControlMode() == VOCAB_CM_POSITION &&
-            left_arm.getControlMode() == VOCAB_CM_POSITION &&
-            right_leg.getControlMode() == VOCAB_CM_POSITION &&
-            left_leg.getControlMode() == VOCAB_CM_POSITION;
+    return  torso.isInPositionMode() &&
+            right_arm.isInPositionMode() &&
+            left_arm.isInPositionMode() &&
+            right_leg.isInPositionMode() &&
+            left_leg.isInPositionMode();
 }
 
 bool ComanUtils::handsAreInPositionMode()
 {
-    return  (right_hand.isAvailable && right_hand.getControlMode() == VOCAB_CM_POSITION) &&
-            (left_hand.isAvailable && left_hand.getControlMode() == VOCAB_CM_POSITION);
+    return  (right_hand.isAvailable && right_hand.isInPositionMode()) &&
+            (left_hand.isAvailable && left_hand.isInPositionMode());
 }
