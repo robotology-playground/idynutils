@@ -492,6 +492,91 @@ const std::string& yarp_single_chain_interface::getChainName() const
     return kinematic_chain;
 }
 
+bool walkman::yarp_single_chain_interface::setControlType(const ControlType &controlType)
+{
+    if(controlType.toYarp().first == VOCAB_CM_UNKNOWN)
+        return true;
+    else {
+        bool check = true;
+
+        for(unsigned int i = 0; check && i < joints_number; ++i) {
+            check = check && controlMode->setControlMode(i, controlType.toYarp().first);
+            if(controlType.toYarp.second != VOCAB_IM_UNKNOWN)
+                check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
+            if(!check) {
+                std::cout << "ERROR setting "<<kinematic_chain<<" to " << controlType <<
+                             ". Kinematic chain in inconsistent state at joint " << i;
+            }
+        }
+
+        if(!check)  return false;
+
+        ControlType currentControlType;
+        if(!this->getControlType(currentControlType)) {
+            std::cout << "ERROR asking the current control Type for verification. Something went wrong";
+            return false;
+        }
+
+        _controlType = currentControlType;
+
+        if(controlType != currentControlType) {
+            std::cout << "ERROR: we were able to set the desired control type, but upon check the robot"
+                      << "returns the control type was not updated." << std::endl;
+            return false;
+        }
+    }
+}
+
+bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlType)
+{
+    unsigned int i = 0;
+
+    int ctrlMode0, ctrlMode;
+    bool ableToGetCtrlMode = true;
+    bool ctrlModeIsConsistent = true;
+    ableToGetCtrlMode = controlMode->getControlMode(0, &ctrlMode0);
+
+    for(i = 1; ableToGetCtrlMode && ctrlModeIsConsistent && i < joint_number; ++i) {
+        ableToGetCtrlMode = ableToGetCtrlMode && controlMode->getControlMode(i, &ctrlMode);
+        ctrlModeIsConsistent = (ctrlMode0 == ctrlMode);
+    }
+
+    if(!ableToGetCrlMode) {
+        std::cout << "ERROR asking the current control Type for verification. Something went "
+                  << "wrong while asking joint " << i << " for its control mode.";
+        return false;
+    }
+
+    if(!ctrlModeIsConsistent) {
+        std::cout << "ERROR: joint" << i << " is in different control mode than joint 0 for this chain.";
+        return false;
+    }
+
+
+    yarp::dev::InteractionModeEnum intMode0, intMode;
+    bool ableToGetIntMode = true;
+    bool intModeIsConsistent = true;
+    ableToGetIntMode = interactionMode->getInteractionMode(0, &intMode0);
+
+    for(i = 1; ableToGetIntMode && intModeIsConsistent && i < joint_number; ++i) {
+        ableToGetIntMode = ableToGetIntMode && controlMode->getInteractionMode(i, &intMode);
+        intModeIsConsistent = (intMode0 == intMode);
+    }
+
+    if(!ableToGetIntMode) {
+        std::cout << "ERROR asking the current control Type for verification. Something went "
+                  << "wrong while asking joint " << i << " for its interaction mode.";
+        return false;
+    }
+
+    if(!intModeIsConsistent) {
+        std::cout << "ERROR: joint" << i << " is in different interaction mode than joint 0 for this chain.";
+        return false;
+    }
+
+    controlType = ControlType::fromYarp(ctrlMode, intMode);
+}
+
 bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver& polyDriver)
 {
     yarp::os::Property options;

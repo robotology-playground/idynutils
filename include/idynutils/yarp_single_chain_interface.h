@@ -29,6 +29,7 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <idynutils/ControlType.hpp>
 
 #define WALKMAN_CM_NONE VOCAB3('d','i','o')
 #define WALKMAN_CM_TORQUE VOCAB4('c','a','n','e')
@@ -244,6 +245,20 @@ public:
 
     const std::string &getChainName() const;
 
+    /**
+     * @brief setControlType sets the desired control type, if possible
+     * @param controlType the desired control type for this kinematic chain
+     * @return true on success
+     */
+    bool setControlType(const walkman::ControlType& controlType);
+
+    /**
+     * @brief getControlType returns the current control type for this kinematic chain
+     * @param controlType the control type actually set for this kinematic chain
+     * @return true if able to query a control type on the kinemait chain
+     */
+    bool getControlType(walkman::ControlType& controlType);
+
     bool setPositionMode();
 
     bool isInPositionMode() const;
@@ -312,7 +327,7 @@ private:
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
     bool _useSI;
-    int _controlMode;
+    ControlType _controlType;
     std::string _robot_name;
 
     void convertEncoderToSI(yarp::sig::Vector& vector);
