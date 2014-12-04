@@ -26,6 +26,14 @@ namespace walkman {
     /**
      * @brief The ControlType class represents the type of control running on the robot.
      * All possible control types are listed in the walkman::controlTypes namespace
+     *
+     * The way ControlType is implemented at the moment is through a std::pair
+     * This wraps the new modes so that only the five control types are available:
+     * - position (for setpoints, automatically generates trajectories between setpoints)
+     * - position direct (no trajectory interpolation between position references: used when sending trajectories)
+     * - torque
+     * - impedance control
+     * - idle
      */
     class ControlType {
     protected:
@@ -44,10 +52,6 @@ namespace walkman {
          */
         ControlType();
 
-        bool operator==(const ControlType& controlType);
-
-        std::ostream& operator<<(std::ostream& os, const ControlType& controlType);
-
         /**
          * @brief fromYarp tries to create a ControlType object from a yarp ControlMode, InteractionMode pair
          * @return a ControlType if the ControlMode/InteractionMode pair is supported. Otherwise throws an exception
@@ -61,6 +65,10 @@ namespace walkman {
          * @return a pair<yarp controlMode, yarp interactionMode>
          */
         std::pair<const int, const yarp::dev::InteractionModeEnum> toYarp() const;
+
+        bool operator==(const ControlType& controlType) const;
+
+        bool operator!=(const ControlType& controlType) const;
     };
 
     /*********************************************************************************
@@ -125,15 +133,6 @@ namespace walkman {
         return "unknown";
     }
 
-    inline bool ControlType::operator==(const ControlType& controlType) {
-        return controlType._controlType == this->_controlType;
-    }
-
-    inline std::ostream& ControlType::operator<<(std::ostream& os, const ControlType& controlType) {
-        os << controlType.toString();
-        return os;
-    }
-
     inline ControlType ControlType::fromYarp(const int& controlMode,
                                 const yarp::dev::InteractionModeEnum& interactionMode) throw() {
         using namespace yarp::dev;
@@ -157,6 +156,17 @@ namespace walkman {
         return _controlType;
     }
 
+    inline bool ControlType::operator!=(const ControlType& controlType) const {
+        return !(this->operator ==(controlType));
+    }
 
+    inline bool ControlType::operator==(const ControlType& controlType) const {
+        return controlType._controlType == this->_controlType;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const ControlType& controlType) {
+        os << controlType.toString();
+        return os;
+    }
 }
 #endif // __CONTROLTYPE_HPP__

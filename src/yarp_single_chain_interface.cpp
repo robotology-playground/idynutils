@@ -28,12 +28,11 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
                                                          std::string module_prefix_with_no_slash,
                                                          std::string robot_name,
                                                          bool useSI,
-                                                         const int controlModeVocab):
+                                                         const ControlType& controlType):
     module_prefix(robot_name + "/" + module_prefix_with_no_slash),
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
     _useSI(useSI),
-    _controlMode(controlModeVocab),
     _robot_name(robot_name)
 {
     internal_isAvailable=false;
@@ -65,36 +64,10 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
 
-    if (controlModeVocab == WALKMAN_CM_NONE) return;
-    switch(controlModeVocab) {
-        case WALKMAN_CM_TORQUE:
-            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_TORQUE"<<std::endl;
-            if(!setTorqueMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_TORQUE"<<std::endl;
-            break;
-        case WALKMAN_CM_IMPEDANCE_POS:
-            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_IMPEDANCE_POS"<<std::endl;
-            if(!setImpedanceMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_IMPEDANCE_POS"<<std::endl;
-            break;
-        case WALKMAN_CM_POSITION_DIRECT:
-            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION_DIRECT"<<std::endl;
-            if(!setPositionDirectMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION_DIRECT"<<std::endl;
-            break;
-        case WALKMAN_CM_POSITION:
-            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION"<<std::endl;
-            if(!setPositionMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_POSITION"<<std::endl;
-            break;
-        case WALKMAN_CM_IDLE:
-        default:
-            std::cout<<"Initializing "<<kinematic_chain<<" with WALKMAN_CM_IDLE"<<std::endl;
-            if(!setIdleMode())
-                std::cout<<"PROBLEM Initializing "<<kinematic_chain<<" with WALKMAN_CM_IDLE"<<std::endl;
-
-    }
-    
+    if(setControlType(controlType))
+            _controlType = controlType;
+    else
+            std::cout << "PROBLEM initializing" << kinematic_chain << " with " << controlType << std::endl;
 }
 
 
@@ -103,7 +76,7 @@ bool yarp_single_chain_interface::setReferenceSpeeds( const yarp::sig::Vector& m
     yarp::sig::Vector maximum_velocity_deg;
 
     assert(maximum_velocity.size() == joints_number);
-    if(this->getControlMode() != VOCAB_CM_POSITION) {
+    if(_controlType != walkman::controlTypes::position) {
         std::cout << "Tryng to set Reference Speed for chain " << this->getChainName()
                   << " which is not in Position mode" << std::endl;
         return false;
@@ -138,7 +111,8 @@ bool walkman::yarp_single_chain_interface::setImpedance(const yarp::sig::Vector 
                                 Dq.size());
 
     assert(impedanceSize == joints_number);
-    if(this->getControlMode() != VOCAB_CM_IMPEDANCE_POS) {
+
+    if(_controlType != walkman::controlTypes::impedance) {
         std::cout << "Tryng to set Impedance for chain " << this->getChainName()
                   << "which is not in Impedance mode" << std::endl;
         return false;
@@ -178,7 +152,7 @@ bool walkman::yarp_single_chain_interface::getImpedance(yarp::sig::Vector &Kq, y
         convertEncoderToSI(Dq);
     }
 
-    return set_success && (this->getControlMode() == VOCAB_CM_IMPEDANCE_POS);
+    return set_success && (_controlType == walkman::controlTypes::impedance);
 }
 
 bool walkman::yarp_single_chain_interface::getControlTypes(walkman::yarp_single_chain_interface::ControlTypes &controlTypes)
@@ -189,8 +163,7 @@ bool walkman::yarp_single_chain_interface::getControlTypes(walkman::yarp_single_
         this->getInteractionModes(interactionModes)) {
         controlTypes.resize(joints_number);
         for(unsigned int i = 0; i < joints_number; ++i) {
-            controlTypes[i].first = controlModes[i];
-            controlTypes[i].second = interactionModes[i];
+            controlTypes[i] = walkman::ControlType::fromYarp(controlModes[i],interactionModes[i]);
         }
         return true;
     } else return false;
@@ -203,8 +176,8 @@ bool walkman::yarp_single_chain_interface::setControlTypes(const walkman::yarp_s
     std::vector<yarp::dev::InteractionModeEnum> interactionModes(joints_number,
                                                                  (yarp::dev::InteractionModeEnum)0);
     for(unsigned int i = 0; i < joints_number; ++i) {
-        controlModes[i] = controlTypes[i].first;
-        interactionModes[i] = controlTypes[i].second;
+        controlModes[i] = controlTypes[i].toYarp().first;
+        interactionModes[i] = controlTypes[i].toYarp().second;
     }
 
     return  controlMode->setControlModes(controlModes.data()) &&
@@ -223,8 +196,8 @@ void walkman::yarp_single_chain_interface::vectorsFromControlTypes(const walkman
     interactionModes.assign(joints_number, (yarp::dev::InteractionModeEnum)0);
 
     for(unsigned int i = 0; i < joints_number; ++i) {
-        controlModes[i] = controlTypes[i].first;
-        interactionModes[i] = controlTypes[i].second;
+        controlModes[i] = controlTypes[i].toYarp().first;
+        interactionModes[i] = controlTypes[i].toYarp().second;
     }
 
     return;
@@ -237,7 +210,7 @@ walkman::yarp_single_chain_interface::ControlTypes walkman::yarp_single_chain_in
     unsigned int controlTypesSize = controlModes.size();
     ControlTypes controlTypes;
     for(unsigned int i = 0; i < controlTypesSize; ++i) {
-        controlTypes.push_back(ControlType(controlModes[i],interactionModes[i]));
+        controlTypes.push_back(walkman::ControlType::fromYarp(controlModes[i],interactionModes[i]));
     }
     return controlTypes;
 }
@@ -273,91 +246,42 @@ std::vector<yarp::dev::InteractionModeEnum> walkman::yarp_single_chain_interface
 
 bool yarp_single_chain_interface::setIdleMode()
 {
-    bool check = true;
-    for(unsigned int i = 0; i < joints_number; ++i)
-        check = check && controlMode->setControlMode(i, VOCAB_CM_IDLE);
-
-    if(check) {
-        _controlMode = VOCAB_CM_IDLE;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
-    }
-    else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IDLE mode"<<std::endl;
-    return check;
+    return setControlType(walkman::controlTypes::idle);
 }
 
-bool walkman::yarp_single_chain_interface::isInIdleMode() const
+bool walkman::yarp_single_chain_interface::isInIdleMode()
 {
-    return this->getControlMode() == VOCAB_CM_IDLE;
+    return (getControlType() == walkman::controlTypes::idle);
 }
 
 bool yarp_single_chain_interface::setTorqueMode()
 {
-    bool check = true;
-    for(unsigned int i = 0; i < joints_number; ++i)
-        check = check && controlMode->setControlMode(i, VOCAB_CM_TORQUE);
-
-    if(check) {
-        _controlMode = VOCAB_CM_TORQUE;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
-    }
-    else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_TORQUE mode"<<std::endl;
-    return check;
+    return setControlType(walkman::controlTypes::torque);
 }
 
-bool walkman::yarp_single_chain_interface::isInTorqueMode() const
+bool walkman::yarp_single_chain_interface::isInTorqueMode()
 {
-    return this->getControlMode() == VOCAB_CM_TORQUE;
+    return (getControlType() == walkman::controlTypes::torque);
 }
 
 bool yarp_single_chain_interface::setPositionMode()
 {
-    bool check = true;
-    for(unsigned int i = 0; i < joints_number; ++i)
-    {
-        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION) &&
-            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-    }
-    if(check) {
-        _controlMode = VOCAB_CM_POSITION;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
-    }
-    else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION mode"<<std::endl;
-    return check;
+    return setControlType(walkman::controlTypes::position);
 }
 
-bool walkman::yarp_single_chain_interface::isInPositionMode() const
+bool walkman::yarp_single_chain_interface::isInPositionMode()
 {
-    return this->getControlMode() == VOCAB_CM_POSITION;
+    return (getControlType() == walkman::controlTypes::position);
 }
 
 bool yarp_single_chain_interface::setImpedanceMode()
 {
-    bool check = true;
-    for(unsigned int i = 0; i < joints_number; ++i)
-    {
-        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
-            interactionMode->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-    }
-    if(check) {
-        _controlMode = VOCAB_CM_IMPEDANCE_POS;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
-    }
-    else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_IMPEDANCE_POS mode"<<std::endl;
-    return check;
+    return setControlType(walkman::controlTypes::impedance);
 }
 
-bool walkman::yarp_single_chain_interface::isInImpedanceMode() const
+bool walkman::yarp_single_chain_interface::isInImpedanceMode()
 {
-    return this->getControlMode() == VOCAB_CM_IMPEDANCE_POS;
-}
-
-const int walkman::yarp_single_chain_interface::getControlMode() const
-{
-    return _controlMode;
+    return (getControlType() == walkman::controlTypes::impedance);
 }
 
 bool walkman::yarp_single_chain_interface::useSI() const
@@ -367,24 +291,12 @@ bool walkman::yarp_single_chain_interface::useSI() const
 
 bool yarp_single_chain_interface::setPositionDirectMode()
 {
-    bool check = true;
-    for(unsigned int i = 0; i < joints_number; ++i)
-    {
-        check = check && controlMode->setControlMode(i, VOCAB_CM_POSITION_DIRECT) &&
-            interactionMode->setInteractionMode(i,VOCAB_IM_STIFF);
-    }
-    if(check) {
-        _controlMode = VOCAB_CM_POSITION_DIRECT;
-        std::cout<< "Setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
-    }
-    else
-        std::cout<< "ERROR setting "<<kinematic_chain<<" to VOCAB_CM_POSITION_DIRECT mode"<<std::endl;
-    return check;
+    return setControlType(walkman::controlTypes::positionDirect);
 }
 
-bool walkman::yarp_single_chain_interface::isInPositionDirectMode() const
+bool walkman::yarp_single_chain_interface::isInPositionDirectMode()
 {
-    return this->getControlMode() == VOCAB_CM_POSITION_DIRECT;
+    return (getControlType() == walkman::controlTypes::positionDirect);
 }
 
 yarp::sig::Vector yarp_single_chain_interface::senseTorque() {
@@ -436,12 +348,7 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
 {
     yarp::sig::Vector u_sent(u_d);
 
-    // We assume that all the joints in the kinemati chain are controlled
-    // in the same way, so I check only the control mode of the first one.
-//     _controlMode = computeControlMode();
-    assert(_controlMode == computeControlMode());
-
-    switch (_controlMode)
+    switch (_controlType.toYarp().first)
     {
         case VOCAB_CM_POSITION_DIRECT:
         case VOCAB_CM_IMPEDANCE_POS:
@@ -465,23 +372,6 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     }
 }
 
-int yarp_single_chain_interface::computeControlMode()
-{
-    int ctrlMode;
-    controlMode->getControlMode(0, &ctrlMode);
-
-    yarp::dev::InteractionModeEnum intMode;
-    interactionMode->getInteractionMode(0, &intMode);
-
-    if(ctrlMode == VOCAB_CM_TORQUE)
-	return VOCAB_CM_TORQUE;
-    
-    if(intMode == VOCAB_IM_COMPLIANT)
-        return VOCAB_CM_IMPEDANCE_POS;
-    else
-        return ctrlMode;
-}
-
 const int& yarp_single_chain_interface::getNumberOfJoints() const
 {
     return this->joints_number;
@@ -501,10 +391,10 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
 
         for(unsigned int i = 0; check && i < joints_number; ++i) {
             check = check && controlMode->setControlMode(i, controlType.toYarp().first);
-            if(controlType.toYarp.second != VOCAB_IM_UNKNOWN)
+            if(controlType.toYarp().second != VOCAB_IM_UNKNOWN)
                 check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
             if(!check) {
-                std::cout << "ERROR setting "<<kinematic_chain<<" to " << controlType <<
+                std::cout << "ERROR setting " << kinematic_chain << " to " << controlType <<
                              ". Kinematic chain in inconsistent state at joint " << i;
             }
         }
@@ -527,6 +417,13 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
     }
 }
 
+walkman::ControlType walkman::yarp_single_chain_interface::getControlType() throw()
+{
+    ControlType controlType;
+    if(getControlType(controlType)) return controlType;
+    throw("Unable to correctly read control type");
+}
+
 bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlType)
 {
     unsigned int i = 0;
@@ -536,12 +433,12 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
     bool ctrlModeIsConsistent = true;
     ableToGetCtrlMode = controlMode->getControlMode(0, &ctrlMode0);
 
-    for(i = 1; ableToGetCtrlMode && ctrlModeIsConsistent && i < joint_number; ++i) {
+    for(i = 1; ableToGetCtrlMode && ctrlModeIsConsistent && i < joints_number; ++i) {
         ableToGetCtrlMode = ableToGetCtrlMode && controlMode->getControlMode(i, &ctrlMode);
         ctrlModeIsConsistent = (ctrlMode0 == ctrlMode);
     }
 
-    if(!ableToGetCrlMode) {
+    if(!ableToGetCtrlMode) {
         std::cout << "ERROR asking the current control Type for verification. Something went "
                   << "wrong while asking joint " << i << " for its control mode.";
         return false;
@@ -558,8 +455,8 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
     bool intModeIsConsistent = true;
     ableToGetIntMode = interactionMode->getInteractionMode(0, &intMode0);
 
-    for(i = 1; ableToGetIntMode && intModeIsConsistent && i < joint_number; ++i) {
-        ableToGetIntMode = ableToGetIntMode && controlMode->getInteractionMode(i, &intMode);
+    for(i = 1; ableToGetIntMode && intModeIsConsistent && i < joints_number; ++i) {
+        ableToGetIntMode = ableToGetIntMode && interactionMode->getInteractionMode(i, &intMode);
         intModeIsConsistent = (intMode0 == intMode);
     }
 
