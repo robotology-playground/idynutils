@@ -69,7 +69,9 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/comanutils.cpp
                                 src/convex_hull.cpp
                                 src/idynutils.cpp
+                                src/RobotUtils.cpp
                                 src/tests_utils.cpp
+                                src/WalkmanUtils.cpp
                                 src/yarp_ft_interface.cpp
                                 src/yarp_IMU_interface.cpp
                                 src/yarp_single_chain_interface.cpp
