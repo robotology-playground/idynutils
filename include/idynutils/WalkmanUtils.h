@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef COMANUTILS_H
-#define COMANUTILS_H
+#ifndef WALKMANUTILS_H
+#define WALKMANUTILS_H
 
 #include <idynutils/RobotUtils.h>
 #include <idynutils/yarp_single_chain_interface.h>
@@ -27,12 +27,12 @@
 #include <yarp/sig/all.h>
 
 /**
- * @brief The ComanUtils class eases whole body control for the coman robot.
+ * @brief The WalkmanUtils class eases whole body control for the coman robot.
  */
-class ComanUtils : public RobotUtils
+class WalkmanUtils : public RobotUtils
 {
 public:
-    ComanUtils(const std::string moduleName);
+    WalkmanUtils(const std::string moduleName);
 };
 
-#endif // COMANUTILS_H
+#endif // WALKMANUTILS_H

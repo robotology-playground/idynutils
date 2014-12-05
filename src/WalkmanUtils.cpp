@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014 Walkman
- * Author: Mirko Ferrati, Enrico Mingo, Alessio Rocchi
- * email:  mirko.ferrati@gmail.com, enrico.mingo@iit.it, alessio.rocchi@iit.it
+ * Author: Alessio Rocchi
+ * email:  alessio.rocchi@iit.it
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,22 +17,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef COMANUTILS_H
-#define COMANUTILS_H
-
-#include <idynutils/RobotUtils.h>
-#include <idynutils/yarp_single_chain_interface.h>
+#include <idynutils/WalkmanUtils.h>
 #include <idynutils/idynutils.h>
-#include <yarp/math/Math.h>
-#include <yarp/sig/all.h>
 
-/**
- * @brief The ComanUtils class eases whole body control for the coman robot.
- */
-class ComanUtils : public RobotUtils
-{
-public:
-    ComanUtils(const std::string moduleName);
-};
+using namespace iCub::iDynTree;
+using namespace yarp::math;
 
-#endif // COMANUTILS_H
+WalkmanUtils::WalkmanUtils(const std::string moduleName): RobotUtils(moduleName,"bigman")
+{}
