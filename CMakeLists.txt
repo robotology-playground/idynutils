@@ -66,10 +66,12 @@ file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynut
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
 ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
-                                src/comanutils.cpp
+                                src/ComanUtils.cpp
                                 src/convex_hull.cpp
                                 src/idynutils.cpp
+                                src/RobotUtils.cpp
                                 src/tests_utils.cpp
+                                src/WalkmanUtils.cpp
                                 src/yarp_ft_interface.cpp
                                 src/yarp_IMU_interface.cpp
                                 src/yarp_single_chain_interface.cpp
