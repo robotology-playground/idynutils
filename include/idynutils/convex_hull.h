@@ -31,7 +31,6 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/project_inliers.h>
-#include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
 #include <yarp/sig/Vector.h>
 
