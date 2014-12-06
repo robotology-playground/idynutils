@@ -48,15 +48,15 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
-FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
-                                            #features
-                                            filters
-                                            #kdtree
-                                            #io
-                                            #sample_consensus
-                                            #search
-                                            #segmentation
-                                            surface)
+FIND_PACKAGE(PCL 1.8  COMPONENTS    #common
+                                    #features
+                                    filters
+                                    #kdtree
+                                    #io
+                                    #sample_consensus
+                                    #search
+                                    #segmentation
+                                    surface)
 
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
                             ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
@@ -65,9 +65,15 @@ INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
+if(PCL_FOUND)
+    set(pcl_dependent_src src/convex_hull.cpp)
+else(PCL_FOUND)
+    message(">> Could not find PCL. Not compiling convex_hull.cpp")
+endif(PCL_FOUND)
+
 ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/ComanUtils.cpp
-                                src/convex_hull.cpp
+                                ${pcl_dependent_src}
                                 src/idynutils.cpp
                                 src/RobotUtils.cpp
                                 src/tests_utils.cpp
