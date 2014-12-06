@@ -27,7 +27,6 @@
 #include <pcl/point_types.h>
 #include <kdl/frames.hpp>
 #include <pcl/ModelCoefficients.h>
-#include <pcl/io/pcd_io.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/filters/passthrough.h>
