@@ -26,11 +26,6 @@
 using namespace iCub::iDynTree;
 using namespace yarp::math;
 
-// Here is the path to the URDF/SRDF model
-// const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
-// const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
-// const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
-// const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
 iDynUtils::iDynUtils(std::string robot_name_):
     right_arm(walkman::robot::right_arm),
@@ -53,6 +48,38 @@ iDynUtils::iDynUtils(std::string robot_name_):
     
     robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
     
+    bool iDyn3Model_loaded = iDyn3Model();
+    if(!iDyn3Model_loaded){
+        std::cout<<"Problem Loading iDyn3Model"<<std::endl;
+        assert(iDyn3Model_loaded);}
+
+    bool setJointNames_ok = setJointNames();
+    if(!setJointNames_ok){
+        std::cout<<"Problems Setting Joint names"<<std::endl;
+        assert(setJointNames_ok);}
+
+    setControlledKinematicChainsJointNumbers();
+
+    zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
+}
+
+iDynUtils::iDynUtils(const std::string& robot_name_, const std::string& urdf_path,
+          const std::string& srdf_path):
+    right_arm(walkman::robot::right_arm),
+    right_leg(walkman::robot::right_leg),
+    left_arm(walkman::robot::left_arm),
+    left_leg(walkman::robot::left_leg),
+    torso(walkman::robot::torso),
+    robot_name(robot_name_),
+    robot_urdf_folder(urdf_path),
+    robot_srdf_folder(srdf_path),
+    g(3,0.0)
+{
+    worldT.resize(4,4);
+    worldT.eye();
+
+    g[2] = 9.81;
+
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
         std::cout<<"Problem Loading iDyn3Model"<<std::endl;

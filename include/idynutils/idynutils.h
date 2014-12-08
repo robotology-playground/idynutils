@@ -64,7 +64,23 @@ public:
 class iDynUtils
 {
 public:
+    /**
+     * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf
+     * @param robot_name_ is the robot name used by the idynutils
+     */
     iDynUtils(std::string robot_name_="coman");
+
+    /**
+     * @brief iDynUtils constructor that uses given path for urdf and srdf
+     * @param robot_name_ is the robot name used by the idynutils
+     * @param urdf_path is the path to the urdf file
+     *   e.g. /home/enrico/my_robot/my_robot_urdf/my_robot.urdf
+     * @param srdf_path is the path to the srdf file
+     *   e.g. /home/enrico/my_robot/my_robot_srdf/my_robot.srdf
+     */
+    iDynUtils(const std::string& robot_name_, const std::string& urdf_path,
+              const std::string& srdf_path);
+
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree iDyn3_model; // iDyn3 Model THIS HAS TO BE RENAMED!!!
 
