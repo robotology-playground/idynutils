@@ -390,9 +390,9 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
         bool check = true;
 
         for(unsigned int i = 0; check && i < joints_number; ++i) {
-            check = check && controlMode->setControlMode(i, controlType.toYarp().first);
-            if(controlType.toYarp().second != VOCAB_IM_UNKNOWN)
+	    if(controlType.toYarp().second != VOCAB_IM_UNKNOWN)
                 check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
+            check = check && controlMode->setControlMode(i, controlType.toYarp().first);
             if(!check) {
                 std::cout << "ERROR setting " << kinematic_chain << " to " << controlType <<
                              ". Kinematic chain in inconsistent state at joint " << i;
@@ -411,7 +411,7 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
 
         if(controlType != currentControlType) {
             std::cout << "ERROR: we were able to set the desired control type, but upon check the robot"
-                      << "returns the control type was not updated." << std::endl;
+                      << " returns the control type was not updated." << std::endl;
             return false;
         }
         return true;
