@@ -67,7 +67,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     if(setControlType(controlType))
             _controlType = controlType;
     else
-            std::cout << "PROBLEM initializing" << kinematic_chain << " with " << controlType << std::endl;
+            std::cout << "PROBLEM initializing " << kinematic_chain << " with " << controlType << std::endl;
 }
 
 
@@ -403,7 +403,7 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
 
         ControlType currentControlType;
         if(!this->getControlType(currentControlType)) {
-            std::cout << "ERROR asking the current control Type for verification. Something went wrong";
+            std::cout << "ERROR asking the current control Type for verification. Something went wrong" << std::endl;
             return false;
         }
 
@@ -414,6 +414,7 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
                       << "returns the control type was not updated." << std::endl;
             return false;
         }
+        return true;
     }
 }
 
@@ -472,6 +473,7 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
     }
 
     controlType = ControlType::fromYarp(ctrlMode, intMode);
+    return true;
 }
 
 bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver& polyDriver)
