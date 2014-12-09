@@ -472,7 +472,7 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
         return false;
     }
 
-    controlType = ControlType::fromYarp(ctrlMode, intMode);
+    controlType = ControlType::fromYarp(ctrlMode0, intMode0);
     return true;
 }
 
