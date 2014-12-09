@@ -283,10 +283,8 @@ bool iDynUtils::iDyn3Model()
 
    iDyn3_model.setJointTorqueBoundMax(tauMax);
     
-    yarp::sig::Vector a;
-    a = iDyn3_model.getJointTorqueMax();
-    
-    /*std::cout<<"MAX TAU: [ "<<a.toString()<<std::endl;
+
+    /*std::cout<<"MAX TAU: [ "<<iDyn3_model.getJointTorqueMax().toString()<<std::endl;
     std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
     //std::cout<<"#Links: "<<iDyn3_model.getNrOfLinks()<<std::endl;
     */
