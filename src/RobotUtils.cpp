@@ -374,67 +374,48 @@ void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
     idynutils.fromRobotToIDyn(_left_leg, _q, idynutils.left_leg);
 }
 
+bool RobotUtils::setControlType(const walkman::ControlType& controlType)
+{
+    std::cout << "Setting control type : " << controlType.toString() << std::endl;
+    return  (right_hand.isAvailable ? right_hand.setControlType(controlType) : true) &&
+            (left_hand.isAvailable ? left_hand.setControlType(controlType) : true) &&
+            torso.setControlType(controlType) &&
+            right_arm.setControlType(controlType) &&
+            left_arm.setControlType(controlType) &&
+            right_leg.setControlType(controlType) &&
+            left_leg.setControlType(controlType);
+}
+
 bool RobotUtils::setPositionMode()
 {
-    return  (right_hand.isAvailable ? right_hand.setPositionMode() : true) &&
-            (left_hand.isAvailable ? left_hand.setPositionMode() : true) &&
-            torso.setPositionMode() &&
-            right_arm.setPositionMode() &&
-            left_arm.setPositionMode() &&
-            right_leg.setPositionMode() &&
-            left_leg.setPositionMode();
+    return setControlType(walkman::controlTypes::position);
 }
+
+bool RobotUtils::setPositionDirectMode()
+{
+    return setControlType(walkman::controlTypes::positionDirect);
+}
+
+bool RobotUtils::setTorqueMode()
+{
+    return setControlType(walkman::controlTypes::torque);
+}
+
+bool RobotUtils::setIdleMode()
+{
+    return setControlType(walkman::controlTypes::idle);
+}
+
+bool RobotUtils::setImpedanceMode()
+{
+    return setControlType(walkman::controlTypes::impedance);
+}
+
 
 bool RobotUtils::isInPositionMode()
 {
     return bodyIsInPositionMode() &&
            (!hasHands() || handsAreInPositionMode());
-}
-
-bool RobotUtils::setPositionDirectMode()
-{
-    return  (right_hand.isAvailable ? right_hand.setPositionDirectMode() : true) &&
-            (left_hand.isAvailable ? left_hand.setPositionDirectMode() : true) &&
-            torso.setPositionDirectMode() &&
-            right_arm.setPositionDirectMode() &&
-            left_arm.setPositionDirectMode() &&
-            right_leg.setPositionDirectMode() &&
-            left_leg.setPositionDirectMode();
-}
-
-bool RobotUtils::setTorqueMode()
-{
-    return  (right_hand.isAvailable ? right_hand.setPositionDirectMode() : true) &&
-            (left_hand.isAvailable ? left_hand.setPositionDirectMode() : true) &&
-            torso.setTorqueMode() &&
-            right_arm.setTorqueMode() &&
-            left_arm.setTorqueMode() &&
-            right_leg.setTorqueMode() &&
-            left_leg.setTorqueMode();
-}
-
-bool RobotUtils::setIdleMode()
-{
-    return  (right_hand.isAvailable ? right_hand.setIdleMode() : true) &&
-            (left_hand.isAvailable ? left_hand.setIdleMode() : true) &&
-            torso.setIdleMode() &&
-            right_arm.setIdleMode() &&
-            left_arm.setIdleMode() &&
-            right_leg.setIdleMode() &&
-            left_leg.setIdleMode();
-}
-
-bool RobotUtils::setImpedanceMode()
-{
-//    return  (right_hand.isAvailable ? right_hand.setImpedanceMode() : true) &&
-//            (left_hand.isAvailable ? left_hand.setImpedanceMode() : true) &&
-    return  (right_hand.isAvailable ? right_hand.setPositionDirectMode() : true) &&
-            (left_hand.isAvailable ? left_hand.setPositionDirectMode() : true) &&
-            torso.setImpedanceMode() &&
-            right_arm.setImpedanceMode() &&
-            left_arm.setImpedanceMode() &&
-            right_leg.setImpedanceMode() &&
-            left_leg.setImpedanceMode();
 }
 
 bool RobotUtils::isInImpedanceMode()

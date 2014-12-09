@@ -248,6 +248,13 @@ public:
                          const yarp::sig::Vector &_right_leg,
                          const yarp::sig::Vector &_left_leg,
                          yarp::sig::Vector& _q);
+    
+    /**
+     * @brief setControlType sets the desired control type, if possible, for all kinematic chains
+     * @param controlType the desired control type for all kinematic chains
+     * @return true on success
+     */
+    bool setControlType(const walkman::ControlType& controlType);
 
     /**
      * @brief setPositionMode sets position mode for all kinematic chains
