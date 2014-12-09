@@ -36,6 +36,14 @@ namespace walkman {
      * - idle
      */
     class ControlType {
+    private:
+	/**
+	 * @brief isCompatibleWithInteractionMode checks if the current control mode is compatible with the interaction mode; when the function returns 
+	 * false the interaction mode should be set to VOCAB_IM_UNKNOWN.
+	 * 
+	 * @return true if the current control mode is compatible with the interaction mode.
+	 */
+	bool isCompatibleWithInteractionMode() const;
     protected:
         std::pair<int, yarp::dev::InteractionModeEnum> _controlType;
     public:
@@ -69,6 +77,7 @@ namespace walkman {
         bool operator==(const ControlType& controlType) const;
 
         bool operator!=(const ControlType& controlType) const;
+	
     };
 
     /*********************************************************************************
@@ -130,7 +139,7 @@ namespace walkman {
         if(*this == walkman::controlTypes::positionDirect) return "position direct";
         if(*this == walkman::controlTypes::torque) return "torque";
         if(*this == walkman::controlTypes::none) return "none";
-        return "unknown";
+        return "Unrecognized control type";
     }
 
     inline ControlType ControlType::fromYarp(const int& controlMode,
@@ -161,12 +170,20 @@ namespace walkman {
     }
 
     inline bool ControlType::operator==(const ControlType& controlType) const {
-        return controlType._controlType == this->_controlType;
+        return 	( ( controlType._controlType.first == this->_controlType.first ) && 
+		 ( !this->isCompatibleWithInteractionMode() || 
+		   ( controlType._controlType.second == this->_controlType.second ) ) ) ;
     }
 
     inline std::ostream& operator<<(std::ostream& os, const ControlType& controlType) {
         os << controlType.toString();
         return os;
+    }
+    
+    inline bool ControlType::isCompatibleWithInteractionMode() const
+    {
+	return ( this->_controlType.first == VOCAB_CM_POSITION || 
+		 this->_controlType.first == VOCAB_CM_POSITION_DIRECT );
     }
 }
 #endif // __CONTROLTYPE_HPP__
