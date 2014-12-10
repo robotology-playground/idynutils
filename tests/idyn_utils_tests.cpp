@@ -3,6 +3,7 @@
 #include <idynutils/cartesian_utils.h>
 #include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
+#include <kdl/frames_io.hpp>
 
 
 
@@ -51,6 +52,10 @@ protected:
     }
 
     yarp::sig::Vector q;
+};
+
+class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
+                public ::testing::WithParamInterface<bool> {
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -430,6 +435,100 @@ TEST_F(testIDynUtils, testAnchorSwitch)
 
 }
 
+TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
+{
+    bool updateIDynAfterSwitch = GetParam();
+
+    setGoodInitialPosition();
+
+    KDL::Frame w_T_l_wrist_l_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout << "World to l_wrist Transform in q=good, anchor=l_sole:" << std::endl
+              << w_T_l_wrist_l_sole << std::endl;
+
+    std::string new_anchor = "r_sole";
+    std::cout   << "Setting new anchor in " << new_anchor << std::endl;
+    switchAnchor(new_anchor);
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+
+    KDL::Frame w_T_l_wrist_r_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout   << "World to l_wrist Transform in q=good, anchor=r_sole:"  << std::endl
+                << w_T_l_wrist_r_sole << std::endl;
+
+    EXPECT_TRUE(w_T_l_wrist_l_sole == w_T_l_wrist_r_sole);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+
+    w_T_l_wrist_r_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout   << "World to l_wrist Transform in q=0, anchor=r_sole:" << std::endl
+                << w_T_l_wrist_r_sole << std::endl;
+
+    std::string old_anchor = "l_sole";
+    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
+    switchAnchor(new_anchor);
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    w_T_l_wrist_l_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout<<"World to l_wrist Transform in q=0, anchor=l_sole:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_l_wrist_l_sole);
+
+    EXPECT_TRUE(w_T_l_wrist_l_sole == w_T_l_wrist_r_sole);
+
+}
+
+
+TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
+{
+    bool updateIDynAfterSwitch = GetParam();
+
+    setGoodInitialPosition();
+
+    KDL::Vector w_T_CoM_l_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=good, anchor=l_sole:" << std::endl
+                << w_T_CoM_l_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_CoM_l_sole);
+
+    std::string new_anchor = "r_sole";
+    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
+    switchAnchor(new_anchor);
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    KDL::Vector w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=good, anchor=r_sole:" << std::endl
+                << w_T_CoM_r_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_l_wrist_r_sole);
+
+    EXPECT_TRUE(w_T_CoM_l_sole == w_T_CoM_r_sole);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=0, anchor=r_sole:" << std::endl
+                << w_T_CoM_r_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_CoM_r_sole);
+
+    std::string old_anchor = "l_sole";
+    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
+    switchAnchor(new_anchor);
+
+
+    w_T_CoM_l_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=0, anchor=l_sole:" << std::endl
+                << w_T_CoM_l_sole << std::endl;
+    //cartesian_utils::printKDL(w_T_CoM_l_sole);
+
+    EXPECT_TRUE(w_T_CoM_l_sole == w_T_CoM_r_sole);
+
+}
+
+INSTANTIATE_TEST_CASE_P(SwitchAnchor,
+                        testIDynUtilsWithAndWithoutUpdate,
+                        ::testing::Bool());
 } //namespace
 
 int main(int argc, char **argv) {
