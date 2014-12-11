@@ -23,8 +23,11 @@
 using namespace iCub::iDynTree;
 using namespace yarp::math;
 
-RobotUtils::RobotUtils(const std::string moduleName, const std::string robotName):
-right_hand(walkman::robot::right_hand, moduleName, robotName, true, walkman::controlTypes::none),
+RobotUtils::RobotUtils(const std::string moduleName, 
+		       const std::string robotName,
+		       const std::string urdf_path, 
+		       const std::string srdf_path) :
+    right_hand(walkman::robot::right_hand, moduleName, robotName, true, walkman::controlTypes::none),
     right_arm(walkman::robot::right_arm, moduleName, robotName, true, walkman::controlTypes::none),
     right_leg(walkman::robot::right_leg, moduleName, robotName, true, walkman::controlTypes::none),
     left_hand(walkman::robot::left_hand, moduleName, robotName, true, walkman::controlTypes::none),
@@ -44,7 +47,8 @@ right_hand(walkman::robot::right_hand, moduleName, robotName, true, walkman::con
     q_commanded_left_arm( left_arm.getNumberOfJoints() ),
     q_commanded_torso( torso.getNumberOfJoints() ),
     q_commanded_right_leg( right_leg.getNumberOfJoints() ),
-    q_commanded_left_leg( left_leg.getNumberOfJoints() )
+    q_commanded_left_leg( left_leg.getNumberOfJoints() ),
+    idynutils( robotName, urdf_path, srdf_path )
 {
     this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);

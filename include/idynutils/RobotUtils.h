@@ -43,9 +43,15 @@ public:
      * switch mode for each kinematic chain.
      * @param moduleName the name of the module which uses the facility
      * @param robotName the name of the robot
+     * @param urdf_path is the path to the urdf file
+     *   e.g. /home/enrico/my_robot/my_robot_urdf/my_robot.urdf
+     * @param srdf_path is the path to the srdf file
+     *   e.g. /home/enrico/my_robot/my_robot_srdf/my_robot.srdf
      */
-    RobotUtils(const std::string moduleName,
-               const std::string robotName);
+    RobotUtils( const std::string moduleName,
+                const std::string robotName,
+	        const std::string urdf_path = "",
+	        const std::string srdf_path = "" );
 
     walkman::yarp_single_chain_interface right_hand, left_hand;
     walkman::yarp_single_chain_interface right_arm, left_arm;
