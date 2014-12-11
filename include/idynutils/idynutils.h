@@ -139,16 +139,6 @@ public:
                           const yarp::sig::Vector& ddq_ref,
                           const bool set_world_pose = false);
 
-
-    /**
-     * @brief initWorldPose inits the inertial frame putting it on the plane idenfitied by
-     *                      the anchor link, on the point located by the projection of the
-     *                      base link position on that same plane
-     * @param anchor        the anchor link
-     */
-    void initWorldPose();
-
-
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
@@ -180,8 +170,27 @@ public:
     /**
      * @brief switchAnchor switch the anchor frame according to the new given anchor name
      * @param new_anchor name
+     * @return true if all went well, false otherwise
      */
     bool switchAnchor(const std::string& new_anchor);
+
+    /**
+     * Set the floating base link. Updates the transform from anchor to world accordingly:
+     * anchor_T_fb is updated with the new world and the old anchor, so that
+     * anchor_T_fb_new = anchor_T_fb_old * fb_old_T_fb_new
+     * @param new_base the name of the link which will be the new floating base (i.e.,
+     * the 6dof unactuated virtual joints will connect the world frame to this base link)
+     * @return true if all went well, false otherwise
+     */
+    bool setFloatingBaseLink(const std::string new_base);
+
+    /**
+     * @brief switchAnchorAndFloatingBase a shortcut version of calling
+     *                                    switchAnchor(new_anchor); setFloatingBaseLink(new_anchor);
+     * @param new_anchor name
+     * @return true if all went well, false otherwise
+     */
+    bool switchAnchorAndFloatingBase(const std::string new_anchor);
 
 protected:
     std::vector<std::string> joint_names;
@@ -196,8 +205,18 @@ protected:
     void setJointNumbers(kinematic_chain& chain);
 
     /**
+     * @brief initWorldPose inits the inertial frame putting it on the plane idenfitied by
+     *                      the anchor link, on the point located by the projection of the
+     *                      base link position on that same plane.
+     * It will set the robot to a "nice" initial configuration and call setWorldPose(anchor)
+     * @param anchor        the anchor link
+     */
+    void initWorldPose();
+
+    /**
      * @brief updateWorldPose updates the world pose relative to the current robot state,
-     *        using anchor and offset calculated by the initWorldPose function
+     *        using anchor and offset calculated by the initWorldPose function.
+     * It will call setWorldPose(anchor_T_w,anchor)
      */
     void updateWorldPose();
 

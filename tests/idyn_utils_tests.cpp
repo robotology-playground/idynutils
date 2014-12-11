@@ -11,6 +11,14 @@ using namespace yarp::math;
 
 namespace {
 
+enum switchingTest {
+    SWITCH_ANCHOR = 1,
+    SWITCH_FLOATING_BASE = 2,
+    SWITCH_BOTH = 3
+};
+
+typedef std::pair<bool,switchingTest> switchingType;
+
 class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
@@ -55,7 +63,7 @@ protected:
 };
 
 class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
-                public ::testing::WithParamInterface<bool> {
+                public ::testing::WithParamInterface<switchingType> {
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -437,7 +445,8 @@ TEST_F(testIDynUtils, testAnchorSwitch)
 
 TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
 {
-    bool updateIDynAfterSwitch = GetParam();
+    bool updateIDynAfterSwitch = GetParam().first;
+    switchingTest whatToSwitch = GetParam().second;
 
     setGoodInitialPosition();
 
@@ -446,8 +455,26 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
               << w_T_l_wrist_l_sole << std::endl;
 
     std::string new_anchor = "r_sole";
-    std::cout   << "Setting new anchor in " << new_anchor << std::endl;
-    switchAnchor(new_anchor);
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << new_anchor << std::endl;
+            switchAnchor(new_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << new_anchor << std::endl;
+            setFloatingBaseLink(new_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << new_anchor << std::endl;
+            switchAnchorAndFloatingBase(new_anchor);
+            break;
+        }
+    }
     if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
 
 
@@ -466,8 +493,26 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
                 << w_T_l_wrist_r_sole << std::endl;
 
     std::string old_anchor = "l_sole";
-    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
-    switchAnchor(new_anchor);
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << old_anchor << std::endl;
+            switchAnchorAndFloatingBase(old_anchor);
+            break;
+        }
+    }
     if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
 
     w_T_l_wrist_l_sole = iDyn3_model.getPositionKDL(left_arm.index);
@@ -481,7 +526,8 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
 
 TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
 {
-    bool updateIDynAfterSwitch = GetParam();
+    bool updateIDynAfterSwitch = GetParam().first;
+    switchingTest whatToSwitch = GetParam().second;
 
     setGoodInitialPosition();
 
@@ -491,8 +537,26 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
     //cartesian_utils::printKDLFrame(w_T_CoM_l_sole);
 
     std::string new_anchor = "r_sole";
-    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
-    switchAnchor(new_anchor);
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << new_anchor << std::endl;
+            switchAnchor(new_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << new_anchor << std::endl;
+            setFloatingBaseLink(new_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << new_anchor << std::endl;
+            switchAnchorAndFloatingBase(new_anchor);
+            break;
+        }
+    }
     if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
 
     KDL::Vector w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
@@ -505,7 +569,6 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
     q.zero();
 
     updateiDyn3Model(q,true);
-    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
 
     w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
     std::cout   << "World to CoM Transform in q=0, anchor=r_sole:" << std::endl
@@ -513,9 +576,29 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
     //cartesian_utils::printKDLFrame(w_T_CoM_r_sole);
 
     std::string old_anchor = "l_sole";
-    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
-    switchAnchor(new_anchor);
-
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+    }
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
 
     w_T_CoM_l_sole = iDyn3_model.getCOMKDL();
     std::cout   << "World to CoM Transform in q=0, anchor=l_sole:" << std::endl
@@ -528,7 +611,12 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
 
 INSTANTIATE_TEST_CASE_P(SwitchAnchor,
                         testIDynUtilsWithAndWithoutUpdate,
-                        ::testing::Bool());
+                        ::testing::Values(std::make_pair(true,SWITCH_ANCHOR),
+                                          std::make_pair(false,SWITCH_ANCHOR),
+                                          std::make_pair(true,SWITCH_FLOATING_BASE),
+                                          std::make_pair(false,SWITCH_FLOATING_BASE),
+                                          std::make_pair(true,SWITCH_BOTH),
+                                          std::make_pair(false,SWITCH_BOTH)));
 } //namespace
 
 int main(int argc, char **argv) {

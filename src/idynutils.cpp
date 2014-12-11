@@ -502,3 +502,27 @@ bool iDynUtils::switchAnchor(const std::string& new_anchor)
     }
     return false;
 }
+
+bool iDynUtils::setFloatingBaseLink(const std::string new_base)
+{
+    int new_fb_index = iDyn3_model.getLinkIndex(new_base);
+    int old_fb_index = iDyn3_model.getFloatingBaseLink();
+    if(new_fb_index != -1 &&
+       old_fb_index != -1)
+    {
+        KDL::Frame old_world_T_new_world = iDyn3_model.getPositionKDL(old_fb_index, new_fb_index);
+        //anchor_T_world = anchor_T_world*old_world_T_new_world;
+        if(iDyn3_model.setFloatingBaseLink(new_fb_index))
+        {
+            setWorldPose(anchor_T_world, anchor_name);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool iDynUtils::switchAnchorAndFloatingBase(const std::string new_anchor)
+{
+    switchAnchor(new_anchor);
+    setFloatingBaseLink(new_anchor);
+}
