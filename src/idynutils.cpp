@@ -27,7 +27,9 @@ using namespace iCub::iDynTree;
 using namespace yarp::math;
 
 
-iDynUtils::iDynUtils(std::string robot_name_):
+iDynUtils::iDynUtils(const std::string robot_name_,
+		     const std::string urdf_path,
+		     const std::string srdf_path) :
     right_arm(walkman::robot::right_arm),
     right_leg(walkman::robot::right_leg),
     left_arm(walkman::robot::left_arm),
@@ -42,11 +44,24 @@ iDynUtils::iDynUtils(std::string robot_name_):
     g[2] = 9.81;
 
     std::string folder = std::string(robot_name_+"_folder");
-    std::string robot_folder = std::string(getenv(folder.c_str()));
+    // initialize the path for urdf
+    if( urdf_path != "" ) {
+	robot_urdf_folder = urdf_path;
+    }
+    else {
+	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
+	robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
+    }
     
-    robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
-    
-    robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
+    // initialize the path for srdf
+    if( srdf_path != "" ) {
+	robot_srdf_folder = srdf_path;
+    }
+    else {
+	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
+	robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
+    }
+	
     
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
@@ -63,37 +78,41 @@ iDynUtils::iDynUtils(std::string robot_name_):
     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
 }
 
-iDynUtils::iDynUtils(const std::string& robot_name_, const std::string& urdf_path,
-          const std::string& srdf_path):
-    right_arm(walkman::robot::right_arm),
-    right_leg(walkman::robot::right_leg),
-    left_arm(walkman::robot::left_arm),
-    left_leg(walkman::robot::left_leg),
-    torso(walkman::robot::torso),
-    robot_name(robot_name_),
-    robot_urdf_folder(urdf_path),
-    robot_srdf_folder(srdf_path),
-    g(3,0.0)
-{
-    worldT.resize(4,4);
-    worldT.eye();
-
-    g[2] = 9.81;
-
-    bool iDyn3Model_loaded = iDyn3Model();
-    if(!iDyn3Model_loaded){
-        std::cout<<"Problem Loading iDyn3Model"<<std::endl;
-        assert(iDyn3Model_loaded);}
-
-    bool setJointNames_ok = setJointNames();
-    if(!setJointNames_ok){
-        std::cout<<"Problems Setting Joint names"<<std::endl;
-        assert(setJointNames_ok);}
-
-    setControlledKinematicChainsJointNumbers();
-
-    zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
-}
+// iDynUtils::iDynUtils(const std::string& robot_name_, 
+// 		     const std::string& urdf_path,
+// 		     const std::string& srdf_path):
+//     right_arm(walkman::robot::right_arm),
+//     right_leg(walkman::robot::right_leg),
+//     left_arm(walkman::robot::left_arm),
+//     left_leg(walkman::robot::left_leg),
+//     torso(walkman::robot::torso),
+//     robot_name(robot_name_),
+//     robot_urdf_folder(urdf_path),
+//     robot_srdf_folder(srdf_path),
+//     g(3,0.0)
+// {
+//     std::cout << "Current robot_urdf_folder : " << robot_urdf_folder << std::endl;
+//     std::cout << "Current robot_srdf_folder : " << robot_srdf_folder << std::endl;
+//     
+//     worldT.resize(4,4);
+//     worldT.eye();
+// 
+//     g[2] = 9.81;
+// 
+//     bool iDyn3Model_loaded = iDyn3Model();
+//     if(!iDyn3Model_loaded){
+//         std::cout<<"Problem Loading iDyn3Model"<<std::endl;
+//         assert(iDyn3Model_loaded);}
+// 
+//     bool setJointNames_ok = setJointNames();
+//     if(!setJointNames_ok){
+//         std::cout<<"Problems Setting Joint names"<<std::endl;
+//         assert(setJointNames_ok);}
+// 
+//     setControlledKinematicChainsJointNumbers();
+// 
+//     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
+// }
 
 const std::vector<std::string>& iDynUtils::getJointNames() const {
     return this->joint_names;
