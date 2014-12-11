@@ -78,42 +78,6 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
 }
 
-// iDynUtils::iDynUtils(const std::string& robot_name_, 
-// 		     const std::string& urdf_path,
-// 		     const std::string& srdf_path):
-//     right_arm(walkman::robot::right_arm),
-//     right_leg(walkman::robot::right_leg),
-//     left_arm(walkman::robot::left_arm),
-//     left_leg(walkman::robot::left_leg),
-//     torso(walkman::robot::torso),
-//     robot_name(robot_name_),
-//     robot_urdf_folder(urdf_path),
-//     robot_srdf_folder(srdf_path),
-//     g(3,0.0)
-// {
-//     std::cout << "Current robot_urdf_folder : " << robot_urdf_folder << std::endl;
-//     std::cout << "Current robot_srdf_folder : " << robot_srdf_folder << std::endl;
-//     
-//     worldT.resize(4,4);
-//     worldT.eye();
-// 
-//     g[2] = 9.81;
-// 
-//     bool iDyn3Model_loaded = iDyn3Model();
-//     if(!iDyn3Model_loaded){
-//         std::cout<<"Problem Loading iDyn3Model"<<std::endl;
-//         assert(iDyn3Model_loaded);}
-// 
-//     bool setJointNames_ok = setJointNames();
-//     if(!setJointNames_ok){
-//         std::cout<<"Problems Setting Joint names"<<std::endl;
-//         assert(setJointNames_ok);}
-// 
-//     setControlledKinematicChainsJointNumbers();
-// 
-//     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
-// }
-
 const std::vector<std::string>& iDynUtils::getJointNames() const {
     return this->joint_names;
 }
