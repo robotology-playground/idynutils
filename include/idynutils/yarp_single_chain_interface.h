@@ -225,6 +225,39 @@ public:
      * @return true if able to succesfully write control mode and interaction mode for each joint
      */
     bool setControlTypes(const ControlTypes& controlTypes);
+    
+    
+    /**
+     * @brief getVoltage Get current voltage value for all the joints of the chain.
+     * 
+     * @param voltage the vector of voltages in [mV]
+     * @return true if the getting of the voltage was successful for all the joints of the chain. 
+     */
+    bool getVoltage(yarp::sig::Vector& voltage);
+    
+    /**
+     * @brief setVoltage set the specified voltage to all the joints of the chain.
+     * 
+     * @param voltage the vector of voltages in [mV]
+     * @return true if the setting of the voltage was successful for all the joints of the chain.
+     */
+    bool setVoltage(const yarp::sig::Vector& voltage);
+    
+    /**
+     * @brief Get current PID value for all the joints of the chain.
+     * 
+     * @param pid the vector of PID that will be filled by this function.
+     * @return true if the getting of the PID gains was successful for all the joints of the chain. 
+     */
+    bool getPIDGains(std::vector<yarp::dev::Pid>& pid);
+    
+    /**
+     * @brief setPIDGains set the desired PID gains for all the joints in the chain.  
+     * 
+     * @param pid the vector of PID gain values
+     * @return true if the setting of the PID gain was successful for all the joints in the chain
+     */
+    bool setPIDGains(const std::vector<yarp::dev::Pid>& pid);
 
     ControlTypes controlTypesFromVectors(const std::vector<int>& controlModes,
                                          const std::vector<yarp::dev::InteractionModeEnum>& interactionModes);
@@ -324,7 +357,7 @@ private:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
-
+    yarp::dev::IPidControlRaw *pidControlRaw;
 };
 
 

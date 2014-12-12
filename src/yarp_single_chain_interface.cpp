@@ -52,11 +52,13 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
+        temp=temp&&polyDriver.view(pidControlRaw);
         internal_isAvailable = temp;
     }
     if (!internal_isAvailable)
     {
         //TODO
+        std::cout << "One (or more) device driver are not available" << std::endl;
         return;
     }
     
@@ -552,4 +554,41 @@ inline yarp::sig::Vector yarp_single_chain_interface::convertMotorCommandFromSI(
 inline double yarp_single_chain_interface::convertMotorCommandFromSI(const double& in) const
 {
     return in * 180.0 / M_PI;
+}
+
+bool walkman::yarp_single_chain_interface::getVoltage(yarp::sig::Vector& voltage)
+{
+    bool success = true; 
+    for(int i = 0; i < this->joints_number && success; i++) {
+        success = pidControlRaw->getOutputRaw(i, &voltage[i]);
+    }
+    return success;
+}
+
+bool yarp_single_chain_interface::setVoltage(const yarp::sig::Vector& voltage)
+{
+    bool success = true; 
+    for(int i = 0; i < this->joints_number && success; i++) {
+        success = pidControlRaw->setOffsetRaw(i, voltage[i]);
+    }
+    return success;
+}
+
+bool walkman::yarp_single_chain_interface::getPIDGains(std::vector< Pid >& pid)
+{
+    bool success = true; 
+    for(int i = 0; i < this->joints_number && success; i++) {
+        success = pidControlRaw->getPidRaw(i, &pid[i]);
+    }
+    return success;
+}
+
+
+bool walkman::yarp_single_chain_interface::setPIDGains(const std::vector< Pid >& pid)
+{
+    bool success = true; 
+    for(int i = 0; i < this->joints_number && success; i++) {
+        success = pidControlRaw->setPidRaw(i, pid[i]);
+    }
+    return success;
 }
