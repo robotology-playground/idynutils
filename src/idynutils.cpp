@@ -32,7 +32,9 @@ using namespace yarp::math;
 // const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
 // const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
-iDynUtils::iDynUtils(std::string robot_name_, const std::string& anchor_name_):
+iDynUtils::iDynUtils(const std::string robot_name_,
+		     const std::string urdf_path,
+		     const std::string srdf_path) :
     right_arm(walkman::robot::right_arm),
     right_leg(walkman::robot::right_leg),
     left_arm(walkman::robot::left_arm),
@@ -40,7 +42,7 @@ iDynUtils::iDynUtils(std::string robot_name_, const std::string& anchor_name_):
     torso(walkman::robot::torso),
     robot_name(robot_name_),
     g(3,0.0),
-    anchor_name(anchor_name_)
+    anchor_name("l_sole")
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -48,11 +50,24 @@ iDynUtils::iDynUtils(std::string robot_name_, const std::string& anchor_name_):
     g[2] = 9.81;
 
     std::string folder = std::string(robot_name_+"_folder");
-    std::string robot_folder = std::string(getenv(folder.c_str()));
+    // initialize the path for urdf
+    if( urdf_path != "" ) {
+	robot_urdf_folder = urdf_path;
+    }
+    else {
+	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
+	robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
+    }
     
-    robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
-    
-    robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
+    // initialize the path for srdf
+    if( srdf_path != "" ) {
+	robot_srdf_folder = srdf_path;
+    }
+    else {
+	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
+	robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
+    }
+	
     
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
@@ -103,20 +118,21 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
     {
         auto chain=group.chains_[0];
         KDL::Chain temp;
-        //std::cout<<group.name_<<std::endl;
+        std::cout<<group.name_<<std::endl;
         
         robot.getChain(chain.first,chain.second,temp);
         if (!setChainIndex(chain.second,k_chain)) return false;
         for (KDL::Segment& segment: temp.segments)
         {
             if (segment.getJoint().getType()==KDL::Joint::None) continue;
-            //std::cout<<segment.getJoint().getName()<<std::endl;
+            std::cout<<segment.getJoint().getName()<<std::endl;
             k_chain.joint_names.push_back(segment.getJoint().getName());
         }
         return true;
     }
     return false;
 }
+
 
 bool iDynUtils::setJointNames()
 {
@@ -180,7 +196,7 @@ bool iDynUtils::iDyn3Model()
     std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
-
+    std::string model_folder, srdf_folder;
     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
 
     if (!urdf_model->initFile(robot_urdf_folder))
@@ -199,8 +215,9 @@ bool iDynUtils::iDyn3Model()
         else
         {
             moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
-            //std::ostringstream robot_info;
-            //moveit_robot_model->printModelInfo(robot_info);
+            std::ostringstream robot_info;
+            moveit_robot_model->printModelInfo(robot_info);
+            //ROS_INFO(robot_info.str().c_str());
         }
     }
     
@@ -255,9 +272,11 @@ bool iDynUtils::iDyn3Model()
 
    iDyn3_model.setJointTorqueBoundMax(tauMax);
     
-    yarp::sig::Vector a;
-    a = iDyn3_model.getJointTorqueMax();
-    
+
+    /*std::cout<<"MAX TAU: [ "<<iDyn3_model.getJointTorqueMax().toString()<<std::endl;
+    std::cout<<"Loaded COMAN in iDyn3!"<<std::endl;
+    //std::cout<<"#Links: "<<iDyn3_model.getNrOfLinks()<<std::endl;
+    */
     return true;
 }
 
@@ -525,4 +544,8 @@ bool iDynUtils::switchAnchorAndFloatingBase(const std::string new_anchor)
 {
     switchAnchor(new_anchor);
     setFloatingBaseLink(new_anchor);
+}
+
+unsigned int kinematic_chain::getNrOfDOFs() const {
+    return joint_numbers.size();
 }

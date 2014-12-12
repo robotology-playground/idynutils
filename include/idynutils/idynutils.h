@@ -46,7 +46,7 @@ public:
      * @brief getNrOfDOFs return # of dofs of the kinematic chain
      * @return # of dofs of the kinematic chain
      */
-    unsigned int getNrOfDOFs(){return joint_numbers.size();}
+    unsigned int getNrOfDOFs() const;
 
    /**
    * @brief chain_name is the name of the kinematic chain
@@ -76,7 +76,18 @@ public:
 class iDynUtils
 {
 public:
-    iDynUtils(std::string robot_name_="coman", const std::string& anchor_name_ = "l_sole");
+    /**
+     * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf
+     * @param robot_name_ is the robot name used by the idynutils
+     * @param urdf_path is the path to the urdf file
+     *   e.g. /home/enrico/my_robot/my_robot_urdf/my_robot.urdf
+     * @param srdf_path is the path to the srdf file
+     *   e.g. /home/enrico/my_robot/my_robot_srdf/my_robot.srdf
+     */
+    iDynUtils(const std::string robot_name_="coman",
+	      const std::string urdf_path="",
+	      const std::string srdf_path="");
+
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree iDyn3_model;
 
@@ -104,7 +115,6 @@ public:
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
      * @param set_world_pose do we update the base link pose wrt the world frame?
-     * @param support_foot what is the support foot link name in single stance mode?
      * @TODO in the future we should use the IMU + rgbdslam + FK
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
@@ -115,7 +125,6 @@ public:
      * @param q robot configuration
      * @param dq robot joint velocities
      * @param set_world_pose do we update the base link pose wrt the world frame?
-     * @param support_foot what is the support foot link name in single stance mode?
      * @TODO in the future we should use the IMU + rgbdslam + FK
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
@@ -139,6 +148,7 @@ public:
                           const yarp::sig::Vector& ddq_ref,
                           const bool set_world_pose = false);
 
+    yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
