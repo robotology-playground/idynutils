@@ -148,7 +148,7 @@ public:
                           const yarp::sig::Vector& ddq_ref,
                           const bool set_world_pose = false);
 
-    yarp::sig::Matrix getSimpleChainJacobian(const kinematic_chain chain, bool world_frame=false);
+
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
