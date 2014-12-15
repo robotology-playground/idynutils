@@ -345,39 +345,41 @@ TEST_F(testIDynUtils, testWorld)
     idynutils2.iDyn3_model.setFloatingBaseLink(idynutils2.left_leg.index);
 
     yarp::sig::Vector q(idynutils1.iDyn3_model.getNrOfDOFs(), 0.0);
-    for(unsigned int i = 0; i < q.size(); ++i)
-        q[i] = tests_utils::getRandomAngle();
+    for(unsigned int j = 0; j < 100; ++j) {
+        for(unsigned int i = 0; i < q.size(); ++i)
+            q[i] = tests_utils::getRandomAngle();
 
-    idynutils1.updateiDyn3Model(q, true);
-    idynutils2.updateiDyn3Model(q, true);
+        idynutils1.updateiDyn3Model(q, true);
+        idynutils2.updateiDyn3Model(q, true);
 
-    yarp::sig::Matrix w_T_bl = idynutils1.iDyn3_model.getWorldBasePose();
-    EXPECT_EQ(idynutils1.iDyn3_model.getLinkIndex("Waist"), 0);
-    yarp::sig::Matrix bl_T_lf = idynutils1.iDyn3_model.getPosition(0, idynutils1.left_leg.index);
-    yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
+        yarp::sig::Matrix w_T_bl = idynutils1.iDyn3_model.getWorldBasePose();
+        EXPECT_EQ(idynutils1.iDyn3_model.getLinkIndex("Waist"), 0);
+        yarp::sig::Matrix bl_T_lf = idynutils1.iDyn3_model.getPosition(0, idynutils1.left_leg.index);
+        yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
 
-    yarp::sig::Matrix w_T_bl2 = idynutils2.iDyn3_model.getWorldBasePose();
-    EXPECT_EQ(idynutils2.iDyn3_model.getLinkIndex("Waist"), 0);
+        yarp::sig::Matrix w_T_bl2 = idynutils2.iDyn3_model.getWorldBasePose();
+        EXPECT_EQ(idynutils2.iDyn3_model.getLinkIndex("Waist"), 0);
 
-    std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
-    std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
+        std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
+        std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
 
-    for(unsigned int i = 0; i < 4; ++i)
-    {
-        for(unsigned int j = 0; j < 4; ++j)
+        for(unsigned int i = 0; i < 4; ++i)
         {
-            EXPECT_NEAR(w_T_lf(i,j), w_T_bl2(i,j), 1E-15);
+            for(unsigned int j = 0; j < 4; ++j)
+            {
+                EXPECT_NEAR(w_T_lf(i,j), w_T_bl2(i,j), 1E-12);
+            }
         }
-    }
 
-    yarp::sig::Matrix w_T_rh = idynutils1.iDyn3_model.getPosition(idynutils1.right_arm.index);
-    yarp::sig::Matrix w_T_rh2 = idynutils2.iDyn3_model.getPosition(idynutils2.right_arm.index);
+        yarp::sig::Matrix w_T_rh = idynutils1.iDyn3_model.getPosition(idynutils1.right_arm.index);
+        yarp::sig::Matrix w_T_rh2 = idynutils2.iDyn3_model.getPosition(idynutils2.right_arm.index);
 
-    for(unsigned int i = 0; i < 4; ++i)
-    {
-        for(unsigned int j = 0; j < 4; ++j)
+        for(unsigned int i = 0; i < 4; ++i)
         {
-            EXPECT_NEAR(w_T_rh(i,j), w_T_rh2(i,j), 1E-15);
+            for(unsigned int j = 0; j < 4; ++j)
+            {
+                EXPECT_NEAR(w_T_rh(i,j), w_T_rh2(i,j), 1E-12);
+            }
         }
     }
 
@@ -393,12 +395,12 @@ TEST_F(testIDynUtils, testWorld)
     {
         for(unsigned int j = 0; j < 4; ++j)
         {
-            EXPECT_NEAR(w_T_lh(i,j), w_T_lh2(i,j), 1E-15);
+            EXPECT_NEAR(w_T_lh(i,j), w_T_lh2(i,j), 1E-12);
         }
     }
 
     for(unsigned int i = 0; i < 3; ++i)
-        EXPECT_NEAR(w_T_CoM(i), w_T_CoM2(i), 1E-15);
+        EXPECT_NEAR(w_T_CoM(i), w_T_CoM2(i), 1E-12);
 
 }
 
@@ -628,7 +630,8 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
     if(updateIDynAfterSwitch)
         com_model.updateiDyn3Model(q, true);
 
-    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-model.iDyn3_model.getCOMKDL()).Norm()<1E-5);
+    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
+    EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-model.iDyn3_model.getCOM()) < 1E-9);
 }
 
 INSTANTIATE_TEST_CASE_P(SwitchAnchor,
