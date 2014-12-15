@@ -62,8 +62,12 @@ protected:
     yarp::sig::Vector q;
 };
 
-class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
+class testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes : public testIDynUtils,
                 public ::testing::WithParamInterface<switchingType> {
+};
+
+class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
+                public ::testing::WithParamInterface<bool> {
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -443,7 +447,7 @@ TEST_F(testIDynUtils, testAnchorSwitch)
 
 }
 
-TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetPosition)
 {
     bool updateIDynAfterSwitch = GetParam().first;
     switchingTest whatToSwitch = GetParam().second;
@@ -523,8 +527,7 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetPosition)
 
 }
 
-
-TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetCoM)
 {
     bool updateIDynAfterSwitch = GetParam().first;
     switchingTest whatToSwitch = GetParam().second;
@@ -609,14 +612,38 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchWGetCoM)
 
 }
 
+TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
+{
+    bool updateIDynAfterSwitch = GetParam();
+
+    iDynUtils model;
+    iDynUtils com_model;
+
+    setGoodInitialPosition();
+    yarp::sig::Vector pos = this->iDyn3_model.getAng();
+
+    model.updateiDyn3Model(q,true);
+    com_model.updateiDyn3Model(q,true);
+    com_model.setFloatingBaseLink("l_sole");
+    if(updateIDynAfterSwitch)
+        com_model.updateiDyn3Model(q, true);
+
+    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-model.iDyn3_model.getCOMKDL()).Norm()<1E-5);
+}
+
 INSTANTIATE_TEST_CASE_P(SwitchAnchor,
-                        testIDynUtilsWithAndWithoutUpdate,
+                        testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes,
                         ::testing::Values(std::make_pair(true,SWITCH_ANCHOR),
                                           std::make_pair(false,SWITCH_ANCHOR),
                                           std::make_pair(true,SWITCH_FLOATING_BASE),
                                           std::make_pair(false,SWITCH_FLOATING_BASE),
                                           std::make_pair(true,SWITCH_BOTH),
                                           std::make_pair(false,SWITCH_BOTH)));
+
+INSTANTIATE_TEST_CASE_P(SwitchAnchor,
+                        testIDynUtilsWithAndWithoutUpdate,
+                        ::testing::Values(true,false));
+
 } //namespace
 
 int main(int argc, char **argv) {
