@@ -308,6 +308,8 @@ protected:
     std::string robot_name;
     std::string robot_urdf_folder;
     std::string robot_srdf_folder;
+
+    bool world_is_inited;
 };
 
 #endif // IDYNUTILS_H

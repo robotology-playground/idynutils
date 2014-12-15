@@ -42,7 +42,8 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     torso(walkman::robot::torso),
     robot_name(robot_name_),
     g(3,0.0),
-    anchor_name("l_sole")
+    anchor_name("l_sole"),
+    world_is_inited(false)
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -402,7 +403,6 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     iDyn3_model.setAng(q);
     iDyn3_model.setDAng(dq_ref);
     iDyn3_model.setD2Ang(ddq_ref);
-    static bool world_is_inited = false;
 
     // setting the world pose
 

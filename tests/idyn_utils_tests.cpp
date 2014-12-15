@@ -618,20 +618,36 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
 {
     bool updateIDynAfterSwitch = GetParam();
 
-    iDynUtils model;
+    iDynUtils normal_model;
     iDynUtils com_model;
 
     setGoodInitialPosition();
+
     yarp::sig::Vector pos = this->iDyn3_model.getAng();
 
-    model.updateiDyn3Model(q,true);
-    com_model.updateiDyn3Model(q,true);
+    normal_model.updateiDyn3Model(pos,true);
+    com_model.updateiDyn3Model(pos,true);
     com_model.setFloatingBaseLink("l_sole");
     if(updateIDynAfterSwitch)
-        com_model.updateiDyn3Model(q, true);
+        com_model.updateiDyn3Model(pos, true);
 
-    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
-    EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-model.iDyn3_model.getCOM()) < 1E-9);
+    std::cout << "[COM from com_model] " << com_model.iDyn3_model.getCOM().toString() << std::endl;
+    std::cout << "[COM from model] " << normal_model.iDyn3_model.getCOM().toString() << std::endl;
+    std::cout << "[left_foot from model] " << normal_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0).toString() << std::endl;
+
+    EXPECT_FALSE(normal_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0) == yarp::sig::Vector(3,0.0));
+    EXPECT_FALSE(com_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0) == yarp::sig::Vector(3,0.0));
+
+    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-normal_model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
+    EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-normal_model.iDyn3_model.getCOM()) < 1E-9);
+
+    for(unsigned int i = 0; i < 10; ++i) {
+        pos[left_arm.joint_numbers[0]] = pos[left_arm.joint_numbers[0]] + .1;
+        normal_model.updateiDyn3Model(pos,true);
+        com_model.updateiDyn3Model(pos,true);
+        EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-normal_model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
+        EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-normal_model.iDyn3_model.getCOM()) < 1E-9);
+    }
 }
 
 INSTANTIATE_TEST_CASE_P(SwitchAnchor,
@@ -643,7 +659,7 @@ INSTANTIATE_TEST_CASE_P(SwitchAnchor,
                                           std::make_pair(true,SWITCH_BOTH),
                                           std::make_pair(false,SWITCH_BOTH)));
 
-INSTANTIATE_TEST_CASE_P(SwitchAnchor,
+INSTANTIATE_TEST_CASE_P(CheckCoMConsistency,
                         testIDynUtilsWithAndWithoutUpdate,
                         ::testing::Values(true,false));
 
