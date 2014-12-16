@@ -549,3 +549,8 @@ bool iDynUtils::switchAnchorAndFloatingBase(const std::string new_anchor)
 unsigned int kinematic_chain::getNrOfDOFs() const {
     return joint_numbers.size();
 }
+
+std::string iDynUtils::getRobotName()
+{
+    return robot_name;
+}
