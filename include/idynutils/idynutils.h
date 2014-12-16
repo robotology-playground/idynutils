@@ -202,6 +202,12 @@ public:
      */
     bool switchAnchorAndFloatingBase(const std::string new_anchor);
 
+    /**
+     * @brief getRobotName
+     * @return robot_name
+     */
+    std::string getRobotName();
+
 protected:
     std::vector<std::string> joint_names;
     KDL::Tree robot_kdl_tree; // A KDL Tree
