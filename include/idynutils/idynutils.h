@@ -150,6 +150,7 @@ public:
 
 
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
+    boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
     const std::vector<std::string> &getJointNames() const;
@@ -304,7 +305,6 @@ protected:
      * @brief worldT Transformation between world and base_link
      */
     yarp::sig::Matrix worldT;
-    boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
 
     /**
      * @brief g gravity vector

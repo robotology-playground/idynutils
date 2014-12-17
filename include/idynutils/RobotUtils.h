@@ -22,6 +22,8 @@
 
 #include <idynutils/yarp_single_chain_interface.h>
 #include <idynutils/idynutils.h>
+#include <idynutils/yarp_IMU_interface.h>
+#include <idynutils/yarp_ft_interface.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
@@ -60,7 +62,7 @@ public:
     iDynUtils idynutils;
 
     /**
-     * @brief hasHands check whether thboth hands are available
+     * @brief hasHands check whether both hands are available
      * @return true if connection to both hands is successful
      */
     bool hasHands();

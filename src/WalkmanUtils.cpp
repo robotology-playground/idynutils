@@ -18,10 +18,6 @@
 */
 
 #include <idynutils/WalkmanUtils.h>
-#include <idynutils/idynutils.h>
-
-using namespace iCub::iDynTree;
-using namespace yarp::math;
 
 WalkmanUtils::WalkmanUtils(const std::string moduleName): RobotUtils(moduleName,"bigman")
 {}

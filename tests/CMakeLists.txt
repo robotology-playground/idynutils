@@ -51,10 +51,15 @@ ADD_EXECUTABLE(iDynUtilsTest    idyn_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(iDynUtilsTest ${TestLibs})
 add_dependencies(iDynUtilsTest GTest-ext idynutils)
 
+ADD_EXECUTABLE(RobotUtilsTest    robot_utils_tests.cpp)
+TARGET_LINK_LIBRARIES(RobotUtilsTest ${TestLibs})
+add_dependencies(RobotUtilsTest GTest-ext idynutils)
+
 ADD_EXECUTABLE(testUtilsTest     tests_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(testUtilsTest ${TestLibs})
 add_dependencies(testUtilsTest GTest-ext idynutils)
 
 add_test(NAME cartesian_utils_tests COMMAND CartesianUtilsTest)
 add_test(NAME idyn_utils_tests COMMAND iDynUtilsTest)
+add_test(NAME robot_utils_tests COMMAND RobotUtilsTest)
 add_test(NAME tests_utils_tests COMMAND testUtilsTest)

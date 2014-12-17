@@ -529,8 +529,6 @@ bool iDynUtils::setFloatingBaseLink(const std::string new_base)
     if(new_fb_index != -1 &&
        old_fb_index != -1)
     {
-        KDL::Frame old_world_T_new_world = iDyn3_model.getPositionKDL(old_fb_index, new_fb_index);
-        //anchor_T_world = anchor_T_world*old_world_T_new_world;
         if(iDyn3_model.setFloatingBaseLink(new_fb_index))
         {
             setWorldPose(anchor_T_world, anchor_name);

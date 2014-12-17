@@ -17,8 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#include <idynutils/comanutils.h>
-#include <idynutils/idynutils.h>
+#include <idynutils/RobotUtils.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;

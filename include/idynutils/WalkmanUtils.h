@@ -21,10 +21,6 @@
 #define WALKMANUTILS_H
 
 #include <idynutils/RobotUtils.h>
-#include <idynutils/yarp_single_chain_interface.h>
-#include <idynutils/idynutils.h>
-#include <yarp/math/Math.h>
-#include <yarp/sig/all.h>
 
 /**
  * @brief The WalkmanUtils class eases whole body control for the coman robot.

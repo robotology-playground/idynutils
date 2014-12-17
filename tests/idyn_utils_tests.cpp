@@ -3,6 +3,7 @@
 #include <idynutils/cartesian_utils.h>
 #include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
+#include <yarp/math/SVD.h>
 #include <kdl/frames_io.hpp>
 
 
@@ -17,7 +18,13 @@ enum switchingTest {
     SWITCH_BOTH = 3
 };
 
+enum walkingTestStartingFoot {
+    START_WITH_LEFT = 1,
+    START_WITH_RIGHT = 2
+};
+
 typedef std::pair<bool,switchingTest> switchingType;
+typedef std::pair<bool,walkingTestStartingFoot> walkingType;
 
 class testIDynUtils: public ::testing::Test, public iDynUtils
 {
@@ -68,6 +75,11 @@ class testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes : public testIDyn
 
 class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
                 public ::testing::WithParamInterface<bool> {
+};
+
+class testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching : public testIDynUtils,
+        public ::testing::WithParamInterface<walkingType> {
+
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -650,6 +662,127 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
     }
 }
 
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
+{
+    bool updateIDynAfterSwitch = GetParam().first;
+    walkingTestStartingFoot startingFootParam = GetParam().second;
+
+    int startingFoot, followingFoot;
+    std::string startingFootName, followingFootName;
+    if(startingFootParam == START_WITH_LEFT) {
+        startingFoot = left_leg.end_effector_index;
+        startingFootName = left_leg.end_effector_name;
+        followingFoot = right_leg.end_effector_index;
+        followingFootName = right_leg.end_effector_name;
+    } else if(startingFootParam == START_WITH_RIGHT) {
+        startingFoot = right_leg.end_effector_index;
+        startingFootName = right_leg.end_effector_name;
+        followingFoot = left_leg.end_effector_index;
+        followingFootName = left_leg.end_effector_name;
+    } else ASSERT_TRUE(false);
+
+    iDynUtils normal_model;
+    setGoodInitialPosition();
+
+    yarp::sig::Vector q_whole = this->iDyn3_model.getAng();
+
+    normal_model.updateiDyn3Model(q_whole,true);
+
+    yarp::sig::Matrix x;
+    yarp::sig::Matrix x_ref;
+    yarp::sig::Vector positionError(3,0.0);
+    yarp::sig::Vector orientationError(3,0.0);
+
+    yarp::sig::Matrix J;
+    yarp::sig::Vector b;
+
+    int foot = -1; int anchor = -1;
+    std::string footName, anchorName;
+    unsigned int n_steps = 0;
+
+    // try making 9 steps
+    for(n_steps = 0; n_steps < 9; ++n_steps) {
+        // we start with the foot specified by parameter
+        if(n_steps % 2 == 0) {
+            foot = startingFoot;
+            footName = startingFootName;
+            anchor = followingFoot;
+            anchorName = followingFootName;
+        }
+        else {
+            foot = followingFoot;
+            footName = followingFootName;
+            anchor = startingFoot;
+            anchorName = startingFootName;
+        }
+
+        KDL::Frame footBeforeSwitch = normal_model.iDyn3_model.getPositionKDL(foot);
+        KDL::Frame anchorBeforeSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+
+        std::cout << "Step "   << n_steps+1 << ": "    << footName   << " pose before switch"
+                  << std::endl << footBeforeSwitch   << std::endl;
+        std::cout << "Step "   << n_steps+1 << ": "    << anchorName << " pose before switch"
+                  << std::endl << anchorBeforeSwitch << std::endl;
+
+        normal_model.switchAnchorAndFloatingBase(anchorName);
+        std::cout   << "---------------------------------" << std::endl
+                    << "Switched anchor to " << anchorName << std::endl
+                    << "---------------------------------" << std::endl;
+        if(updateIDynAfterSwitch)
+            normal_model.updateiDyn3Model(q_whole, true);
+
+        KDL::Frame footAfterSwitch = normal_model.iDyn3_model.getPositionKDL(foot);
+        KDL::Frame anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+
+        std::cout << "Step "   << n_steps+1 << ": "   << footName   << " pose after switch"
+                  << std::endl << footAfterSwitch   << std::endl;
+        std::cout << "Step "   << n_steps+1 << ": "   << anchorName << " pose after switch"
+                  << std::endl << anchorAfterSwitch << std::endl;
+
+        EXPECT_TRUE(footAfterSwitch == footBeforeSwitch);
+        EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
+        x = normal_model.iDyn3_model.getPosition(foot);
+        x_ref = x;
+        // stepping 10cm forward
+        x_ref(0,3) = x_ref(0,3) + .01;
+
+        std::cout << "--------------------------------------" << std::endl
+                  << "Moving " << footName << " 10cm forward" << std::endl
+                  << "--------------------------------------" << std::endl;
+
+        int iterations = 0;
+
+        do {
+            ++iterations;
+            normal_model.updateiDyn3Model(q_whole,true);
+
+            x = normal_model.iDyn3_model.getPosition(foot);
+
+            cartesian_utils::computeCartesianError(x, x_ref,
+                                                   positionError, orientationError);
+            b = cat(positionError, -1.0*orientationError);
+
+            normal_model.iDyn3_model.getJacobian(foot, J);
+            J.removeCols(0,6);
+            q_whole += pinv(J,1E-7)*0.1*b;
+            normal_model.updateiDyn3Model(q_whole,true);
+
+            //std::cout << "e" << iterations << " = " << x_ref(0,3) - x(0,3) << std::endl;
+
+            anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+            EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
+        } while (norm(b) > 1e-10 && iterations < 1000);
+        ASSERT_TRUE (iterations < 1000) << "IK did not converge after 1000 iterations. Stopping";
+    }
+
+    std::cout << "Step "   << n_steps+1 << ": "   << footName   << " pose after last step"
+              << std::endl << normal_model.iDyn3_model.getPositionKDL(foot)   << std::endl;
+    std::cout << "Step "   << n_steps+1 << ": "   << anchorName << " pose after last step"
+              << std::endl << normal_model.iDyn3_model.getPositionKDL(anchor) << std::endl;
+}
+
 INSTANTIATE_TEST_CASE_P(SwitchAnchor,
                         testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes,
                         ::testing::Values(std::make_pair(true,SWITCH_ANCHOR),
@@ -662,6 +795,14 @@ INSTANTIATE_TEST_CASE_P(SwitchAnchor,
 INSTANTIATE_TEST_CASE_P(CheckCoMConsistency,
                         testIDynUtilsWithAndWithoutUpdate,
                         ::testing::Values(true,false));
+
+INSTANTIATE_TEST_CASE_P(CheckWorldConsistencyByWalking9Steps,
+                        testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching,
+                        ::testing::Values(std::make_pair(true,START_WITH_LEFT),
+                                          std::make_pair(false,START_WITH_LEFT),
+                                          std::make_pair(true,START_WITH_RIGHT),
+                                          std::make_pair(false,START_WITH_RIGHT)));
+
 
 } //namespace
 
