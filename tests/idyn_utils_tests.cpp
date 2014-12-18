@@ -338,6 +338,12 @@ TEST_F(testIDynUtils, testIDyn3Model)
                                      "generate file model before going to Enrico or Alessio complaining."<<std::endl;
 }
 
+// TODO check updating of iDyn, most important utility functions are "fast"
+TEST_F(testIDynUtils, checkTimings)
+{
+
+}
+
 TEST_F(testIDynUtils, testSetJointNames)
 {
     EXPECT_TRUE(this->setJointNames());

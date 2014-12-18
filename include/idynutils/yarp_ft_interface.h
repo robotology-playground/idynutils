@@ -29,7 +29,6 @@
 #include <mutex>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/BufferedPort.h>
-#define FT_ENABLED TRUE
 
 class yarp_ft_interface
 {
@@ -54,18 +53,17 @@ public:
     /**
      * @brief sense reads the sensed 6d wrench from the ft yarp port
      * @param wrench_sensed the sensed wrench
+     * @return true on success
      */
-    void sense(yarp::sig::Vector& wrench_sensed);
+    bool sense(yarp::sig::Vector& wrench_sensed);
     
     
 private:
     int ft_channels;
     yarp::sig::Vector input;
     
-    #if (FT_ENABLED == TRUE)
     yarp::dev::IAnalogSensor *FT_sensor;    
     yarp::dev::PolyDriver polyDriver_FT;
-    #endif
     
 };
 

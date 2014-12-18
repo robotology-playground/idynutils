@@ -47,17 +47,31 @@ RobotUtils::RobotUtils(const std::string moduleName,
     q_commanded_torso( torso.getNumberOfJoints() ),
     q_commanded_right_leg( right_leg.getNumberOfJoints() ),
     q_commanded_left_leg( left_leg.getNumberOfJoints() ),
-    idynutils( robotName, urdf_path, srdf_path )
+    idynutils( robotName, urdf_path, srdf_path ),
+    _moduleName(moduleName)
 {
     this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
     qdot_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
+
+    loadIMUSensors();
+    loadForceTorqueSensors();
 }
 
 bool RobotUtils::hasHands()
 {
     return left_hand.isAvailable && right_hand.isAvailable;
+}
+
+bool RobotUtils::hasftSensors()
+{
+    return this->ftSensors.size() > 0;
+}
+
+RobotUtils::ftPtrMap RobotUtils::getftSensors()
+{
+    return this->ftSensors;
 }
 
 const unsigned int& RobotUtils::getNumberOfJoints() const
@@ -332,6 +346,26 @@ yarp::sig::Vector &RobotUtils::senseTorque()
     return tau_sensed;
 }
 
+RobotUtils::ftReadings& RobotUtils::senseftSensors()
+{
+    ft_readings.clear();
+    for( ftPtrMap::iterator i = ftSensors.begin(); i != ftSensors.end(); ++i)
+    {
+        ft_readings[i->first] = i->second->sense();
+    }
+    return ft_readings;
+}
+
+bool RobotUtils::senseftSensor(const walkman::yarp_single_chain_interface &chain,
+                               yarp::sig::Vector &ftReading)
+{
+    if(ftSensors[chain.getChainName()]) {
+        ftPtr ft(ftSensors[chain.getChainName()]);
+        return ft->sense(ftReading);
+    }
+    return false;
+}
+
 bool RobotUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
                                     yarp::sig::Vector &q_right_hand)
 {
@@ -454,4 +488,91 @@ bool RobotUtils::handsAreInPositionMode()
 {
     return  (right_hand.isAvailable && right_hand.isInPositionMode()) &&
             (left_hand.isAvailable && left_hand.isInPositionMode());
+}
+
+
+bool RobotUtils::hasIMU()
+{
+    return (bool)this->IMU;
+}
+
+
+RobotUtils::IMUPtr RobotUtils::getIMU()
+{
+    return this->IMU;
+}
+
+
+bool RobotUtils::loadForceTorqueSensors()
+{
+    std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+    for(auto group: robot_groups)
+    {
+        if (group.name_ == walkman::robot::force_torque_sensors)
+        {
+            if(group.joints_.size() > 0) {
+                for(auto joint_name : group.joints_) {
+                    std::cout << "ft sensors found on joint " << joint_name;
+                    KinematicChains k_chains = this->getKinematicChains();
+
+                    for(auto chain : k_chains) {
+                        if(std::find(chain->joint_names.begin(),
+                                     chain->joint_names.end(), joint_name) != chain->joint_names.end()) {
+                            std::cout << " on chain " << chain->chain_name << ". Loading ft ..." << std::endl; std::cout.flush();
+
+                            try {
+                                ftPtr ft( new yarp_ft_interface(chain->chain_name,
+                                                                _moduleName,
+                                                                idynutils.getRobotName()) );
+                                ftSensors[chain->chain_name] = ft;
+                                std::cout << "ft on " << chain->chain_name << " loaded" << std::endl;
+                            } catch(...) {
+                                std::cerr << "Error loading " << chain->chain_name << " ft " << std::endl;
+                                return false;
+                            }
+                            break;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+    }
+    std::cout << "Robot does not have any ft sensor" << std::endl;
+    return false;
+}
+
+
+bool RobotUtils::loadIMUSensors()
+{
+    std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+    for(auto group: robot_groups)
+    {
+        if (group.name_ == walkman::robot::imu_sensors)
+        {
+            if(group.joints_.size() > 0) {
+                try {
+                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName));
+                    std::cout << "IMU loaded" << std::endl;
+                    return true;
+                } catch(...) {
+                    std::cerr << "Error loading IMU" << std::endl;
+                    return false;
+                }
+            }
+        }
+    }
+    std::cout << "Robot does not have an IMU" << std::endl;
+    return false;
+}
+
+RobotUtils::KinematicChains RobotUtils::getKinematicChains()
+{
+    KinematicChains k_chains;
+    k_chains.push_back(&idynutils.torso);
+    k_chains.push_back(&idynutils.right_arm);
+    k_chains.push_back(&idynutils.left_arm);
+    k_chains.push_back(&idynutils.right_leg);
+    k_chains.push_back(&idynutils.left_leg);
+    return k_chains;
 }

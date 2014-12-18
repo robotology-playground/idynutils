@@ -45,6 +45,8 @@ yarp_IMU_interface::~yarp_IMU_interface()
 
 void yarp_IMU_interface::_sense()
 {
+    if ( !imuReader.getPendingReads () ) return;
+
     yarp::os::Bottle* bottleData;
     bottleData = imuReader.read(false);
     if( !(bottleData == NULL) )

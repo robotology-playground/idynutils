@@ -36,6 +36,12 @@ public:
     typedef std::pair<yarp::sig::Vector, yarp::sig::Vector> Impedance;
     typedef std::map<std::string,  Impedance> ImpedanceMap;
     typedef std::map<std::string,  yarp::sig::Vector> VelocityMap;
+    typedef std::shared_ptr<yarp_IMU_interface> IMUPtr;
+    typedef std::shared_ptr<yarp_ft_interface> ftPtr;
+    typedef std::map<std::string, ftPtr> ftPtrMap;
+    typedef std::map<std::string, yarp::sig::Vector> ftReadings;
+    typedef kinematic_chain* KinematicChainPtr;
+    typedef std::list<KinematicChainPtr> KinematicChains;
 
     /**
      * @brief RobotUtils creates interfaces for all kinematic chains.
@@ -68,6 +74,30 @@ public:
     bool hasHands();
 
     /**
+     * @brief hasftSensors checks whether the robot provides and exposes at least a ft (Force/Torque) sensor
+     * @return true if at least a ft is present and connection to the ft sensor is successful
+     */
+    bool hasftSensors();
+
+    /**
+     * @brief getftSensors returns a map of available force torque sensors
+     * @return a map <std::string kinematic chain name, ftPtr ft>
+     */
+    ftPtrMap getftSensors();
+
+    /**
+     * @brief hasIMU checks whether the robot provides and exposes an IMU
+     * @return true if IMU is present and connection to the IMU is successful
+     */
+    bool hasIMU();
+
+    /**
+     * @brief getIMU returns a pointer to the IMU, if present
+     * @return a pointer the IMU, if present
+     */
+    IMUPtr getIMU();
+
+    /**
      * @brief sense returns position, velocities, torques sensed by the robot
      * @param q
      * @param qdot
@@ -94,6 +124,22 @@ public:
      * @return
      */
     yarp::sig::Vector& senseTorque();
+
+    /**
+     * @brief senseftSensors senses all available ft sensors
+     * @return a map <std::string chain name, yarp::sig::Vector ft Reading>
+     */
+    ftReadings& senseftSensors();
+
+    /**
+     * @brief senseftSensor senses the ft sensor on specified chain
+     * @param chain the yarp single chain interface corresponding to
+     *        the chain where the ft sensor is located.
+     * @param ftReading the reading back from the ft sensor
+     * @return
+     */
+    bool senseftSensor(const walkman::yarp_single_chain_interface& chain,
+                       yarp::sig::Vector& ftReading);
 
     /**
      * @brief sensePosition returns the position of the robot's joints
@@ -306,6 +352,12 @@ public:
      */
     bool isInImpedanceMode();
 
+    // TODO more methods should iterate over this list
+    /**
+     * @brief getKinematicChains returns a list of kinematic chains for the current robot
+     * @return a list of kinematic chains for this robot
+     */
+    KinematicChains getKinematicChains();
 private:
     unsigned int number_of_joints;
     /// @brief q_commanded_right_arm q sento to the right hand, in robot joint ordering
@@ -349,11 +401,35 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
 
+    std::string _moduleName;
+
+    IMUPtr IMU;
+
+    ftPtrMap ftSensors;
+
+    ftReadings ft_readings;
+
     walkman::yarp_single_chain_interface* const getChainByName(const std::string chain_name);
 
     bool bodyIsInPositionMode();
 
     bool handsAreInPositionMode();
+
+    /**
+     * @brief loadForceTorqueSensors checks whether the current robot has force/torque sensors (from the SRDF,
+     * then by checking on the robotInterface), then tries to allocate a number of sensors.
+     * Since the interface of force torque sensors accepts a kinematic chain name..
+     * @return true if succesfully parsed the SRDF, and the SRDF is consistent with the capabilities offered by the robot
+     */
+    bool loadForceTorqueSensors();
+
+    /**
+     * @brief loadIMUSensors checks whether the current robot has IMU sensors (from the SRDF,
+     * then by checking on the robotInterface), then tries to allocate a number of sensors.
+     * Since the interface of IMUs is thought ATM for robots with just one IMU, only the first KIMU will be loaded.
+     * @return true if succesfully parsed the SRDF, and the SRDF is consistent with the capabilities offered by the robot
+     */
+    bool loadIMUSensors();
 };
 
 #endif // ROBOTUTILS_H
