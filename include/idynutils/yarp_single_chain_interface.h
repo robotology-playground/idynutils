@@ -145,6 +145,8 @@ public:
      * \f$[N]\f$ is control mode is torque
      */
     virtual void move(const yarp::sig::Vector& u_d);
+    
+    bool moveDone();
 
     /**
      * @brief setReferenceSpeed set a desired reference speed vector for all joints in the chain

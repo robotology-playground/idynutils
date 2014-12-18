@@ -87,6 +87,17 @@ void RobotUtils::move(const yarp::sig::Vector &_q) {
     right_leg.move(q_commanded_right_leg);
 }
 
+bool RobotUtils::moveDone()
+{
+    bool moveDone = torso.moveDone() &&
+		    left_arm.moveDone() &&
+		    right_arm.moveDone() &&
+		    left_leg.moveDone() &&
+		    right_leg.moveDone();
+    return moveDone;
+}
+
+
 bool RobotUtils::moveHands(const yarp::sig::Vector &q_left_hand,
                            const yarp::sig::Vector &q_right_hand)
 {

@@ -372,6 +372,30 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     }
 }
 
+bool walkman::yarp_single_chain_interface::moveDone()
+{
+    bool moveDone;
+    switch (_controlType.toYarp().first)
+    {
+        case VOCAB_CM_POSITION_DIRECT:
+        case VOCAB_CM_IMPEDANCE_POS:
+	    
+            break;
+        case VOCAB_CM_POSITION:
+	    positionControl->checkMotionDone(&moveDone);
+            break;
+        case VOCAB_CM_TORQUE:
+
+            break;
+        case VOCAB_CM_IDLE:
+        default:
+
+            break;
+    }
+    return moveDone;
+}
+
+
 const int& yarp_single_chain_interface::getNumberOfJoints() const
 {
     return this->joints_number;

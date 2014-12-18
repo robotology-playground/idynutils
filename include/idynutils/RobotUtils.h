@@ -108,6 +108,8 @@ public:
      * @param q the desired joint position vector
      */
     void move(const yarp::sig::Vector &q);
+    
+    bool moveDone();
 
     /**
      * @brief move send potision commands to the robot hands.
