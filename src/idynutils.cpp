@@ -569,3 +569,8 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matri
 unsigned int kinematic_chain::getNrOfDOFs() const {
     return joint_numbers.size();
 }
+
+std::string iDynUtils::getRobotName()
+{
+    return robot_name;
+}

@@ -221,6 +221,8 @@ public:
      *         of generalized forces into joint torques
      */
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
+    
+    std::string getRobotName();
 
 protected:
     std::vector<std::string> joint_names;
