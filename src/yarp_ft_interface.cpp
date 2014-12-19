@@ -45,8 +45,11 @@ yarp_ft_interface::yarp_ft_interface(std::string kinematic_chain,
 
 yarp::sig::Vector yarp_ft_interface::sense()
 {
-    #if (FT_ENABLED==TRUE)
     FT_sensor->read(input);
-    #endif
     return input;
-} 
+}
+
+bool yarp_ft_interface::sense(yarp::sig::Vector &wrench_sensed)
+{
+    return ( FT_sensor->read(wrench_sensed) == yarp::dev::IAnalogSensor::AS_OK );
+}

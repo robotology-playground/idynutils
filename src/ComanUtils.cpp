@@ -18,10 +18,6 @@
 */
 
 #include <idynutils/comanutils.h>
-#include <idynutils/idynutils.h>
-
-using namespace iCub::iDynTree;
-using namespace yarp::math;
 
 ComanUtils::ComanUtils(const std::string moduleName) : RobotUtils(moduleName,"coman")
 {}

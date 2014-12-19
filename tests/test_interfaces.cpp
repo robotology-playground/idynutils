@@ -4,7 +4,18 @@
 #include <idynutils/yarp_IMU_interface.h>
 
 using namespace walkman;
+// TODO transform in unit test
+// TODO check reading from interfaces is "fast"
+//TEST_F(testInterface, checkTimings)
+//{
 
+//}
+// TODO check that readings on interfaces when no data is yet available
+//      result in the previous reading
+//TEST_F(testInterface, checkReadingsAreContinuous)
+//{
+
+//}
 int main(int argc, char* argv[])
 {
     yarp::os::Network yarp;

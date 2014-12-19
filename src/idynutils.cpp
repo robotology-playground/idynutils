@@ -26,6 +26,11 @@
 using namespace iCub::iDynTree;
 using namespace yarp::math;
 
+// Here is the path to the URDF/SRDF model
+// const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
+// const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
+// const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
+// const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
 
 iDynUtils::iDynUtils(const std::string robot_name_,
 		     const std::string urdf_path,
@@ -36,7 +41,9 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     left_leg(walkman::robot::left_leg),
     torso(walkman::robot::torso),
     robot_name(robot_name_),
-    g(3,0.0)
+    g(3,0.0),
+    anchor_name("l_sole"),
+    world_is_inited(false)
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -304,7 +311,7 @@ void iDynUtils::fromIDynToRobot(const yarp::sig::Vector& q,
     }
 }
 
-void iDynUtils::initWorldPose(const std::string& anchor)
+void iDynUtils::initWorldPose()
 {
     // saving old values of Ang,DAng,D2Ang
     yarp::sig::Vector Ang,DAng,D2Ang;
@@ -319,8 +326,7 @@ void iDynUtils::initWorldPose(const std::string& anchor)
     iDyn3_model.kinematicRNEA();
     iDyn3_model.computePositions();
 
-    this->anchor_name = anchor;
-    this->anchor_T_world = this->setWorldPose(anchor);
+    this->anchor_T_world = this->setWorldPose(anchor_name);
 
     // restoring old values for Ang,DAng,D2Ang
     iDyn3_model.setAng(Ang);
@@ -377,80 +383,21 @@ void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string
     iDyn3_model.setWorldBasePose(worldT);
 }
 
-
-KDL::Frame iDynUtils::setWorldPose(const yarp::sig::Vector& q,
-                             const yarp::sig::Vector& dq_ref,
-                             const yarp::sig::Vector& ddq_ref,
-                             const std::string& anchor)
-{
-    updateiDyn3Model(q,dq_ref,ddq_ref);
-    
-//     yarp::sig::Matrix worldT(4,4);
-//     worldT.eye();
-//     iDyn3_model.setWorldBasePose(worldT);
-//     yarp::sig::Vector foot_pose(3);
-//     foot_pose = iDyn3_model.getPosition(iDyn3_model.getLinkIndex("r_sole")).getCol(3).subVector(0,2);
-//     worldT(2,3) = -foot_pose(2);
-//     //std::cout<<"World Base Pose: "<<std::endl; cartesian_utils::printHomogeneousTransform(worldT);std::cout<<std::endl;
-//     iDyn3_model.setWorldBasePose(worldT);
-//     iDyn3_model.computePositions();
-    return setWorldPose(anchor);
-}
-
-/**
- * THIS IS AN EXAMPLE OF A MODULE USING THESE UTILS
- * 
- * q=yarp_interface.sense();
- * updateiDyn3Model(q);
- * receiveTargetPosition(waist_target_position);
- *  KDL::Frame waist_target_position;
- *  KDL::Frame from_waist_to_end_effector = fromYARPMatrixtoKDLFrame(iDyn3_model.getPosition(chain.index,true));
- *  KDL::Vector position_error=-from_waist_to_end_effector*waist_target_position;
- *  J=getSmallJacobian()
- *  q_dot=pinv(J)*(k*position_error) , k>0, q_dot.size=chain.size
- *  yarp_interface.moveSpeed(q_dot);
- */
-
-yarp::sig::Matrix iDynUtils::getSimpleChainJacobian(const kinematic_chain chain, bool world_frame)
-{    
-    yarp::sig::Matrix J_chain(6, chain.getNrOfDOFs()); J_chain.zero();
-    yarp::sig::Matrix J_whole;
-
-    int waist = 0;
-
-    std::cout.flush();
-
-    if(!iDyn3_model.getRelativeJacobian(chain.end_effector_index, waist, J_whole, world_frame)) {
-        std::cout << "Error computing Jacobian for chain " << chain.chain_name << std::endl;
-        return J_chain;
-    }
-
-    for(unsigned int i = 0; i < chain.getNrOfDOFs(); i++)
-    {
-        J_chain.setCol(i, J_whole.getCol(chain.joint_numbers[i]));
-    }
-
-    return J_chain;
-}
-
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
-                                 const bool set_world_pose,
-                                 const std::string &support_foot) {
-    this->updateiDyn3Model(q,zeros,zeros, set_world_pose, support_foot);
+                                 const bool set_world_pose) {
+    this->updateiDyn3Model(q,zeros,zeros, set_world_pose);
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const yarp::sig::Vector& dq,
-                                 const bool set_world_pose,
-                                 const std::string &support_foot) {
-    this->updateiDyn3Model(q,dq,zeros, set_world_pose, support_foot);
+                                 const bool set_world_pose) {
+    this->updateiDyn3Model(q,dq,zeros, set_world_pose);
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const yarp::sig::Vector& dq_ref,
                                  const yarp::sig::Vector& ddq_ref,
-                                 const bool set_world_pose,
-                                 const std::string &support_foot)
+                                 const bool set_world_pose)
 {
     // Here we set these values in our internal model
     iDyn3_model.setAng(q);
@@ -460,10 +407,11 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     // setting the world pose
 
     if(set_world_pose) {
-        if(anchor_name.length() == 0)
-            this->initWorldPose(support_foot);
-        this->updateWorldPose();
-    }
+            if(!world_is_inited) {
+                this->initWorldPose();
+                world_is_inited = true;
+            } this->updateWorldPose();
+        }
 
     // This is the fake Inertial Measure
     g.zero();
@@ -486,12 +434,8 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
-    //std::cout<<chain.end_effector_name<<" joint indices: \n";
-    for(auto joint_name: chain.joint_names){
-        //std::cout<<iDyn3_model.getDOFIndex(joint_name)<<" ";
+    for(auto joint_name: chain.joint_names)
         chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(joint_name));
-    }
-//    std::cout<<std::endl;
 }
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
@@ -502,7 +446,6 @@ void iDynUtils::setControlledKinematicChainsJointNumbers()
     setJointNumbers(left_leg);
     setJointNumbers(torso);
 }
-
 
 yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     yarp::sig::Matrix J_left_foot, J_right_foot, J_left_hand, J_right_hand;
@@ -565,6 +508,41 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matri
     return floatingBaseProjector;
 }
 
+bool iDynUtils::switchAnchor(const std::string& new_anchor)
+{
+    int link_index = iDyn3_model.getLinkIndex(new_anchor);
+    if(link_index != -1)
+    {
+        anchor_name = new_anchor;
+        anchor_T_world = iDyn3_model.getPositionKDL(link_index, true);
+        setWorldPose(anchor_T_world, anchor_name);
+
+        return true;
+    }
+    return false;
+}
+
+bool iDynUtils::setFloatingBaseLink(const std::string new_base)
+{
+    int new_fb_index = iDyn3_model.getLinkIndex(new_base);
+    int old_fb_index = iDyn3_model.getFloatingBaseLink();
+    if(new_fb_index != -1 &&
+       old_fb_index != -1)
+    {
+        if(iDyn3_model.setFloatingBaseLink(new_fb_index))
+        {
+            setWorldPose(anchor_T_world, anchor_name);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool iDynUtils::switchAnchorAndFloatingBase(const std::string new_anchor)
+{
+    switchAnchor(new_anchor);
+    setFloatingBaseLink(new_anchor);
+}
 
 unsigned int kinematic_chain::getNrOfDOFs() const {
     return joint_numbers.size();

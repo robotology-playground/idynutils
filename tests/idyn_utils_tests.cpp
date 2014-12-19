@@ -3,15 +3,34 @@
 #include <idynutils/cartesian_utils.h>
 #include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
+#include <yarp/math/SVD.h>
+#include <kdl/frames_io.hpp>
+
+
 
 using namespace yarp::math;
 
 namespace {
 
+enum switchingTest {
+    SWITCH_ANCHOR = 1,
+    SWITCH_FLOATING_BASE = 2,
+    SWITCH_BOTH = 3
+};
+
+enum walkingTestStartingFoot {
+    START_WITH_LEFT = 1,
+    START_WITH_RIGHT = 2
+};
+
+typedef std::pair<bool,switchingTest> switchingType;
+typedef std::pair<bool,walkingTestStartingFoot> walkingType;
+
 class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
-    testIDynUtils()
+    testIDynUtils():
+        q(iDyn3_model.getNrOfDOFs(),0.0)
     {
 
     }
@@ -27,6 +46,40 @@ protected:
     virtual void TearDown() {
 
     }
+
+    void setGoodInitialPosition() {
+
+        yarp::sig::Vector leg(left_leg.getNrOfDOFs(), 0.0);
+        leg[0] = -25.0 * M_PI/180.0;
+        leg[3] =  50.0 * M_PI/180.0;
+        leg[5] = -25.0 * M_PI/180.0;
+        fromRobotToIDyn(leg, q, left_leg);
+        fromRobotToIDyn(leg, q, right_leg);
+        yarp::sig::Vector arm(left_arm.getNrOfDOFs(), 0.0);
+        arm[0] = 20.0 * M_PI/180.0;
+        arm[1] = 10.0 * M_PI/180.0;
+        arm[3] = -80.0 * M_PI/180.0;
+        fromRobotToIDyn(arm, q, left_arm);
+        arm[1] = -arm[1];
+        fromRobotToIDyn(arm, q, right_arm);
+
+        updateiDyn3Model(q,true);
+    }
+
+    yarp::sig::Vector q;
+};
+
+class testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes : public testIDynUtils,
+                public ::testing::WithParamInterface<switchingType> {
+};
+
+class testIDynUtilsWithAndWithoutUpdate : public testIDynUtils,
+                public ::testing::WithParamInterface<bool> {
+};
+
+class testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching : public testIDynUtils,
+        public ::testing::WithParamInterface<walkingType> {
+
 };
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -285,6 +338,12 @@ TEST_F(testIDynUtils, testIDyn3Model)
                                      "generate file model before going to Enrico or Alessio complaining."<<std::endl;
 }
 
+// TODO check updating of iDyn, most important utility functions are "fast"
+TEST_F(testIDynUtils, checkTimings)
+{
+
+}
+
 TEST_F(testIDynUtils, testSetJointNames)
 {
     EXPECT_TRUE(this->setJointNames());
@@ -304,39 +363,41 @@ TEST_F(testIDynUtils, testWorld)
     idynutils2.iDyn3_model.setFloatingBaseLink(idynutils2.left_leg.index);
 
     yarp::sig::Vector q(idynutils1.iDyn3_model.getNrOfDOFs(), 0.0);
-    for(unsigned int i = 0; i < q.size(); ++i)
-        q[i] = tests_utils::getRandomAngle();
+    for(unsigned int j = 0; j < 100; ++j) {
+        for(unsigned int i = 0; i < q.size(); ++i)
+            q[i] = tests_utils::getRandomAngle();
 
-    idynutils1.updateiDyn3Model(q, true);
-    idynutils2.updateiDyn3Model(q, true);
+        idynutils1.updateiDyn3Model(q, true);
+        idynutils2.updateiDyn3Model(q, true);
 
-    yarp::sig::Matrix w_T_bl = idynutils1.iDyn3_model.getWorldBasePose();
-    EXPECT_EQ(idynutils1.iDyn3_model.getLinkIndex("Waist"), 0);
-    yarp::sig::Matrix bl_T_lf = idynutils1.iDyn3_model.getPosition(0, idynutils1.left_leg.index);
-    yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
+        yarp::sig::Matrix w_T_bl = idynutils1.iDyn3_model.getWorldBasePose();
+        EXPECT_EQ(idynutils1.iDyn3_model.getLinkIndex("Waist"), 0);
+        yarp::sig::Matrix bl_T_lf = idynutils1.iDyn3_model.getPosition(0, idynutils1.left_leg.index);
+        yarp::sig::Matrix w_T_lf = w_T_bl * bl_T_lf;
 
-    yarp::sig::Matrix w_T_bl2 = idynutils2.iDyn3_model.getWorldBasePose();
-    EXPECT_EQ(idynutils2.iDyn3_model.getLinkIndex("Waist"), 0);
+        yarp::sig::Matrix w_T_bl2 = idynutils2.iDyn3_model.getWorldBasePose();
+        EXPECT_EQ(idynutils2.iDyn3_model.getLinkIndex("Waist"), 0);
 
-    std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
-    std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
+        std::cout<<"w_T_lf: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_lf);
+        std::cout<<"w_T_bl2: "<<std::endl;cartesian_utils::printHomogeneousTransform(w_T_bl2);
 
-    for(unsigned int i = 0; i < 4; ++i)
-    {
-        for(unsigned int j = 0; j < 4; ++j)
+        for(unsigned int i = 0; i < 4; ++i)
         {
-            EXPECT_NEAR(w_T_lf(i,j), w_T_bl2(i,j), 1E-15);
+            for(unsigned int j = 0; j < 4; ++j)
+            {
+                EXPECT_NEAR(w_T_lf(i,j), w_T_bl2(i,j), 1E-12);
+            }
         }
-    }
 
-    yarp::sig::Matrix w_T_rh = idynutils1.iDyn3_model.getPosition(idynutils1.right_arm.index);
-    yarp::sig::Matrix w_T_rh2 = idynutils2.iDyn3_model.getPosition(idynutils2.right_arm.index);
+        yarp::sig::Matrix w_T_rh = idynutils1.iDyn3_model.getPosition(idynutils1.right_arm.index);
+        yarp::sig::Matrix w_T_rh2 = idynutils2.iDyn3_model.getPosition(idynutils2.right_arm.index);
 
-    for(unsigned int i = 0; i < 4; ++i)
-    {
-        for(unsigned int j = 0; j < 4; ++j)
+        for(unsigned int i = 0; i < 4; ++i)
         {
-            EXPECT_NEAR(w_T_rh(i,j), w_T_rh2(i,j), 1E-15);
+            for(unsigned int j = 0; j < 4; ++j)
+            {
+                EXPECT_NEAR(w_T_rh(i,j), w_T_rh2(i,j), 1E-12);
+            }
         }
     }
 
@@ -352,19 +413,402 @@ TEST_F(testIDynUtils, testWorld)
     {
         for(unsigned int j = 0; j < 4; ++j)
         {
-            EXPECT_NEAR(w_T_lh(i,j), w_T_lh2(i,j), 1E-15);
+            EXPECT_NEAR(w_T_lh(i,j), w_T_lh2(i,j), 1E-12);
         }
     }
 
     for(unsigned int i = 0; i < 3; ++i)
-        EXPECT_NEAR(w_T_CoM(i), w_T_CoM2(i), 1E-15);
+        EXPECT_NEAR(w_T_CoM(i), w_T_CoM2(i), 1E-12);
 
 }
 
-TEST_F(testIDynUtils, testComputeFloatingBaseProjectorFeetInContact)
+TEST_F(testIDynUtils, testAnchorSwitch)
 {
+    KDL::Frame w_T_b0 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"Initial World to base_link Transform:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b0);
+
+    setGoodInitialPosition();
+
+    KDL::Frame w_T_b1 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform before switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b1);
+
+    std::string new_anchor = "r_sole";
+    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
+    switchAnchor(new_anchor);
+
+    KDL::Frame w_T_b2 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform after switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b2);
+
+    EXPECT_TRUE(w_T_b1 == w_T_b2);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+
+    KDL::Frame w_T_b22 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform before switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b22);
+
+    std::string old_anchor = "l_sole";
+    std::cout<<"Setting old anchor in "<<old_anchor<<std::endl;
+    switchAnchor(new_anchor);
+
+
+    KDL::Frame w_T_b12 = iDyn3_model.getWorldBasePoseKDL();
+    std::cout<<"World to base_link Transform after switching:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_b12);
+
+    EXPECT_TRUE(w_T_b12 == w_T_b22);
+
+    //EXPECT_TRUE(w_T_b12 == w_T_b0);
 
 }
+
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetPosition)
+{
+    bool updateIDynAfterSwitch = GetParam().first;
+    switchingTest whatToSwitch = GetParam().second;
+
+    setGoodInitialPosition();
+
+    KDL::Frame w_T_l_wrist_l_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout << "World to l_wrist Transform in q=good, anchor=l_sole:" << std::endl
+              << w_T_l_wrist_l_sole << std::endl;
+
+    std::string new_anchor = "r_sole";
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << new_anchor << std::endl;
+            switchAnchor(new_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << new_anchor << std::endl;
+            setFloatingBaseLink(new_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << new_anchor << std::endl;
+            switchAnchorAndFloatingBase(new_anchor);
+            break;
+        }
+    }
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+
+    KDL::Frame w_T_l_wrist_r_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout   << "World to l_wrist Transform in q=good, anchor=r_sole:"  << std::endl
+                << w_T_l_wrist_r_sole << std::endl;
+
+    EXPECT_TRUE(w_T_l_wrist_l_sole == w_T_l_wrist_r_sole);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+
+    w_T_l_wrist_r_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout   << "World to l_wrist Transform in q=0, anchor=r_sole:" << std::endl
+                << w_T_l_wrist_r_sole << std::endl;
+
+    std::string old_anchor = "l_sole";
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << old_anchor << std::endl;
+            switchAnchorAndFloatingBase(old_anchor);
+            break;
+        }
+    }
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    w_T_l_wrist_l_sole = iDyn3_model.getPositionKDL(left_arm.index);
+    std::cout<<"World to l_wrist Transform in q=0, anchor=l_sole:"<<std::endl;
+    cartesian_utils::printKDLFrame(w_T_l_wrist_l_sole);
+
+    EXPECT_TRUE(w_T_l_wrist_l_sole == w_T_l_wrist_r_sole);
+
+}
+
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetCoM)
+{
+    bool updateIDynAfterSwitch = GetParam().first;
+    switchingTest whatToSwitch = GetParam().second;
+
+    setGoodInitialPosition();
+
+    KDL::Vector w_T_CoM_l_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=good, anchor=l_sole:" << std::endl
+                << w_T_CoM_l_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_CoM_l_sole);
+
+    std::string new_anchor = "r_sole";
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << new_anchor << std::endl;
+            switchAnchor(new_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << new_anchor << std::endl;
+            setFloatingBaseLink(new_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new floating base and anchor in " << new_anchor << std::endl;
+            switchAnchorAndFloatingBase(new_anchor);
+            break;
+        }
+    }
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    KDL::Vector w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=good, anchor=r_sole:" << std::endl
+                << w_T_CoM_r_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_l_wrist_r_sole);
+
+    EXPECT_TRUE(w_T_CoM_l_sole == w_T_CoM_r_sole);
+
+    q.zero();
+
+    updateiDyn3Model(q,true);
+
+    w_T_CoM_r_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=0, anchor=r_sole:" << std::endl
+                << w_T_CoM_r_sole << std::endl;
+    //cartesian_utils::printKDLFrame(w_T_CoM_r_sole);
+
+    std::string old_anchor = "l_sole";
+    switch(whatToSwitch) {
+        case SWITCH_ANCHOR:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            break;
+        }
+        case SWITCH_FLOATING_BASE:
+        {
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+        case SWITCH_BOTH:
+        {
+            std::cout   << "Setting new anchor in " << old_anchor << std::endl;
+            switchAnchor(old_anchor);
+            std::cout   << "Setting new floating base in " << old_anchor << std::endl;
+            setFloatingBaseLink(old_anchor);
+            break;
+        }
+    }
+    if(updateIDynAfterSwitch) updateiDyn3Model(q,true);
+
+    w_T_CoM_l_sole = iDyn3_model.getCOMKDL();
+    std::cout   << "World to CoM Transform in q=0, anchor=l_sole:" << std::endl
+                << w_T_CoM_l_sole << std::endl;
+    //cartesian_utils::printKDL(w_T_CoM_l_sole);
+
+    EXPECT_TRUE(w_T_CoM_l_sole == w_T_CoM_r_sole);
+
+}
+
+TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
+{
+    bool updateIDynAfterSwitch = GetParam();
+
+    iDynUtils normal_model;
+    iDynUtils com_model;
+
+    setGoodInitialPosition();
+
+    yarp::sig::Vector pos = this->iDyn3_model.getAng();
+
+    normal_model.updateiDyn3Model(pos,true);
+    com_model.updateiDyn3Model(pos,true);
+    com_model.setFloatingBaseLink("l_sole");
+    if(updateIDynAfterSwitch)
+        com_model.updateiDyn3Model(pos, true);
+
+    std::cout << "[COM from com_model] " << com_model.iDyn3_model.getCOM().toString() << std::endl;
+    std::cout << "[COM from model] " << normal_model.iDyn3_model.getCOM().toString() << std::endl;
+    std::cout << "[left_foot from model] " << normal_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0).toString() << std::endl;
+
+    EXPECT_FALSE(normal_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0) == yarp::sig::Vector(3,0.0));
+    EXPECT_FALSE(com_model.iDyn3_model.getPosition(left_leg.end_effector_index).submatrix(0,2,3,3).getCol(0) == yarp::sig::Vector(3,0.0));
+
+    EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-normal_model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
+    EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-normal_model.iDyn3_model.getCOM()) < 1E-9);
+
+    for(unsigned int i = 0; i < 10; ++i) {
+        pos[left_arm.joint_numbers[0]] = pos[left_arm.joint_numbers[0]] + .1;
+        normal_model.updateiDyn3Model(pos,true);
+        com_model.updateiDyn3Model(pos,true);
+        EXPECT_TRUE((com_model.iDyn3_model.getCOMKDL()-normal_model.iDyn3_model.getCOMKDL()).Norm() < 1E-9);
+        EXPECT_TRUE(norm2(com_model.iDyn3_model.getCOM()-normal_model.iDyn3_model.getCOM()) < 1E-9);
+    }
+}
+
+TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
+{
+    bool updateIDynAfterSwitch = GetParam().first;
+    walkingTestStartingFoot startingFootParam = GetParam().second;
+
+    int startingFoot, followingFoot;
+    std::string startingFootName, followingFootName;
+    if(startingFootParam == START_WITH_LEFT) {
+        startingFoot = left_leg.end_effector_index;
+        startingFootName = left_leg.end_effector_name;
+        followingFoot = right_leg.end_effector_index;
+        followingFootName = right_leg.end_effector_name;
+    } else if(startingFootParam == START_WITH_RIGHT) {
+        startingFoot = right_leg.end_effector_index;
+        startingFootName = right_leg.end_effector_name;
+        followingFoot = left_leg.end_effector_index;
+        followingFootName = left_leg.end_effector_name;
+    } else ASSERT_TRUE(false);
+
+    iDynUtils normal_model;
+    setGoodInitialPosition();
+
+    yarp::sig::Vector q_whole = this->iDyn3_model.getAng();
+
+    normal_model.updateiDyn3Model(q_whole,true);
+
+    yarp::sig::Matrix x;
+    yarp::sig::Matrix x_ref;
+    yarp::sig::Vector positionError(3,0.0);
+    yarp::sig::Vector orientationError(3,0.0);
+
+    yarp::sig::Matrix J;
+    yarp::sig::Vector b;
+
+    int foot = -1; int anchor = -1;
+    std::string footName, anchorName;
+    unsigned int n_steps = 0;
+
+    // try making 9 steps
+    for(n_steps = 0; n_steps < 9; ++n_steps) {
+        // we start with the foot specified by parameter
+        if(n_steps % 2 == 0) {
+            foot = startingFoot;
+            footName = startingFootName;
+            anchor = followingFoot;
+            anchorName = followingFootName;
+        }
+        else {
+            foot = followingFoot;
+            footName = followingFootName;
+            anchor = startingFoot;
+            anchorName = startingFootName;
+        }
+
+        KDL::Frame footBeforeSwitch = normal_model.iDyn3_model.getPositionKDL(foot);
+        KDL::Frame anchorBeforeSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+
+        std::cout << "Step "   << n_steps+1 << ": "    << footName   << " pose before switch"
+                  << std::endl << footBeforeSwitch   << std::endl;
+        std::cout << "Step "   << n_steps+1 << ": "    << anchorName << " pose before switch"
+                  << std::endl << anchorBeforeSwitch << std::endl;
+
+        normal_model.switchAnchorAndFloatingBase(anchorName);
+        std::cout   << "---------------------------------" << std::endl
+                    << "Switched anchor to " << anchorName << std::endl
+                    << "---------------------------------" << std::endl;
+        if(updateIDynAfterSwitch)
+            normal_model.updateiDyn3Model(q_whole, true);
+
+        KDL::Frame footAfterSwitch = normal_model.iDyn3_model.getPositionKDL(foot);
+        KDL::Frame anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+
+        std::cout << "Step "   << n_steps+1 << ": "   << footName   << " pose after switch"
+                  << std::endl << footAfterSwitch   << std::endl;
+        std::cout << "Step "   << n_steps+1 << ": "   << anchorName << " pose after switch"
+                  << std::endl << anchorAfterSwitch << std::endl;
+
+        EXPECT_TRUE(footAfterSwitch == footBeforeSwitch);
+        EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
+        x = normal_model.iDyn3_model.getPosition(foot);
+        x_ref = x;
+        // stepping 10cm forward
+        x_ref(0,3) = x_ref(0,3) + .01;
+
+        std::cout << "--------------------------------------" << std::endl
+                  << "Moving " << footName << " 10cm forward" << std::endl
+                  << "--------------------------------------" << std::endl;
+
+        int iterations = 0;
+
+        do {
+            ++iterations;
+            normal_model.updateiDyn3Model(q_whole,true);
+
+            x = normal_model.iDyn3_model.getPosition(foot);
+
+            cartesian_utils::computeCartesianError(x, x_ref,
+                                                   positionError, orientationError);
+            b = cat(positionError, -1.0*orientationError);
+
+            normal_model.iDyn3_model.getJacobian(foot, J);
+            J.removeCols(0,6);
+            q_whole += pinv(J,1E-7)*0.1*b;
+            normal_model.updateiDyn3Model(q_whole,true);
+
+            //std::cout << "e" << iterations << " = " << x_ref(0,3) - x(0,3) << std::endl;
+
+            anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
+            EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
+        } while (norm(b) > 1e-10 && iterations < 1000);
+        ASSERT_TRUE (iterations < 1000) << "IK did not converge after 1000 iterations. Stopping";
+    }
+
+    std::cout << "Step "   << n_steps+1 << ": "   << footName   << " pose after last step"
+              << std::endl << normal_model.iDyn3_model.getPositionKDL(foot)   << std::endl;
+    std::cout << "Step "   << n_steps+1 << ": "   << anchorName << " pose after last step"
+              << std::endl << normal_model.iDyn3_model.getPositionKDL(anchor) << std::endl;
+}
+
+INSTANTIATE_TEST_CASE_P(SwitchAnchor,
+                        testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes,
+                        ::testing::Values(std::make_pair(true,SWITCH_ANCHOR),
+                                          std::make_pair(false,SWITCH_ANCHOR),
+                                          std::make_pair(true,SWITCH_FLOATING_BASE),
+                                          std::make_pair(false,SWITCH_FLOATING_BASE),
+                                          std::make_pair(true,SWITCH_BOTH),
+                                          std::make_pair(false,SWITCH_BOTH)));
+
+INSTANTIATE_TEST_CASE_P(CheckCoMConsistency,
+                        testIDynUtilsWithAndWithoutUpdate,
+                        ::testing::Values(true,false));
+
+INSTANTIATE_TEST_CASE_P(CheckWorldConsistencyByWalking9Steps,
+                        testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching,
+                        ::testing::Values(std::make_pair(true,START_WITH_LEFT),
+                                          std::make_pair(false,START_WITH_LEFT),
+                                          std::make_pair(true,START_WITH_RIGHT),
+                                          std::make_pair(false,START_WITH_RIGHT)));
+
 
 } //namespace
 
