@@ -178,8 +178,6 @@ public:
      */
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
     
-    std::string getRobotName();
-
     /**
      * @brief switchAnchor switch the anchor frame according to the new given anchor name
      * @param new_anchor name
