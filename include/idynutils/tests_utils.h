@@ -24,8 +24,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <kdl/frames.hpp>
-#include <yarp/sig/Vector.h>
-
+#include <yarp/sig/all.h>
+#include <yarp/math/Math.h>
+#include <gtest/gtest.h>
+#include <gtest/internal/gtest-internal.h>
 
 class tests_utils
 {
@@ -99,6 +101,61 @@ public:
 
     static bool stopYarpServer();
 
+    static inline bool matrixAreEqual(const yarp::sig::Matrix& m0,
+                                      const yarp::sig::Matrix& m1)
+    {
+        bool sizeAreCompatible = (m0.rows() == m1.rows() &&
+                                  m0.cols() == m1.cols());
+        EXPECT_TRUE(sizeAreCompatible) << "Size of compared matrices "
+                                       << "are not compatible";
+        if(!sizeAreCompatible)
+            return false;
+
+        bool areEqual = true;
+        for(unsigned int r = 0; r < m0.rows(); ++r)
+            for(unsigned int c = 0; c < m0.cols(); ++c) {
+                EXPECT_DOUBLE_EQ(m0(r,c), m1(r,c)) << "Elements in ("
+                                                   << r << "," << c
+                                                   << ") are not equal";
+
+                using namespace testing::internal;
+                bool elementAreEqual;
+                FloatingPoint<double> lhs(m0(r,c));
+                FloatingPoint<double> rhs(m1(r,c));
+                elementAreEqual = lhs.AlmostEquals(rhs);
+
+                areEqual = areEqual & elementAreEqual;
+
+            }
+        return areEqual;
+    }
+
+    static inline bool vectorAreEqual(const yarp::sig::Vector& v0,
+                                      const yarp::sig::Vector& v1)
+    {
+        bool sizeAreCompatible = (v0.size() == v1.size());
+        EXPECT_TRUE(sizeAreCompatible) << "Size of compared vectors "
+                                       << "are not equal";
+        if(!sizeAreCompatible)
+            return false;
+
+        bool areEqual = true;
+        for(unsigned int s = 0; s < v0.size(); ++s) {
+            EXPECT_DOUBLE_EQ(v0(s), v1(s)) << "Elements in  ("
+                                               << s
+                                               << ") are not equal";
+
+            using namespace testing::internal;
+            bool elementAreEqual;
+            FloatingPoint<double> lhs(v0(s));
+            FloatingPoint<double> rhs(v1(s));
+            elementAreEqual = lhs.AlmostEquals(rhs);
+
+            areEqual = areEqual & elementAreEqual;
+
+        }
+        return areEqual;
+    }
 };
 
 #endif
