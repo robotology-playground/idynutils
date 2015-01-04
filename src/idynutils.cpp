@@ -226,7 +226,7 @@ bool iDynUtils::iDyn3Model()
 
     for(auto group: groups)
     {
-        if (group.name_==walkman::robot::sensors)
+        if (group.name_==walkman::robot::force_torque_sensors)
         {
             for (auto joint:group.joints_)
             {
