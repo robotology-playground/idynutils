@@ -250,6 +250,15 @@ public:
      * @return true if the getting of the PID gains was successful for all the joints of the chain. 
      */
     bool getPIDGains(std::vector<yarp::dev::Pid>& pid);
+	
+	/**
+     * @brief setPIDGain set the desired PID gain for the specified joints in the chain.  
+     * 
+	 * @param j joint index inside the chain
+     * @param pid the vector of PID gain values
+     * @return true if the setting of the PID gain was successful
+     */
+    bool setPIDGain(int j, yarp::dev::Pid pid);
     
     /**
      * @brief setPIDGains set the desired PID gains for all the joints in the chain.  
@@ -357,7 +366,7 @@ private:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
-    yarp::dev::IPidControlRaw *pidControlRaw;
+    yarp::dev::IPidControl *pidControl;
 };
 
 
