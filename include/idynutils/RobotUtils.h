@@ -136,7 +136,7 @@ public:
      * @param chain the yarp single chain interface corresponding to
      *        the chain where the ft sensor is located.
      * @param ftReading the reading back from the ft sensor
-     * @return
+     * @return true if succeed
      */
     bool senseftSensor(const walkman::yarp_single_chain_interface& chain,
                        yarp::sig::Vector& ftReading);
