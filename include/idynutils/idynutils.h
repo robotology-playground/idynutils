@@ -62,6 +62,12 @@ public:
    * @brief joint_names vector contains the name of DOFs in the kinematic chain
    */
   std::vector<std::string> joint_names;
+
+  /**
+   * @brief fixed_joint_names contains the name of fixed joints in the kinematic chain
+   */
+  std::vector<std::string> fixed_joint_names;
+
   /**
    * @brief end_effector_index index of the end effector
    */
@@ -153,7 +159,14 @@ public:
     boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
 
+    /**
+     * @brief getJointNames return a vector with ALL the joint names
+     * @return a vector with ALL the joint names
+     */
     const std::vector<std::string> &getJointNames() const;
+
+    const std::vector<std::string> &getFixedJointNames() const;
+
     yarp::sig::Vector zeros;
 
     enum DefaultProjectorContacts {
@@ -210,7 +223,16 @@ public:
     std::string getRobotName();
 
 protected:
+    /**
+     * @brief joint_names this vector contains ALL the active joint names
+     */
     std::vector<std::string> joint_names;
+
+    /**
+     * @brief fixed_joint_names this vector contains ALL the fixed joint names
+     */
+    std::vector<std::string> fixed_joint_names;
+
     KDL::Tree robot_kdl_tree; // A KDL Tree
 
     std::string anchor_name;    // last anchor used

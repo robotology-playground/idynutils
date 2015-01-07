@@ -26,6 +26,23 @@ enum walkingTestStartingFoot {
 typedef std::pair<bool,switchingTest> switchingType;
 typedef std::pair<bool,walkingTestStartingFoot> walkingType;
 
+class testFoo: public ::testing::Test
+{
+protected:
+    testFoo(){}
+    virtual ~testFoo() {
+
+    }
+
+    virtual void SetUp() {
+
+    }
+
+    virtual void TearDown() {
+
+    }
+};
+
 class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
@@ -81,6 +98,200 @@ class testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching : public testIDynUti
         public ::testing::WithParamInterface<walkingType> {
 
 };
+
+TEST_F(testFoo, testInitialization)
+{
+    std::string urdf_file = std::string(getenv("WALKMAN_ROOT")) + "/drc/idynutils/tests/bigman.urdf";
+    std::string srdf_file = std::string(getenv("WALKMAN_ROOT")) + "/drc/idynutils/tests/bigman.srdf";
+
+    iDynUtils idynutils("bigman", urdf_file, srdf_file);
+
+    //Test ALL active joint list
+    for(unsigned int i = 0; i < idynutils.moveit_robot_model->getActiveJointModels().size(); ++i)
+        EXPECT_TRUE(idynutils.getJointNames()[i] ==
+                    idynutils.moveit_robot_model->getActiveJointModels()[i]->getName());
+
+
+
+    std::vector<std::string> expected_kinematic_chains;
+    expected_kinematic_chains.push_back("left_arm");
+    expected_kinematic_chains.push_back("right_arm");
+    expected_kinematic_chains.push_back("left_leg");
+    expected_kinematic_chains.push_back("right_leg");
+    expected_kinematic_chains.push_back("torso");
+
+    EXPECT_TRUE(idynutils.left_arm.chain_name == expected_kinematic_chains[0]);
+    EXPECT_TRUE(idynutils.right_arm.chain_name == expected_kinematic_chains[1]);
+    EXPECT_TRUE(idynutils.left_leg.chain_name == expected_kinematic_chains[2]);
+    EXPECT_TRUE(idynutils.right_leg.chain_name == expected_kinematic_chains[3]);
+    EXPECT_TRUE(idynutils.torso.chain_name == expected_kinematic_chains[4]);
+
+    std::vector<std::string> expected_joints_left_arm;
+    expected_joints_left_arm.push_back("LShSag");
+    expected_joints_left_arm.push_back("LShLat");
+    expected_joints_left_arm.push_back("LShYaw");
+    expected_joints_left_arm.push_back("LElbj");
+    expected_joints_left_arm.push_back("LForearmPlate");
+    expected_joints_left_arm.push_back("LWrj1");
+    expected_joints_left_arm.push_back("LWrj2");
+    std::vector<std::string> expected_fixed_joints_left_arm;
+    expected_fixed_joints_left_arm.push_back("l_wrist_joint");
+    expected_fixed_joints_left_arm.push_back("l_arm_ft_joint");
+    std::vector<std::string> expected_joints_right_arm;
+    expected_joints_right_arm.push_back("RShSag");
+    expected_joints_right_arm.push_back("RShLat");
+    expected_joints_right_arm.push_back("RShYaw");
+    expected_joints_right_arm.push_back("RElbj");
+    expected_joints_right_arm.push_back("RForearmPlate");
+    expected_joints_right_arm.push_back("RWrj1");
+    expected_joints_right_arm.push_back("RWrj2");
+    std::vector<std::string> expected_fixed_joints_right_arm;
+    expected_fixed_joints_right_arm.push_back("r_wrist_joint");
+    expected_fixed_joints_right_arm.push_back("r_arm_ft_joint");
+    std::vector<std::string> expected_joints_torso;
+    expected_joints_torso.push_back("WaistLat");
+    expected_joints_torso.push_back("WaistSag");
+    expected_joints_torso.push_back("WaistYaw");
+    std::vector<std::string> expected_fixed_joints_torso;
+    expected_fixed_joints_torso.push_back("torso_joint");
+    std::vector<std::string> expected_joints_left_leg;
+    expected_joints_left_leg.push_back("LHipLat");
+    expected_joints_left_leg.push_back("LHipYaw");
+    expected_joints_left_leg.push_back("LHipSag");
+    expected_joints_left_leg.push_back("LKneeSag");
+    expected_joints_left_leg.push_back("LAnkSag");
+    expected_joints_left_leg.push_back("LAnkLat");
+    std::vector<std::string> expected_fixed_joints_left_leg;
+    expected_fixed_joints_left_leg.push_back("l_sole_joint");
+    expected_fixed_joints_left_leg.push_back("l_leg_ft_joint");
+    std::vector<std::string> expected_joints_right_leg;
+    expected_joints_right_leg.push_back("RHipLat");
+    expected_joints_right_leg.push_back("RHipYaw");
+    expected_joints_right_leg.push_back("RHipSag");
+    expected_joints_right_leg.push_back("RKneeSag");
+    expected_joints_right_leg.push_back("RAnkSag");
+    expected_joints_right_leg.push_back("RAnkLat");
+    std::vector<std::string> expected_fixed_joints_right_leg;
+    expected_fixed_joints_right_leg.push_back("r_sole_joint");
+    expected_fixed_joints_right_leg.push_back("r_leg_ft_joint");
+
+    for(unsigned int i = 0; i < expected_joints_left_arm.size(); ++i){
+        EXPECT_TRUE(expected_joints_left_arm[i] == idynutils.left_arm.joint_names[i]);
+        EXPECT_TRUE(expected_joints_right_arm[i] == idynutils.right_arm.joint_names[i]);}
+    for(unsigned int i = 0; i < expected_fixed_joints_left_arm.size(); ++i){
+        EXPECT_TRUE(expected_fixed_joints_left_arm[i] == idynutils.left_arm.fixed_joint_names[i]);
+        EXPECT_TRUE(expected_fixed_joints_right_arm[i] == idynutils.right_arm.fixed_joint_names[i]);}
+    for(unsigned int i = 0; i < expected_joints_torso.size(); ++i)
+        EXPECT_TRUE(expected_joints_torso[i] == idynutils.torso.joint_names[i]);
+    for(unsigned int i = 0; i < expected_fixed_joints_torso.size(); ++i)
+        EXPECT_TRUE(expected_fixed_joints_torso[i] == idynutils.torso.fixed_joint_names[i]);
+    for(unsigned int i = 0; i < expected_joints_left_leg.size(); ++i){
+        EXPECT_TRUE(expected_joints_left_leg[i] == idynutils.left_leg.joint_names[i]);
+        EXPECT_TRUE(expected_joints_right_leg[i] == idynutils.right_leg.joint_names[i]);}
+    for(unsigned int i = 0; i < expected_fixed_joints_left_leg.size(); ++i){
+        EXPECT_TRUE(expected_fixed_joints_left_leg[i] == idynutils.left_leg.fixed_joint_names[i]);
+        EXPECT_TRUE(expected_fixed_joints_right_leg[i] == idynutils.right_leg.fixed_joint_names[i]);}
+
+    for(unsigned int i = 0; i < idynutils.getJointNames().size(); ++i){
+        bool found = false;
+
+        std::vector<std::string>::iterator it = std::find(idynutils.left_arm.joint_names.begin(),
+                                                          idynutils.left_arm.joint_names.end(),
+                                                          idynutils.getJointNames()[i]);
+        if (it != idynutils.left_arm.joint_names.end())
+            found = true;
+
+        if(!found)
+        {
+            it = std::find(idynutils.right_arm.joint_names.begin(), idynutils.right_arm.joint_names.end(),
+                           idynutils.getJointNames()[i]);
+            if (it != idynutils.right_arm.joint_names.end())
+                found = true;
+        }
+
+        if(!found)
+        {
+            it = std::find(idynutils.right_leg.joint_names.begin(), idynutils.right_leg.joint_names.end(),
+                           idynutils.getJointNames()[i]);
+            if (it != idynutils.right_leg.joint_names.end())
+                found = true;
+        }
+
+        if(!found)
+        {
+            it = std::find(idynutils.left_leg.joint_names.begin(), idynutils.left_leg.joint_names.end(),
+                           idynutils.getJointNames()[i]);
+            if (it != idynutils.left_leg.joint_names.end())
+                found = true;
+        }
+
+        if(!found)
+        {
+            it = std::find(idynutils.torso.joint_names.begin(), idynutils.torso.joint_names.end(),
+                           idynutils.getJointNames()[i]);
+            if (it != idynutils.torso.joint_names.end())
+                found = true;
+        }
+
+        EXPECT_TRUE(found);}
+
+        std::vector<std::string> fixed_joints;
+        fixed_joints.push_back("base_joint");
+        fixed_joints.push_back("l_ankle_joint");
+        fixed_joints.push_back("l_sole_joint");
+        fixed_joints.push_back("l_foot_lower_left_joint");
+        fixed_joints.push_back("l_foot_lower_right_joint");
+        fixed_joints.push_back("l_foot_upper_left_joint");
+        fixed_joints.push_back("l_foot_upper_right_joint");
+        fixed_joints.push_back("l_toe_joint");
+        fixed_joints.push_back("l_leg_ft_joint");
+        fixed_joints.push_back("r_ankle_joint");
+        fixed_joints.push_back("r_sole_joint");
+        fixed_joints.push_back("r_foot_lower_left_joint");
+        fixed_joints.push_back("r_foot_lower_right_joint");
+        fixed_joints.push_back("r_foot_upper_left_joint");
+        fixed_joints.push_back("r_foot_upper_right_joint");
+        fixed_joints.push_back("r_toe_joint");
+        fixed_joints.push_back("r_leg_ft_joint");
+        fixed_joints.push_back("l_arm_ft_joint");
+        fixed_joints.push_back("l_handj");
+        fixed_joints.push_back("l_hand_lower_left_joint");
+        fixed_joints.push_back("l_hand_lower_right_joint");
+        fixed_joints.push_back("l_hand_upper_left_joint");
+        fixed_joints.push_back("l_hand_upper_right_joint");
+        fixed_joints.push_back("l_wrist_joint");
+        fixed_joints.push_back("r_arm_ft_joint");
+        fixed_joints.push_back("r_handj");
+        fixed_joints.push_back("r_hand_lower_left_joint");
+        fixed_joints.push_back("r_hand_lower_right_joint");
+        fixed_joints.push_back("r_hand_upper_left_joint");
+        fixed_joints.push_back("r_hand_upper_right_joint");
+        fixed_joints.push_back("r_wrist_joint");
+        fixed_joints.push_back("neck_joint");
+        fixed_joints.push_back("center_bottom_led_frame_joint");
+        fixed_joints.push_back("center_top_led_frame_joint");
+        fixed_joints.push_back("head_imu_joint");
+        fixed_joints.push_back("hokuyo_joint");
+        fixed_joints.push_back("head_hokuyo_joint");
+        fixed_joints.push_back("left_camera_frame_joint");
+        fixed_joints.push_back("left_camera_optical_frame_joint");
+        fixed_joints.push_back("left_led_frame_joint");
+        fixed_joints.push_back("right_camera_frame_joint");
+        fixed_joints.push_back("right_camera_optical_frame_joint");
+        fixed_joints.push_back("right_led_frame_joint");
+        fixed_joints.push_back("torso_joint");
+        fixed_joints.push_back("gaze_joint");
+        fixed_joints.push_back("imu_joint");
+
+        for(unsigned int i = 0; i < idynutils.getFixedJointNames().size(); ++i){
+            std::vector<std::string>::iterator it = find(fixed_joints.begin(), fixed_joints.end(),
+                    idynutils.getFixedJointNames()[i]);
+            EXPECT_TRUE(it != fixed_joints.end())<<idynutils.getFixedJointNames()[i]<<" not found at index "<<i<<std::endl;}
+
+
+
+
+}
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
 {

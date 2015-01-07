@@ -22,15 +22,15 @@
 #include <idynutils/yarp_single_chain_interface.h>
 #include <yarp/math/SVD.h>
 #include <idynutils/cartesian_utils.h>
+#include <moveit/robot_model/joint_model.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
 
-// Here is the path to the URDF/SRDF model
-// const std::string coman_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_urdf/urdf/coman.urdf";
-// const std::string coman_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/IITComanRosPkg/coman_srdf/srdf/coman.srdf";
-// const std::string atlas_model_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/urdf/urdf/atlas_v3.urdf";
-// const std::string atlas_srdf_folder = std::string(getenv("YARP_WORKSPACE")) + "/atlas_description/srdf/srdf/atlas_v3.srdf";
+#define GREEN "\033[0;32m"
+#define YELLOW "\033[0;33m"
+#define RED "\033[0;31m"
+#define DEFAULT "\033[0m"
 
 iDynUtils::iDynUtils(const std::string robot_name_,
 		     const std::string urdf_path,
@@ -89,6 +89,10 @@ const std::vector<std::string>& iDynUtils::getJointNames() const {
     return this->joint_names;
 }
 
+const std::vector<std::string>& iDynUtils::getFixedJointNames() const {
+    return this->fixed_joint_names;
+}
+
 
 bool iDynUtils::findGroupChain(const std::vector<std::string>& chain_list, const std::vector<srdf::Model::Group>& groups,std::string chain_name, int& group_index)
 {
@@ -119,16 +123,32 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
     {
         auto chain=group.chains_[0];
         KDL::Chain temp;
-        std::cout<<group.name_<<std::endl;
         
         robot.getChain(chain.first,chain.second,temp);
         if (!setChainIndex(chain.second,k_chain)) return false;
         for (KDL::Segment& segment: temp.segments)
         {
-            if (segment.getJoint().getType()==KDL::Joint::None) continue;
-            std::cout<<segment.getJoint().getName()<<std::endl;
-            k_chain.joint_names.push_back(segment.getJoint().getName());
+            if (segment.getJoint().getType()==KDL::Joint::None)
+                k_chain.fixed_joint_names.push_back(segment.getJoint().getName());
+            else
+                k_chain.joint_names.push_back(segment.getJoint().getName());
         }
+
+        std::vector<std::string> explicit_joints = group.joints_;
+        for(unsigned int i = 0; i < explicit_joints.size(); ++i)
+        {
+            if(moveit_robot_model->getJointModel(explicit_joints[i])->getType() == moveit::core::JointModel::FIXED)
+                k_chain.fixed_joint_names.push_back(explicit_joints[i]);
+            else
+                k_chain.joint_names.push_back(explicit_joints[i]);
+        }
+
+        std::cout<<GREEN<<" "<<group.name_<<DEFAULT<<std::endl;
+        for(unsigned int i = 0; i < k_chain.joint_names.size(); ++i)
+            std::cout<<"    "<<k_chain.joint_names[i]<<"  Active"<<std::endl;
+        for(unsigned int i = 0; i < k_chain.fixed_joint_names.size(); ++i)
+            std::cout<<"    "<<k_chain.fixed_joint_names[i]<<"  Fixed"<<std::endl;
+
         return true;
     }
     return false;
@@ -137,15 +157,13 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
 
 bool iDynUtils::setJointNames()
 {
-    
-    std::vector<std::string> temp_joint_names = this->moveit_robot_model->getJointModelNames();
-    this->joint_names.resize(iDyn3_model.getNrOfDOFs(), "unknown_joint_name");
-    for(unsigned int i = 0; i < temp_joint_names.size(); ++i) {
-        int jointIndex = iDyn3_model.getDOFIndex(temp_joint_names[i]);
-        if(jointIndex>=0 &&
-           jointIndex <= iDyn3_model.getNrOfDOFs())
-            joint_names[jointIndex] = temp_joint_names[i];
-    }
+    //Index 0 is a string that do not exists!
+    for(unsigned int i = 1; i < moveit_robot_model->getJointModels().size(); ++i){
+        if(moveit_robot_model->getJointModels()[i]->getType() == moveit::core::JointModel::FIXED)
+            fixed_joint_names.push_back(moveit_robot_model->getJointModels()[i]->getName());
+        else
+            joint_names.push_back(moveit_robot_model->getJointModels()[i]->getName());}
+
 
     bool expected_left_arm = false;
     bool expected_right_arm = false;
@@ -153,10 +171,10 @@ bool iDynUtils::setJointNames()
     bool expected_right_leg = false;
     bool expected_torso = false;
 
+    std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
     std::vector<srdf::Model::Group> coman_groups = robot_srdf->getGroups();
     for(auto group: coman_groups)
     {
-        std::cout<<group.name_<<std::endl;
         if (group.name_==walkman::robot::chains)
         {
             int group_index=-1;
