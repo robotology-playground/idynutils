@@ -35,14 +35,15 @@ class yarp_ft_interface
 public:
     /**
      * @brief yarp_ft_interface
-     * @param kinematic_chain the name of the kinematic chain where the ft resides, as specified in the sdf
+     * @param deviceId the name of the kinematic chain where the ft resides, as specified in the sdf
      * (assuming there is a ft sensor at the distal link of a kinematic chain)
      * @param robot_name the name of the robot, will be used to open polydrivers
      * @param module_prefix_with_no_slash the module name
      */
-    yarp_ft_interface(std::string kinematic_chain,
+    yarp_ft_interface(std::string deviceId,
                       std::string module_prefix_with_no_slash,
-                      std::string robot_name);
+                      std::string robot_name,
+                      std::string reference_frame = "");
 
     /**
      * @brief sense reads the sensed 6d wrench from the ft yarp port
@@ -56,11 +57,18 @@ public:
      * @return true on success
      */
     bool sense(yarp::sig::Vector& wrench_sensed);
+
+    /**
+     * @brief getReferenceFrame where the forces/torques are measured
+     * @return a string with the reference frame where the ft are measured
+     */
+    std::string getReferenceFrame(){return _reference_frame;}
     
     
 private:
     int ft_channels;
     yarp::sig::Vector input;
+    std::string _reference_frame;
     
     yarp::dev::IAnalogSensor *FT_sensor;    
     yarp::dev::PolyDriver polyDriver_FT;

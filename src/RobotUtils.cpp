@@ -367,11 +367,11 @@ RobotUtils::ftReadings& RobotUtils::senseftSensors()
     return ft_readings;
 }
 
-bool RobotUtils::senseftSensor(const walkman::yarp_single_chain_interface &chain,
+bool RobotUtils::senseftSensor(const std::string &ft_frame,
                                yarp::sig::Vector &ftReading)
 {
-    if(ftSensors[chain.getChainName()]) {
-        ftPtr ft(ftSensors[chain.getChainName()]);
+    if(ftSensors[ft_frame]) {
+        ftPtr ft(ftSensors[ft_frame]);
         return ft->sense(ftReading);
     }
     return false;
@@ -522,28 +522,27 @@ bool RobotUtils::loadForceTorqueSensors()
         if (group.name_ == walkman::robot::force_torque_sensors)
         {
             if(group.joints_.size() > 0) {
-                for(auto joint_name : group.joints_) {
+                for(auto joint_name : group.joints_)
+                {
                     std::cout << "ft sensors found on joint " << joint_name;
-                    KinematicChains k_chains = this->getKinematicChains();
 
-                    for(auto chain : k_chains) {
-                        if(std::find(chain->joint_names.begin(),
-                                     chain->joint_names.end(), joint_name) != chain->joint_names.end()) {
-                            std::cout << " on chain " << chain->chain_name << ". Loading ft ..." << std::endl; std::cout.flush();
+                    std::string reference_frame = idynutils.moveit_robot_model->getJointModel(joint_name)->
+                            getChildLinkModel()->getName();
 
-                            try {
-                                ftPtr ft( new yarp_ft_interface(chain->chain_name,
-                                                                _moduleName,
-                                                                idynutils.getRobotName()) );
-                                ftSensors[chain->chain_name] = ft;
-                                std::cout << "ft on " << chain->chain_name << " loaded" << std::endl;
-                            } catch(...) {
-                                std::cerr << "Error loading " << chain->chain_name << " ft " << std::endl;
-                                return false;
-                            }
-                            break;
-                        }
-                    }
+                    std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
+
+                    try {
+                        std::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
+                                                        _moduleName,
+                                                        idynutils.getRobotName(), reference_frame) );
+
+                        ftSensors[reference_frame] = ft;
+                        ft_reference_frames.push_back(reference_frame);
+
+                        std::cout << "ft on " << reference_frame << " loaded" << std::endl;
+                    } catch(...) {
+                        std::cerr << "Error loading " << reference_frame << " ft " << std::endl;
+                        return false;}
                 }
                 return true;
             }

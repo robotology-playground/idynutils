@@ -20,16 +20,16 @@
 #include <idynutils/yarp_ft_interface.h>
 #include <yarp/dev/IAnalogSensor.h>
 
-yarp_ft_interface::yarp_ft_interface(std::string kinematic_chain,
+yarp_ft_interface::yarp_ft_interface(std::string deviceId,
                                      std::string module_prefix_with_no_slash,
-                                     std::string robot_name)
+                                     std::string robot_name, std::string reference_frame)
 {
     
     yarp::os::Property FT_prop;
     FT_prop.put("device", "analogsensorclient");
     FT_prop.put("robotName", robot_name.c_str());
-    FT_prop.put("remote", "/"+robot_name+"/"+kinematic_chain+"/analog:o/forceTorque");
-    FT_prop.put("local", "/"+robot_name+"/"+module_prefix_with_no_slash+"/"+kinematic_chain+"/analog:i/forceTorque");
+    FT_prop.put("remote", "/"+robot_name+"/"+deviceId+"/analog:o/forceTorque");
+    FT_prop.put("local", "/"+robot_name+"/"+module_prefix_with_no_slash+"/"+deviceId+"/analog:i/forceTorque");
     FT_prop.put("rate", 1);
     
     polyDriver_FT.open(FT_prop);
@@ -38,7 +38,8 @@ yarp_ft_interface::yarp_ft_interface(std::string kinematic_chain,
     
     polyDriver_FT.view(this->FT_sensor);
     ft_channels = FT_sensor->getChannels();
-    
+
+    _reference_frame = reference_frame;
 }
 
 

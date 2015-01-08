@@ -67,6 +67,8 @@ public:
     walkman::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
 
+    std::vector<std::string> ft_reference_frames;
+
     /**
      * @brief hasHands check whether both hands are available
      * @return true if connection to both hands is successful
@@ -138,7 +140,7 @@ public:
      * @param ftReading the reading back from the ft sensor
      * @return true if succeed
      */
-    bool senseftSensor(const walkman::yarp_single_chain_interface& chain,
+    bool senseftSensor(const std::string &ft_frame,
                        yarp::sig::Vector& ftReading);
 
     /**
