@@ -126,6 +126,37 @@ public:
 class cartesian_utils
 {
 public:
+    /**
+     * @brief computeFootZMP compute the MEASURED ZMP, on a foot in contact, given forces and torques measured
+     * from an FT sensor. The formula used is based on:
+     *      "Introduction to Humanoid Robots" by Shuuji Kajita et al., pag. 79-80
+     *
+     *          if fz > fz_threshold
+     *              ZMPx = -(tau_y + fx*d)/fz
+     *              ZMPy = (tau_x - fy*d)/fz
+     *              ZMPz = -d
+     *          else
+     *              ZMPx = 0
+     *              ZMPy = 0
+     *              ZMPz = 0
+     *
+     * where d is the height of the sensor w.r.t. the sole. If
+     * The ZMP position is computed w.r.t. the sensor frame.
+     *
+     * @param forces vector of forces measured from the FT sensor
+     * @param torques vector of torques measured from the FT sensor
+     * @param d height of the sensor w.r.t. the sole
+     * @param fz_threshold if fz goes over this threshold then ZMP is computed
+     * @return a vector with the ZMP position
+     */
+    static yarp::sig::Vector computeFootZMP(const yarp::sig::Vector& forces, const yarp::sig::Vector& torques,
+                                         const double d, const double fz_threshold);
+
+    static yarp::sig::Vector computeZMP(const yarp::sig::Vector& Lforces, const yarp::sig::Vector& Ltorques,
+                                        const yarp::sig::Vector& LZMP,
+                                        const yarp::sig::Vector& Rforces, const yarp::sig::Vector& Rtorques,
+                                        const yarp::sig::Vector& RZMP, const double fz_threshold);
+
 
     /**
      * @brief computeCartesianError orientation and position error
@@ -278,6 +309,7 @@ public:
     static yarp::sig::Matrix& computeHessian( const yarp::sig::Vector &x,
                                               GradientVector &vec,
                                               const double &step = 1E-3);
+
 };
 
 #endif

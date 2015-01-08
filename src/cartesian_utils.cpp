@@ -23,6 +23,34 @@
 using namespace yarp::math;
 
 #define toDeg(X) (X*180.0/M_PI)
+yarp::sig::Vector cartesian_utils::computeFootZMP(const yarp::sig::Vector &forces, const yarp::sig::Vector &torques,
+                                                  const double d, const double fz_threshold)
+{
+    yarp::sig::Vector ZMP(3, 0.0);
+
+    if(forces[2] > fz_threshold && fz_threshold >= 0.0){
+        ZMP[0] = -1.0 * (torques[1] + forces[0]*d)/forces[2];
+        ZMP[1] = (torques[0] - forces[1]*d)/forces[2];
+        ZMP[2] = -d;}
+    return ZMP;
+}
+
+yarp::sig::Vector cartesian_utils::computeZMP(const yarp::sig::Vector& Lforces, const yarp::sig::Vector& Ltorques,
+                                        const yarp::sig::Vector& LZMP,
+                                        const yarp::sig::Vector& Rforces, const yarp::sig::Vector& Rtorques,
+                                        const yarp::sig::Vector& RZMP,
+                                        const double fz_threshold)
+{
+    yarp::sig::Vector ZMP(3, 0.0);
+
+    if((Lforces[2] > fz_threshold || Rforces[2] > fz_threshold)&& fz_threshold >= 0.0){
+        ZMP[0] = ( LZMP[0]*Lforces[2] + RZMP[0]*Rforces[2] )/( Lforces[2] + Rforces[2] );
+        ZMP[1] = ( LZMP[1]*Lforces[2] + RZMP[1]*Rforces[2] )/( Lforces[2] + Rforces[2] );
+        ZMP[2] = (LZMP[2] + RZMP[2])/2.0;
+    }
+
+    return ZMP;
+}
 
 void cartesian_utils::homogeneousMatrixFromRPY(yarp::sig::Matrix& T,
                               const double x, const double y, const double z,
