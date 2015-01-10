@@ -35,20 +35,18 @@ yarp::sig::Vector cartesian_utils::computeFootZMP(const yarp::sig::Vector &force
     return ZMP;
 }
 
-yarp::sig::Vector cartesian_utils::computeZMP(const yarp::sig::Vector& Lforces, const yarp::sig::Vector& Ltorques,
-                                        const yarp::sig::Vector& LZMP,
-                                        const yarp::sig::Vector& Rforces, const yarp::sig::Vector& Rtorques,
-                                        const yarp::sig::Vector& RZMP,
-                                        const double fz_threshold)
+yarp::sig::Vector cartesian_utils::computeZMP(const double Lforce_z, const double Rforce_z,
+                                              const yarp::sig::Vector& ZMPL, const yarp::sig::Vector& ZMPR,
+                                              const double fz_threshold)
 {
     yarp::sig::Vector ZMP(3, 0.0);
 
-    if((Lforces[2] > fz_threshold || Rforces[2] > fz_threshold)&& fz_threshold >= 0.0){
-        ZMP[0] = ( LZMP[0]*Lforces[2] + RZMP[0]*Rforces[2] )/( Lforces[2] + Rforces[2] );
-        ZMP[1] = ( LZMP[1]*Lforces[2] + RZMP[1]*Rforces[2] )/( Lforces[2] + Rforces[2] );
-        ZMP[2] = (LZMP[2] + RZMP[2])/2.0;
-    }
+    if((Lforce_z > fz_threshold || Rforce_z > fz_threshold) &&
+        fz_threshold >= 0.0){
 
+        ZMP = (ZMPL*Lforce_z + ZMPR*Rforce_z)/(Lforce_z+Rforce_z);
+        ZMP[2] = ZMPL[2];
+    }
     return ZMP;
 }
 
