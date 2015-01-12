@@ -53,14 +53,6 @@ public:
                              std::vector<KDL::Vector>& ch);
     //void setRansacDistanceThr(const double x){_ransac_distance_thr = x;}
 
-/**
-  * @brief getSupportPolygonPoints
-  * @param points return a list of points express in a frame F
-  *        oriented like the world frame and with origin
-  *        on the CoM projection in the support polygon
-  */
- static void getSupportPolygonPoints( iDynUtils &robot,
-                                      std::list<KDL::Vector>& points);
 private:
     double _ransac_distance_thr;
     pcl::PointCloud<pcl::PointXYZ>::Ptr _pointCloud;
