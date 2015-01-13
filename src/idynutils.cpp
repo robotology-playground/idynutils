@@ -558,8 +558,7 @@ bool iDynUtils::setFloatingBaseLink(const std::string new_base)
 
 bool iDynUtils::switchAnchorAndFloatingBase(const std::string new_anchor)
 {
-    switchAnchor(new_anchor);
-    setFloatingBaseLink(new_anchor);
+    return switchAnchor(new_anchor) && setFloatingBaseLink(new_anchor);
 }
 
 unsigned int kinematic_chain::getNrOfDOFs() const {
