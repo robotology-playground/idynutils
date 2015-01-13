@@ -242,6 +242,8 @@ public:
      * @return true if the setting of the voltage was successful for all the joints of the chain.
      */
     bool setVoltage(const yarp::sig::Vector& voltage);
+	
+    bool setVoltage(int j, double voltage);
     
     /**
      * @brief Get current PID value for all the joints of the chain.

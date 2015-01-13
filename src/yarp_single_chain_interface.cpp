@@ -565,11 +565,17 @@ bool walkman::yarp_single_chain_interface::getVoltage(yarp::sig::Vector& voltage
     return success;
 }
 
+bool yarp_single_chain_interface::setVoltage(int j, double voltage)
+{
+	return pidControl->setOffset(j, voltage);
+}
+
+
 bool yarp_single_chain_interface::setVoltage(const yarp::sig::Vector& voltage)
 {
     bool success = true; 
     for(int i = 0; i < this->joints_number && success; i++) {
-        success = pidControlRaw->setOffsetRaw(i, voltage[i]);
+        success = pidControl->setOffset(i, voltage[i]);
     }
     return success;
 }
