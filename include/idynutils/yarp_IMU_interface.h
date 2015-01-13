@@ -35,10 +35,11 @@ public:
      * @brief yarp_IMU_interface creates a reader for the IMU port
      * @param readerName a unique ID for the reader
      * @param useSI do we want to use SI units? (default to true)
+     * @param robot_name the name of the robot
      */
     yarp_IMU_interface(std::string readerName,
-                       bool useSI = true);
-
+                       bool useSI = true,std::string robot_name="");
+    
     ~yarp_IMU_interface();
     /**
      * @brief sense
@@ -78,7 +79,6 @@ private:
     yarp::sig::Vector _output;
     /**
      * @brief imuReader buffered port, connected to the /inertial port
-     * @TODO  check that the /inertial port exists for this to work!
      */
     yarp::os::BufferedPort<yarp::os::Bottle> imuReader;
 

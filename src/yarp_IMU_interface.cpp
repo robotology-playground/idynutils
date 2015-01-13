@@ -21,16 +21,37 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 
 yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
-                                       bool useSI)
+                                       bool useSI, std::string robot_name)
     : _output(1), _useSI(useSI), _ok(false)
 {
     _output.resize(9,0.0);
 
     std::string portName = "/" + readerName + "/inertial:i";
     if(imuReader.open(portName)) {
-        if(yarp::os::Network::connect("/inertial",portName.c_str())) {
-            _ok = true;
+        if (yarp::os::NetworkBase::exists("/inertial"))
+        {
+            if(yarp::os::Network::connect("/inertial",portName.c_str())) {
+                _ok = true;
+                std::cout<<"IMU: connected from /inertial to "<<portName<<std::endl;
+            }
         }
+        else if (yarp::os::NetworkBase::exists("/"+robot_name+"/inertial"))
+        {
+            if(yarp::os::Network::connect("/"+robot_name+"/inertial",portName.c_str())) {
+                _ok = true;
+                std::cout<<"IMU: connected from /"<<robot_name<<"/inertial to "<<portName<<std::endl;
+            }
+        }
+        else
+        {
+            std::cout<<"IMU: no remote IMU port found, probably wrong name"<<std::endl;
+            _ok=false;
+        }
+    }
+    else
+    {
+        std::cout<<"IMU: could not open local port "<<portName<<std::endl;
+        _ok=false;
     }
 }
 
@@ -45,6 +66,12 @@ yarp_IMU_interface::~yarp_IMU_interface()
 
 void yarp_IMU_interface::_sense()
 {
+#ifndef      NDEBUG //loss of performance and lot of output, but in debug mode this is what you want
+    if (!_ok) {
+        std::cout<<"IMU: you are reading output from a disconnected IMU, values are wrong!!"<<std::endl;
+        return;
+    }
+#endif
     if ( !imuReader.getPendingReads () ) return;
 
     yarp::os::Bottle* bottleData;

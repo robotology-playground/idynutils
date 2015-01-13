@@ -70,7 +70,7 @@ private:
     yarp::sig::Vector input;
     std::string _reference_frame;
     
-    yarp::dev::IAnalogSensor *FT_sensor;    
+    yarp::dev::IAnalogSensor *FT_sensor=0;
     yarp::dev::PolyDriver polyDriver_FT;
     
 };
