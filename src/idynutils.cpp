@@ -138,9 +138,17 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
         for(unsigned int i = 0; i < explicit_joints.size(); ++i)
         {
             if(moveit_robot_model->getJointModel(explicit_joints[i])->getType() == moveit::core::JointModel::FIXED)
-                k_chain.fixed_joint_names.push_back(explicit_joints[i]);
+            {
+                auto it = std::find (k_chain.fixed_joint_names.begin(), k_chain.fixed_joint_names.end(), explicit_joints[i]);
+                if (it == k_chain.fixed_joint_names.end())
+                    k_chain.fixed_joint_names.push_back(explicit_joints[i]);
+            }
             else
-                k_chain.joint_names.push_back(explicit_joints[i]);
+            {
+                auto it = std::find (k_chain.joint_names.begin(), k_chain.joint_names.end(), explicit_joints[i]);
+                if (it == k_chain.joint_names.end())
+                    k_chain.joint_names.push_back(explicit_joints[i]);
+            }
         }
 
         std::cout<<GREEN<<" "<<group.name_<<DEFAULT<<std::endl;
@@ -248,7 +256,10 @@ bool iDynUtils::iDyn3Model()
         {
             for (auto joint:group.joints_)
             {
-                joint_sensor_names.push_back(joint);
+                if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED)
+                    joint_sensor_names.push_back(joint);
+                else
+                    assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
             }
         }
         if (group.name_==walkman::robot::base)
