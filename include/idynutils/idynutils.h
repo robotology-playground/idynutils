@@ -83,7 +83,22 @@ class iDynUtils
 {
 public:
     /**
-     * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf
+     * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf.
+     * Some assumptions are done in the constructor:
+     *
+     *      anchor_name = "l_sole"
+     *
+     * and these links are in contact with the environment:
+     *
+     *      "l_foot_lower_left_link"
+     *      "l_foot_lower_right_link"
+     *      "l_foot_upper_left_link"
+     *      "l_foot_upper_right_link"
+     *      "r_foot_lower_left_link"
+     *      "r_foot_lower_right_link"
+     *      "r_foot_upper_left_link"
+     *      "r_foot_upper_right_link"
+     *
      * @param robot_name_ is the robot name used by the idynutils
      * @param urdf_path is the path to the urdf file
      *   e.g. /home/enrico/my_robot/my_robot_urdf/my_robot.urdf
@@ -267,6 +282,19 @@ public:
      */
     const std::string getRobotSRDFPath() const;
 
+   /**
+    * @brief getSupportPolygonPoints given a vector of reference frames that we consider in contact wit the ground,
+    * it return a list of points express in a frame F oriented like the world frame and with origin on the CoM
+    * projection in the support polygon
+    * @param points a list of points in the same reference frame
+    * @return false if the vector of reference frames is empty. True otherwise.
+    */
+   bool getSupportPolygonPoints(std::list<KDL::Vector>& points);
+
+   const std::list<std::string>& getLinksInContact();
+
+   void setLinksInContact(const std::list<std::string>& list_links_in_contact);
+
 protected:
     /**
      * @brief joint_names this vector contains ALL the active joint names
@@ -277,6 +305,11 @@ protected:
      * @brief fixed_joint_names this vector contains ALL the fixed joint names
      */
     std::vector<std::string> fixed_joint_names;
+
+    /**
+     * @brief links_in_contact list of links (reference frames) that are in contact with the environment
+     */
+    std::list<std::string> links_in_contact;
 
     KDL::Tree robot_kdl_tree; // A KDL Tree
 

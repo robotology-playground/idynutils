@@ -83,6 +83,15 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     setControlledKinematicChainsJointNumbers();
 
     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
+
+    links_in_contact.push_back("l_foot_lower_left_link");
+    links_in_contact.push_back("l_foot_lower_right_link");
+    links_in_contact.push_back("l_foot_upper_left_link");
+    links_in_contact.push_back("l_foot_upper_right_link");
+    links_in_contact.push_back("r_foot_lower_left_link");
+    links_in_contact.push_back("r_foot_lower_right_link");
+    links_in_contact.push_back("r_foot_upper_left_link");
+    links_in_contact.push_back("r_foot_upper_right_link");
 }
 
 const std::vector<std::string>& iDynUtils::getJointNames() const {
@@ -92,7 +101,6 @@ const std::vector<std::string>& iDynUtils::getJointNames() const {
 const std::vector<std::string>& iDynUtils::getFixedJointNames() const {
     return this->fixed_joint_names;
 }
-
 
 bool iDynUtils::findGroupChain(const std::vector<std::string>& chain_list, const std::vector<srdf::Model::Group>& groups,std::string chain_name, int& group_index)
 {
@@ -613,4 +621,43 @@ const std::string iDynUtils::getRobotURDFPath() const
 const std::string iDynUtils::getRobotSRDFPath() const
 {
     return robot_srdf_folder;
+}
+
+const std::list<std::string>& iDynUtils::getLinksInContact(){
+    return links_in_contact;
+}
+
+void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_contact){
+    std::list<std::string> tmp_list;
+    for(std::list<std::string>::const_iterator it = list_links_in_contact.begin(); it != list_links_in_contact.end(); it++)
+    {
+        int link_index = iDyn3_model.getLinkIndex(*it);
+        if(!(link_index == -1))
+            tmp_list.push_back(*it);
+    }
+
+    if(!tmp_list.empty())
+        links_in_contact = tmp_list;
+}
+
+
+bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points)
+{
+    if(links_in_contact.empty())
+        return false;
+
+    KDL::Frame waist_T_CoM;
+    KDL::Frame waist_T_point;
+    KDL::Frame CoM_T_point;
+    for(std::list<std::string>::iterator it = links_in_contact.begin(); it != links_in_contact.end(); it++)
+    {
+        // get points in world frame
+        waist_T_point = iDyn3_model.getPositionKDL(iDyn3_model.getLinkIndex(*it));
+        // get CoM in the world frame
+        YarptoKDL(iDyn3_model.getCOM(), waist_T_CoM.p);
+
+        CoM_T_point = waist_T_CoM.Inverse() * waist_T_point;
+        points.push_back(CoM_T_point.p);
+    }
+    return true;
 }

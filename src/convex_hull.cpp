@@ -142,31 +142,3 @@ void convex_hull::printIndexAndPointsInfo(const pcl::PointCloud<pcl::PointXYZ>& 
                      vertices.vertices[ii]);
     }
 }
-
-void convex_hull::getSupportPolygonPoints(iDynUtils &robot,
-                                          std::list<KDL::Vector>& points)
-{
-    std::vector<std::string> names;
-    names.push_back("l_foot_lower_left_link");
-    names.push_back("l_foot_lower_right_link");
-    names.push_back("l_foot_upper_left_link");
-    names.push_back("l_foot_upper_right_link");
-    names.push_back("r_foot_lower_left_link");
-    names.push_back("r_foot_lower_right_link");
-    names.push_back("r_foot_upper_left_link");
-    names.push_back("r_foot_upper_right_link");
-
-    KDL::Frame waist_T_CoM;
-    KDL::Frame waist_T_point;
-    KDL::Frame CoM_T_point;
-    for(unsigned int i = 0; i < names.size(); ++i)
-    {
-        // get points in world frame
-        waist_T_point = robot.iDyn3_model.getPositionKDL(robot.iDyn3_model.getLinkIndex(names[i]));
-        // get CoM in the world frame
-        YarptoKDL(robot.iDyn3_model.getCOM(), waist_T_CoM.p);
-
-        CoM_T_point = waist_T_CoM.Inverse() * waist_T_point;
-        points.push_back(CoM_T_point.p);
-    }
-}

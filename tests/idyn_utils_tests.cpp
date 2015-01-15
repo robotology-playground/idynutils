@@ -633,6 +633,38 @@ TEST_F(testIDynUtils, testWorld)
 
 }
 
+TEST_F(testIDynUtils, testSupportPolygon)
+{
+    std::list<std::string> links_in_contact;
+    links_in_contact.push_back("l_foot_lower_left_link");
+    links_in_contact.push_back("l_foot_lower_right_link");
+    links_in_contact.push_back("l_foot_upper_left_link");
+    links_in_contact.push_back("l_foot_upper_right_link");
+    links_in_contact.push_back("r_foot_lower_left_link");
+    links_in_contact.push_back("r_foot_lower_right_link");
+    links_in_contact.push_back("r_foot_upper_left_link");
+    links_in_contact.push_back("r_foot_upper_right_link");
+
+    std::list<std::string> idyn_links_in_contact = this->getLinksInContact();
+
+    std::list<std::string>::iterator it2 = idyn_links_in_contact.begin();
+    for(std::list<std::string>::iterator it = links_in_contact.begin(); it != links_in_contact.end(); it++){
+        EXPECT_TRUE(*it == *it2);
+        it2++;}
+
+    std::list<std::string> new_links_in_contact;
+    new_links_in_contact.push_back("l_foot_lower_left_link");
+    new_links_in_contact.push_back("l_foot_lower_right_link");
+    new_links_in_contact.push_back("l_foot_upper_left_link");
+
+    this->setLinksInContact(new_links_in_contact);
+
+    std::list<std::string>::const_iterator it3 = this->getLinksInContact().begin();
+    for(std::list<std::string>::iterator it = new_links_in_contact.begin(); it != new_links_in_contact.end(); it++){
+        EXPECT_TRUE(*it == *it3);
+        it3++;}
+}
+
 TEST_F(testIDynUtils, testAnchorSwitch)
 {
     KDL::Frame w_T_b0 = iDyn3_model.getWorldBasePoseKDL();

@@ -172,35 +172,39 @@ TEST_F(testsTestsUtils, testInitializeIfNeeded)
 
 TEST_F(testsTestsUtils, testStartStopYarpServer)
 {
-    EXPECT_TRUE(tests_utils::startYarpServer());
-
     yarp::os::Network yarp_network;
-    unsigned int number_of_trials = 1000;
-    bool check = false;
-    for(unsigned int i = 0; i < number_of_trials; ++i)
-    {
-        if(!yarp_network.checkNetwork())
-            std::cout<<"Checking Yarp Network..."<<std::endl;
-        else
-        {
-            check = true;
-            break;
-        }
-    }
-    EXPECT_TRUE(check);
 
-    EXPECT_TRUE(tests_utils::stopYarpServer());
-    for(unsigned int i = 0; i < number_of_trials; ++i)
+    if(!yarp_network.checkNetwork())
     {
-        if(yarp_network.checkNetwork())
-            std::cout<<"Checking Yarp Network shut down..."<<std::endl;
-        else
+        EXPECT_TRUE(tests_utils::startYarpServer());
+
+        unsigned int number_of_trials = 1000;
+        bool check = false;
+        for(unsigned int i = 0; i < number_of_trials; ++i)
         {
-            check = false;
-            break;
+            if(!yarp_network.checkNetwork())
+                std::cout<<"Checking Yarp Network..."<<std::endl;
+            else
+            {
+                check = true;
+                break;
+            }
         }
+        EXPECT_TRUE(check);
+
+        EXPECT_TRUE(tests_utils::stopYarpServer());
+        for(unsigned int i = 0; i < number_of_trials; ++i)
+        {
+            if(yarp_network.checkNetwork())
+                std::cout<<"Checking Yarp Network shut down..."<<std::endl;
+            else
+            {
+                check = false;
+                break;
+            }
+        }
+        EXPECT_FALSE(check);
     }
-    EXPECT_FALSE(check);
 }
 
 }
