@@ -412,6 +412,25 @@ void iDynUtils::setWorldPose(const KDL::Frame& anchor_T_world, const std::string
     iDyn3_model.setWorldBasePose(worldT);
 }
 
+bool iDynUtils::getWorldPose(KDL::Frame &anchor_T_world, std::string &anchor) const
+{
+    if(!world_is_inited) return false;
+    assert(this->anchor_name.size() > 0);
+    anchor_T_world = this->anchor_T_world;
+    anchor = this->anchor_name;
+}
+
+const KDL::Frame iDynUtils::getAnchor_T_World() const
+{
+    return this->anchor_T_world;
+}
+
+void iDynUtils::setAnchor_T_World(const KDL::Frame& anchor_T_world)
+{
+    world_is_inited = true;
+    this->anchor_T_world = anchor_T_world;
+}
+
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const bool set_world_pose) {
     this->updateiDyn3Model(q,zeros,zeros, set_world_pose);
@@ -551,6 +570,11 @@ bool iDynUtils::switchAnchor(const std::string& new_anchor)
     return false;
 }
 
+const std::string iDynUtils::getAnchor() const
+{
+    return this->anchor_name;
+}
+
 bool iDynUtils::setFloatingBaseLink(const std::string new_base)
 {
     int new_fb_index = iDyn3_model.getLinkIndex(new_base);
@@ -576,7 +600,17 @@ unsigned int kinematic_chain::getNrOfDOFs() const {
     return joint_numbers.size();
 }
 
-std::string iDynUtils::getRobotName()
+const std::string iDynUtils::getRobotName() const
 {
     return robot_name;
+}
+
+const std::string iDynUtils::getRobotURDFPath() const
+{
+    return robot_urdf_folder;
+}
+
+const std::string iDynUtils::getRobotSRDFPath() const
+{
+    return robot_srdf_folder;
 }

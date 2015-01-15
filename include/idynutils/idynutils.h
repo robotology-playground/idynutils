@@ -192,11 +192,20 @@ public:
     yarp::sig::Matrix computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts);
     
     /**
-     * @brief switchAnchor switch the anchor frame according to the new given anchor name
+     * @brief switchAnchor switch the anchor frame according to the new given anchor name.
+     * The anchor name needs to be a valid frame name (i.e., a link name)
      * @param new_anchor name
      * @return true if all went well, false otherwise
      */
     bool switchAnchor(const std::string& new_anchor);
+
+    /**
+     * @brief getAnchor returns the name of the anchor frame (the body frame that does not vary
+     * w.r.t. the world frame while performing the current robot motion). The anchor name corresponds
+     * to the link name which frame system is the anchor frame.
+     * @return the anchor name
+     */
+    const std::string getAnchor() const;
 
     /**
      * Set the floating base link. Updates the transform from anchor to world accordingly:
@@ -217,10 +226,46 @@ public:
     bool switchAnchorAndFloatingBase(const std::string new_anchor);
 
     /**
+     * @brief getWorldPose returns the anchor frame name (the frame which does not move w.r.t. the world frame)
+     * and the transform between that anchor frame and the world frame. If the world has never been initialized,
+     * (i.e. when updateWorld has always been called with updateWorld = false) we return false.
+     * @param anchor_T_world the frame representing the transformation between anchor and world frames
+     * @param anchor the anchor frame (link) name
+     * @return true if the world frame has been initialized
+     */
+    bool getWorldPose(KDL::Frame& anchor_T_world, std::string& anchor) const;
+
+
+    /**
+     * @brief getAnchor_T_World returns the offset between the inertial frame and the anchor frame, expressed
+     * in the anchor frame of reference (transform between anchor and world)
+     * @return the frame representing the transformation between anchor and world frames
+     */
+    const KDL::Frame getAnchor_T_World() const;
+
+    /**
+     * @brief setAnchor_T_World allows to set the transform between the anchor and world frames
+     * @param anchor_T_world the current transform between anchor and world
+     */
+    void setAnchor_T_World(const KDL::Frame& anchor_T_world);
+
+    /**
      * @brief getRobotName
      * @return robot_name
      */
-    std::string getRobotName();
+    const std::string getRobotName() const;
+
+    /**
+     * @brief getRobotURDFFolder returns the full file name of the URDF model for the current robot
+     * @return the robot urdf path (folder name + filename with extension)
+     */
+    const std::string getRobotURDFPath() const;
+
+    /**
+     * @brief getRobotSRDFFolder returns the path of the SRDF model for the current robot
+     * @return the robot srdf path (folder name + filename with extension)
+     */
+    const std::string getRobotSRDFPath() const;
 
 protected:
     /**
@@ -321,7 +366,6 @@ protected:
      *               This should be, in general, the support foot.
      */
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
-
 
     /**
      * @brief worldT Transformation between world and base_link
