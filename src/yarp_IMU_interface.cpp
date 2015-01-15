@@ -30,6 +30,7 @@ yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
     if(imuReader.open(portName)) {
         if (yarp::os::NetworkBase::exists("/inertial"))
         {
+			std::cout<<"IMU: trying to connect to: /inertial to "<<portName<<std::endl;
             if(yarp::os::Network::connect("/inertial",portName.c_str())) {
                 _ok = true;
                 std::cout<<"IMU: connected from /inertial to "<<portName<<std::endl;
@@ -37,6 +38,7 @@ yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
         }
         else if (yarp::os::NetworkBase::exists("/"+robot_name+"/inertial"))
         {
+			std::cout<<"IMU: trying to connect to: /"<<robot_name<<"/inertial to "<<portName<<std::endl;
             if(yarp::os::Network::connect("/"+robot_name+"/inertial",portName.c_str())) {
                 _ok = true;
                 std::cout<<"IMU: connected from /"<<robot_name<<"/inertial to "<<portName<<std::endl;
