@@ -107,6 +107,26 @@ void cartesian_utils::computeCartesianError(yarp::sig::Matrix &T,
     orientation_error[2] = xerr_o.z();
 }
 
+void cartesian_utils::fromYarpVectortoKDLWrench(const yarp::sig::Vector& wi, KDL::Wrench& wo)
+{
+    wo.force[0] = wi[0];
+    wo.force[1] = wi[1];
+    wo.force[2] = wi[2];
+    wo.torque[0] = wi[3];
+    wo.torque[1] = wi[4];
+    wo.torque[2] = wi[5];
+}
+
+void cartesian_utils::fromKDLWrenchtoYarpVector(const KDL::Wrench& wi, yarp::sig::Vector& wo)
+{
+    wo[0] = wi.force[0];
+    wo[1] = wi.force[1];
+    wo[2] = wi.force[2];
+    wo[3] = wi.torque[0];
+    wo[4] = wi.torque[1];
+    wo[5] = wi.torque[2];
+}
+
 void cartesian_utils::fromKDLFrameToYARPMatrix(const KDL::Frame &Ti, yarp::sig::Matrix &To)
 {
     To.resize(4,4);

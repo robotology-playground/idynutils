@@ -256,6 +256,20 @@ public:
     static void printHomogeneousTransform(const yarp::sig::Matrix& T);
 
     /**
+     * @brief fromYarpVectortoKDLWrench convert a yarp::sig::Vector in a KDL::Wrench
+     * @param wi yarp::sig::Vector
+     * @param wo KDL::Wrench
+     */
+    static void fromYarpVectortoKDLWrench(const yarp::sig::Vector& wi, KDL::Wrench& wo);
+
+    /**
+     * @brief fromKDLWrenchtoYarpVector convert a KDL::Wrench in a yarp::sig::Vector
+     * @param wi yarp::sig::Vector
+     * @param wo KDL::Wrench
+     */
+    static void fromKDLWrenchtoYarpVector(const KDL::Wrench& wi, yarp::sig::Vector& wo);
+
+    /**
      * @brief printKDLFrame print a KDL::Frame
      * @param T KDL::Frame
      */
