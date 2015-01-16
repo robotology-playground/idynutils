@@ -49,13 +49,7 @@ FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
-                                            #features
                                             filters
-                                            #kdtree
-                                            #io
-                                            #sample_consensus
-                                            #search
-                                            #segmentation
                                             surface)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -65,7 +59,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
                             ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
-# for every file in sot_INCLUDES CMake already sets the property HEADER_FILE_ONLY
+# for every file in idynutils_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
@@ -88,7 +82,7 @@ TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES} ${kdl_codyco_LIBRA
                                         ${PCL_LIBRARIES})
 
 ########################################################################
-# use YCM to export OpenSoT so taht it can be found using find_package #
+# use YCM to export idynutils so that it can be found using find_package #
 ########################################################################
 
 set(VARS_PREFIX "IDYNUTILS")
@@ -118,7 +112,7 @@ install(TARGETS idynutils
         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib)
         
-#enabling it will add all OpenSoT dependencies as dependencies for third party users
+#enabling it will add all idynutils dependencies as dependencies for third party users
 set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS idynutils)
 
 
