@@ -6,7 +6,8 @@
 #include <yarp/math/SVD.h>
 #include <kdl/frames_io.hpp>
 
-
+#include <iostream>
+#include <cstdlib>
 
 using namespace yarp::math;
 
@@ -47,6 +48,7 @@ class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
     testIDynUtils():
+        iDynUtils("coman"),
         q(iDyn3_model.getNrOfDOFs(),0.0)
     {
 
@@ -101,8 +103,11 @@ class testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching : public testIDynUti
 
 TEST_F(testFoo, testInitialization)
 {
-    std::string urdf_file = std::string(getenv("WALKMAN_ROOT")) + "/drc/idynutils/tests/bigman.urdf";
-    std::string srdf_file = std::string(getenv("WALKMAN_ROOT")) + "/drc/idynutils/tests/bigman.srdf";
+    const char* WALKMAN_ROOT = std::getenv("WALKMAN_ROOT");
+    assert((WALKMAN_ROOT != NULL) &&
+           "Error: $WALKMAN_ROOT is not defined. Please set this environment variable before launching tests.");
+    std::string urdf_file = std::string(WALKMAN_ROOT) + "/drc/idynutils/tests/bigman.urdf";
+    std::string srdf_file = std::string(WALKMAN_ROOT) + "/drc/idynutils/tests/bigman.srdf";
 
     iDynUtils idynutils("bigman", urdf_file, srdf_file);
 
@@ -569,8 +574,8 @@ TEST_F(testIDynUtils, testSetChainIndex)
 
 TEST_F(testIDynUtils, testWorld)
 {
-    iDynUtils idynutils1;
-    iDynUtils idynutils2;
+    iDynUtils idynutils1("coman");
+    iDynUtils idynutils2("coman");
     idynutils2.iDyn3_model.setFloatingBaseLink(idynutils2.left_leg.index);
 
     yarp::sig::Vector q(idynutils1.iDyn3_model.getNrOfDOFs(), 0.0);
@@ -879,8 +884,8 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
 {
     bool updateIDynAfterSwitch = GetParam();
 
-    iDynUtils normal_model;
-    iDynUtils com_model;
+    iDynUtils normal_model("coman");
+    iDynUtils com_model("coman");
 
     setGoodInitialPosition();
 
@@ -930,7 +935,7 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
         followingFootName = left_leg.end_effector_name;
     } else ASSERT_TRUE(false);
 
-    iDynUtils normal_model;
+    iDynUtils normal_model("coman");
     setGoodInitialPosition();
 
     yarp::sig::Vector q_whole = this->iDyn3_model.getAng();

@@ -105,9 +105,9 @@ public:
      * @param srdf_path is the path to the srdf file
      *   e.g. /home/enrico/my_robot/my_robot_srdf/my_robot.srdf
      */
-    iDynUtils(const std::string robot_name_="",
-	      const std::string urdf_path="",
-	      const std::string srdf_path="");
+    iDynUtils(const std::string robot_name_,
+              const std::string urdf_path="",
+              const std::string srdf_path="");
 
     kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
     iCub::iDynTree::DynTree iDyn3_model;
