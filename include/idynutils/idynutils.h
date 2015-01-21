@@ -109,7 +109,7 @@ public:
               const std::string urdf_path="",
               const std::string srdf_path="");
 
-    kinematic_chain left_leg, left_arm,right_leg,right_arm,torso;
+    kinematic_chain right_leg,left_leg; //,right_arm, left_arm,torso;
     iCub::iDynTree::DynTree iDyn3_model;
 
     /**

@@ -132,4 +132,4 @@ add_subdirectory(examples)
 # Add Testing target  #
 #######################
 enable_testing()
-add_subdirectory(tests)
+# add_subdirectory(tests)
