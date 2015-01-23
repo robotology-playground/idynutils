@@ -296,7 +296,7 @@ public:
     * @return false if the vector of reference frames is empty. True otherwise.
     */
    bool getSupportPolygonPoints(std::list<KDL::Vector>& points,
-                                const std::string referenceFrame = "COM");
+                                const std::string referenceFrame = "world");
 
    const std::list<std::string>& getLinksInContact();
 
