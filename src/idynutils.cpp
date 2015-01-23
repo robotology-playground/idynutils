@@ -641,23 +641,48 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 }
 
 
-bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points)
+bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
+                                        const std::string referenceFrame)
 {
-    if(links_in_contact.empty())
+    if(iDyn3_model.getLinkIndex(referenceFrame) < 0)
+        std::cerr << "ERROR: "
+                  << "trying to get support polygon points in "
+                  << "unknown reference frame "
+                  << referenceFrame << std::endl;
+
+    if(links_in_contact.empty() ||
+       (referenceFrame != "COM" &&
+        referenceFrame != "world" &&
+        iDyn3_model.getLinkIndex(referenceFrame) < 0))
         return false;
 
-    KDL::Frame waist_T_CoM;
-    KDL::Frame waist_T_point;
+    KDL::Frame world_T_CoM;
+    KDL::Frame world_T_point;
+    KDL::Frame referenceFrame_T_point;
     KDL::Frame CoM_T_point;
     for(std::list<std::string>::iterator it = links_in_contact.begin(); it != links_in_contact.end(); it++)
     {
-        // get points in world frame
-        waist_T_point = iDyn3_model.getPositionKDL(iDyn3_model.getLinkIndex(*it));
-        // get CoM in the world frame
-        YarptoKDL(iDyn3_model.getCOM(), waist_T_CoM.p);
+        if(referenceFrame == "COM" ||
+           referenceFrame == "world")
+            // get points in world frame
+            world_T_point = iDyn3_model.getPositionKDL(
+                        iDyn3_model.getLinkIndex(*it));
+        else
+            referenceFrame_T_point = iDyn3_model.getPositionKDL(
+                        iDyn3_model.getLinkIndex(referenceFrame),
+                        iDyn3_model.getLinkIndex(*it));
 
-        CoM_T_point = waist_T_CoM.Inverse() * waist_T_point;
-        points.push_back(CoM_T_point.p);
+        if(referenceFrame == "COM")
+        {
+            // get CoM in the world frame
+            YarptoKDL(iDyn3_model.getCOM(), world_T_CoM.p);
+
+            CoM_T_point = world_T_CoM.Inverse() * world_T_point;
+            points.push_back(CoM_T_point.p);
+        } else if(referenceFrame == "world")
+            points.push_back(world_T_point.p);
+        else
+            points.push_back(referenceFrame_T_point.p);
     }
     return true;
 }

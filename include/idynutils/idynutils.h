@@ -284,12 +284,19 @@ public:
 
    /**
     * @brief getSupportPolygonPoints given a vector of reference frames that we consider in contact wit the ground,
-    * it return a list of points express in a frame F oriented like the world frame and with origin on the CoM
-    * projection in the support polygon
+    * it return a list of points express in the specified frame referenceFrame.
+    * By default it is the frame COM, oriented like the world frame and with origin on the CoM
+    * Notice the polygon points are not projected on the support surface.
     * @param points a list of points in the same reference frame
+    * @param referenceFrame the string defining the reference frame in which to express the
+    * support polygon points. The possibilities are:
+    * - "COM"
+    * - "world"
+    * - {linkName}
     * @return false if the vector of reference frames is empty. True otherwise.
     */
-   bool getSupportPolygonPoints(std::list<KDL::Vector>& points);
+   bool getSupportPolygonPoints(std::list<KDL::Vector>& points,
+                                const std::string referenceFrame = "COM");
 
    const std::list<std::string>& getLinksInContact();
 
