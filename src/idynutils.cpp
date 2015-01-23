@@ -644,7 +644,9 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
                                         const std::string referenceFrame)
 {
-    if(iDyn3_model.getLinkIndex(referenceFrame) < 0)
+    if(referenceFrame != "COM" &&
+       referenceFrame != "world" &&
+       iDyn3_model.getLinkIndex(referenceFrame) < 0)
         std::cerr << "ERROR: "
                   << "trying to get support polygon points in "
                   << "unknown reference frame "
