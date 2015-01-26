@@ -529,38 +529,38 @@ RobotUtils::IMUPtr RobotUtils::getIMU()
 
 bool RobotUtils::loadForceTorqueSensors()
 {
-//     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
-//     for(auto group: robot_groups)
-//     {
-//         if (group.name_ == walkman::robot::force_torque_sensors)
-//         {
-//             if(group.joints_.size() > 0) {
-//                 for(auto joint_name : group.joints_)
-//                 {
-//                     std::cout << "ft sensors found on joint " << joint_name;
-// 
-//                     std::string reference_frame = idynutils.moveit_robot_model->getJointModel(joint_name)->
-//                             getChildLinkModel()->getName();
-// 
-//                     std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
-// 
-//                     try {
-//                         std::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
-//                                                         _moduleName,
-//                                                         idynutils.getRobotName(), reference_frame) );
-// 
-//                         ftSensors[reference_frame] = ft;
-//                         ft_reference_frames.push_back(reference_frame);
-// 
-//                         std::cout << "ft on " << reference_frame << " loaded" << std::endl;
-//                     } catch(...) {
-//                         std::cerr << "Error loading " << reference_frame << " ft " << std::endl;
-//                         return false;}
-//                 }
-//                 return true;
-//             }
-//         }
-//     }
+    std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+    for(auto group: robot_groups)
+    {
+        if (group.name_ == walkman::robot::force_torque_sensors)
+        {
+            if(group.joints_.size() > 0) {
+                for(auto joint_name : group.joints_)
+                {
+                    std::cout << "ft sensors found on joint " << joint_name;
+
+                    std::string reference_frame = idynutils.moveit_robot_model->getJointModel(joint_name)->
+                            getChildLinkModel()->getName();
+
+                    std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
+
+                    try {
+                        std::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
+                                                        _moduleName,
+                                                        idynutils.getRobotName(), reference_frame) );
+
+                        ftSensors[reference_frame] = ft;
+                        ft_reference_frames.push_back(reference_frame);
+
+                        std::cout << "ft on " << reference_frame << " loaded" << std::endl;
+                    } catch(...) {
+                        std::cerr << "Error loading " << reference_frame << " ft " << std::endl;
+                        return false;}
+                }
+                return true;
+            }
+        }
+    }
     std::cout << "Robot does not have any ft sensor" << std::endl;
     return false;
 }
