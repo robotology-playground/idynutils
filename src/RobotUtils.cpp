@@ -562,7 +562,7 @@ bool RobotUtils::loadIMUSensors()
         {
             if(group.joints_.size() > 0) {
                 try {
-                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName));
+                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, true, idynutils.getRobotName()));
                     std::cout << "IMU loaded" << std::endl;
                     return true;
                 } catch(...) {
