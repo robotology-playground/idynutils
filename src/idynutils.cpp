@@ -279,7 +279,7 @@ bool iDynUtils::iDyn3Model()
         return false;}
     
     // Here the iDyn3 model of the robot is generated
-    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
+    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, "imu_link");
     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
     int nJ = iDyn3_model.getNrOfDOFs(); //29
