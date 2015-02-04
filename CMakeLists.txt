@@ -48,9 +48,9 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
-FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
-                                            filters
-                                            surface)
+FIND_PACKAGE(PCL 1.7.2  COMPONENTS  #common
+                                    filters
+                                    surface)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wmissing-field-initializers -W -Wunused -Wuninitialized -Wformat=2 -Wctor-dtor-privacy -Wnon-virtual-dtor -Wwrite-strings -Wno-char-subscripts -Wreturn-type -Wcast-qual -Wcast-align -Wsign-promo -Woverloaded-virtual -fno-strict-aliasing  -Werror=address -Werror=parentheses " )
@@ -63,9 +63,15 @@ INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
+if(PCL_FOUND)
+    set(pcl_dependent_src src/convex_hull.cpp)
+else(PCL_FOUND)
+    message(">> Could not find PCL. Not compiling convex_hull.cpp")
+endif(PCL_FOUND)
+
 ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/ComanUtils.cpp
-                                src/convex_hull.cpp
+                                ${pcl_dependent_src}
                                 src/idynutils.cpp
                                 src/RobotUtils.cpp
                                 src/tests_utils.cpp
