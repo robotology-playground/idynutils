@@ -259,7 +259,8 @@ public:
     const KDL::Frame getAnchor_T_World() const;
 
     /**
-     * @brief setAnchor_T_World allows to set the transform between the anchor and world frames
+     * @brief setAnchor_T_World allows to set the transform between the anchor and world frames.
+     * Notice you need to call the update() function before anchor_T_World has an effect on the getPosition
      * @param anchor_T_world the current transform between anchor and world
      */
     void setAnchor_T_World(const KDL::Frame& anchor_T_world);
