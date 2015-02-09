@@ -124,9 +124,9 @@ void yarp_IMU_interface::sense(KDL::Rotation &orientation,
                 yLinearAcceleration,
                 yAngularVelocity);
     orientation.Identity();
-    orientation.RPY(yOrientation(1),
-                    yOrientation(2),
-                    yOrientation(3));
+    orientation.RPY(yOrientation(0),
+                    yOrientation(1),
+                    yOrientation(2));
     YarptoKDL(yLinearAcceleration, linearAcceleration);
     YarptoKDL(yAngularVelocity, angularVelocity);
 }
