@@ -145,6 +145,8 @@ void cartesian_utils::fromKDLTwistToYARPVector(const KDL::Twist& vi, yarp::sig::
     vo[3] = vi.rot.x(); vo[4] = vi.rot.y(); vo[5] = vi.rot.z();
 }
 
+// We copy the homogeneous matrix because we do not want to pass quaternion since we use
+// the notation from "Operational Space Control: A Theoretical and Empirical Comparison"
 void cartesian_utils::fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix &Ti, KDL::Frame &To)
 {
     To.p.data[0] = Ti(0,3); To.p.data[1] = Ti(1,3); To.p.data[2] = Ti(2,3);
