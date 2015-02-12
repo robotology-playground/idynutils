@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <idynutils/cartesian_utils.h>
-
-#include <random>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 namespace {
 
@@ -78,8 +78,8 @@ TEST_F(testQuaternion, testQuaternionError)
     double dot_product = quaternion::dot(quaternion(this->x, this->y, this->z, this->w), q2);
     EXPECT_DOUBLE_EQ(dot_product, w*this->w);
 
-    std::uniform_real_distribution<double> unif;
-    std::default_random_engine re;
+    boost::random::uniform_real_distribution<double> unif;
+    boost::random::mt19937 re;
     double a = unif(re);
     EXPECT_DOUBLE_EQ(a*q2.x, a*x);
     EXPECT_DOUBLE_EQ(a*q2.y, a*y);

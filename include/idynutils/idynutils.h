@@ -40,7 +40,9 @@ public:
      * @brief kinematic_chain constructor
      * @param chain_name name associated to the kinematic chain
      */
-    kinematic_chain(std::string chain_name):chain_name(chain_name)
+    kinematic_chain(std::string chain_name) :
+        chain_name(chain_name),
+        index(end_effector_index)
     {
 
     }
@@ -74,7 +76,7 @@ public:
   /**
    * @brief end_effector_index index of the end effector
    */
-  int end_effector_index; int &index = end_effector_index;
+  int end_effector_index; int& index; //int &index = end_effector_index;
 
   /**
    * @brief joint_numbers a vector of joint IDs for this kinematic chain. All the joint IDs are unique for the whole body.
