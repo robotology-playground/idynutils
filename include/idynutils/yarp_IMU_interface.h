@@ -34,11 +34,14 @@ public:
     /**
      * @brief yarp_IMU_interface creates a reader for the IMU port
      * @param readerName a unique ID for the reader
-     * @param useSI do we want to use SI units? (default to true)
      * @param robot_name the name of the robot
+     * @param useSI do we want to use SI units? (default to true)
+     * @param reference_frame the name of the robot
      */
     yarp_IMU_interface(std::string readerName,
-                       bool useSI = true,std::string robot_name="");
+                       std::string robot_name,
+                       bool useSI = true,
+                       std::string reference_frame = "");
     
     ~yarp_IMU_interface();
     /**
@@ -90,6 +93,11 @@ private:
      * @brief _useSI use the SI system for units? (rad instead of degs)
      */
     bool _useSI;
+
+    /**
+     * @brief _reference_frame where the lectures are taken
+     */
+    std::string _reference_frame;
     
 };
 

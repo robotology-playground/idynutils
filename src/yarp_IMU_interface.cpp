@@ -21,8 +21,10 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 
 yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
-                                       bool useSI, std::string robot_name)
-    : _output(1), _useSI(useSI), _ok(false)
+                                       std::string robot_name,
+                                       bool useSI,
+                                       std::string reference_frame)
+    : _output(1), _useSI(useSI), _ok(false), _reference_frame(reference_frame)
 {
     _output.resize(9,0.0);
 

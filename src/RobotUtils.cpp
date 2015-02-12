@@ -552,7 +552,7 @@ bool RobotUtils::loadForceTorqueSensors()
     return false;
 }
 
-
+///TODO: CHECK LINK IN GROUP imu_sensors in SRDF!!!
 bool RobotUtils::loadIMUSensors()
 {
     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
@@ -562,7 +562,7 @@ bool RobotUtils::loadIMUSensors()
         {
             if(group.joints_.size() > 0) {
                 try {
-                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, true, idynutils.getRobotName()));
+                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true));
                     std::cout << "IMU loaded" << std::endl;
                     return true;
                 } catch(...) {

@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     yarp_ft_interface d("right_arm","test_module","coman");
     yarp_single_chain_interface e("right_arm","test_module","coman");
 
-    yarp_IMU_interface imu("test_module");
+    yarp_IMU_interface imu("test_module","");
 
     yarp::sig::Vector imuData = imu.sense();
     std::cout << "IMU data reading:"
