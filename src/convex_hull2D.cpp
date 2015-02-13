@@ -81,7 +81,12 @@ list< KDL::Vector > convex_hull2D::projection(const list< KDL::Vector >& IMULink
         //         p.y=temp.y();
         //         p.z=temp.z();
         err+=temp.z();
+        temp.z(0.0);
         result.push_back(temp);
+    }
+    for (KDL::Vector& point:result)
+    {
+        point=IMULink_GravityWorld*point;
     }
 //     std::cout<<"global error with respect to the world plane: "<<err<<std::endl;
     return result;
