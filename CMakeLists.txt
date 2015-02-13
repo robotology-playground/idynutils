@@ -64,6 +64,7 @@ file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynut
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
 if(PCL_FOUND)
+    add_definitions(-DPCL_FOUND)
     set(pcl_dependent_src src/convex_hull.cpp)
 else(PCL_FOUND)
     message(">> Could not find PCL. Not compiling convex_hull.cpp")
