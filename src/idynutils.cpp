@@ -35,11 +35,11 @@ using namespace yarp::math;
 iDynUtils::iDynUtils(const std::string robot_name_,
 		     const std::string urdf_path,
 		     const std::string srdf_path) :
-//     right_arm(walkman::robot::right_arm),
-    right_leg(walkman::robot::right_leg),
-//     left_arm(walkman::robot::left_arm),
-    left_leg(walkman::robot::left_leg),
-//     torso(walkman::robot::torso),
+    right_arm(walkman::robot::right_arm),
+//    right_leg(walkman::robot::right_leg),
+    left_arm(walkman::robot::left_arm),
+//    left_leg(walkman::robot::left_leg),
+    torso(walkman::robot::torso),
     robot_name(robot_name_),
     g(3,0.0),
     anchor_name("l_sole"),
@@ -194,31 +194,31 @@ bool iDynUtils::setJointNames()
         if (group.name_==walkman::robot::chains)
         {
             int group_index=-1;
-//             if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::left_arm,group_index))
-//                 expected_left_arm=setChainJointNames(coman_groups[group_index],left_arm);
+            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::left_arm,group_index))
+                expected_left_arm=setChainJointNames(coman_groups[group_index],left_arm);
             if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::left_leg,group_index))
                 expected_left_leg=setChainJointNames(coman_groups[group_index],left_leg);
-//             if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::right_arm,group_index))
-//                 expected_right_arm=setChainJointNames(coman_groups[group_index],right_arm);
+            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::right_arm,group_index))
+                expected_right_arm=setChainJointNames(coman_groups[group_index],right_arm);
             if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::right_leg,group_index))
                 expected_right_leg=setChainJointNames(coman_groups[group_index],right_leg);
-//             if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::torso,group_index))
-//                 expected_torso=setChainJointNames(coman_groups[group_index],torso);
+            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::torso,group_index))
+                expected_torso=setChainJointNames(coman_groups[group_index],torso);
         }
     }
 
-//     if(!expected_left_arm) std::cout<<walkman::robot::left_arm<<" joint group is missing in SRDF"<<std::endl;
-//     if(!expected_right_arm) std::cout<<walkman::robot::right_arm<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_left_arm) std::cout<<walkman::robot::left_arm<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_right_arm) std::cout<<walkman::robot::right_arm<<" joint group is missing in SRDF"<<std::endl;
     if(!expected_left_leg) std::cout<<walkman::robot::left_leg<<" joint group is missing in SRDF"<<std::endl;
     if(!expected_right_leg) std::cout<<walkman::robot::right_leg<<" joint group is missing in SRDF"<<std::endl;
-//     if(!expected_torso) std::cout<<walkman::robot::torso<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_torso) std::cout<<walkman::robot::torso<<" joint group is missing in SRDF"<<std::endl;
 
     if(
-// 	  expected_left_arm  &&
-       expected_left_leg  &&
-//        expected_right_arm &&
-       expected_right_leg //&&
-//        expected_torso
+        expected_left_arm  &&
+//        expected_left_leg  &&
+        expected_right_arm &&
+//        expected_right_leg //&&
+        expected_torso
 	  ) return true;
     return false;
 
@@ -498,45 +498,45 @@ void iDynUtils::setJointNumbers(kinematic_chain& chain)
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
 {
-//     setJointNumbers(right_arm);
-    setJointNumbers(right_leg);
-//     setJointNumbers(left_arm);
-    setJointNumbers(left_leg);
-//     setJointNumbers(torso);
+    setJointNumbers(right_arm);
+//    setJointNumbers(right_leg);
+    setJointNumbers(left_arm);
+//    setJointNumbers(left_leg);
+    setJointNumbers(torso);
 }
 
 yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     yarp::sig::Matrix J_left_foot, J_right_foot, J_left_hand, J_right_hand;
     yarp::sig::Matrix J_contacts;
 
-    if(contacts & CONTACT_LEFT_FOOT) {
-        this->iDyn3_model.getJacobian(this->left_leg.end_effector_index, J_left_foot);
-        J_contacts = J_left_foot;
-    }
+//    if(contacts & CONTACT_LEFT_FOOT) {
+//        this->iDyn3_model.getJacobian(this->left_leg.end_effector_index, J_left_foot);
+//        J_contacts = J_left_foot;
+//    }
 
-    if(contacts & CONTACT_RIGHT_FOOT) {
-        this->iDyn3_model.getJacobian(this->right_leg.end_effector_index, J_right_foot);
+//    if(contacts & CONTACT_RIGHT_FOOT) {
+//        this->iDyn3_model.getJacobian(this->right_leg.end_effector_index, J_right_foot);
+//        if(J_contacts.rows() == 0)
+//            J_contacts = J_right_foot;
+//        else
+//            J_contacts = pile(J_contacts, J_right_foot);
+//    }
+
+    if(contacts & CONTACT_LEFT_HAND) {
+        this->iDyn3_model.getJacobian(this->left_arm.end_effector_index, J_left_hand);
         if(J_contacts.rows() == 0)
-            J_contacts = J_right_foot;
+            J_contacts = J_left_hand;
         else
-            J_contacts = pile(J_contacts, J_right_foot);
+            J_contacts = pile(J_contacts, J_left_hand);
     }
 
-//     if(contacts & CONTACT_LEFT_HAND) {
-//         this->iDyn3_model.getJacobian(this->left_arm.end_effector_index, J_left_hand);
-//         if(J_contacts.rows() == 0)
-//             J_contacts = J_left_hand;
-//         else
-//             J_contacts = pile(J_contacts, J_left_hand);
-//     }
-
-//     if(contacts & CONTACT_RIGHT_HAND) {
-//         this->iDyn3_model.getJacobian(this->right_arm.end_effector_index, J_right_hand);
-//         if(J_contacts.rows() == 0)
-//             J_contacts = J_right_hand;
-//         else
-//             J_contacts = pile(J_contacts, J_right_hand);
-//     }
+    if(contacts & CONTACT_RIGHT_HAND) {
+        this->iDyn3_model.getJacobian(this->right_arm.end_effector_index, J_right_hand);
+        if(J_contacts.rows() == 0)
+            J_contacts = J_right_hand;
+        else
+            J_contacts = pile(J_contacts, J_right_hand);
+    }
 
     return computeFloatingBaseProjector(J_contacts);
 

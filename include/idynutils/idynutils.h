@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>
-*/
+ */
 
 #ifndef IDYNUTILS_H
 #define IDYNUTILS_H
@@ -109,7 +109,7 @@ public:
               const std::string urdf_path="",
               const std::string srdf_path="");
 
-    kinematic_chain right_leg,left_leg; //,right_arm, left_arm,torso;
+    kinematic_chain right_arm, left_arm, torso, right_leg, left_leg;
     iCub::iDynTree::DynTree iDyn3_model;
 
     /**
