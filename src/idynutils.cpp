@@ -23,6 +23,7 @@
 #include <yarp/math/SVD.h>
 #include <idynutils/cartesian_utils.h>
 #include <moveit/robot_model/joint_model.h>
+#include <idynutils/convex_hull.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -634,6 +635,8 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
         int link_index = iDyn3_model.getLinkIndex(*it);
         if(!(link_index == -1))
             tmp_list.push_back(*it);
+        else
+            std::cerr << "ERROR: "<< "setLinksInContact got a wrong link which is not in the idynTree robot model! "<< std::endl;
     }
 
     if(!tmp_list.empty())
@@ -642,7 +645,7 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 
 
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
-                                        const std::string referenceFrame)
+                                        const std::string referenceFrame, KDL::Vector projection_vector)
 {
     if(referenceFrame != "COM" &&
        referenceFrame != "world" &&
@@ -686,5 +689,6 @@ bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
         else
             points.push_back(referenceFrame_T_point.p);
     }
+    points=idynutils::convex_hull::projectKDL2Plane(points,projection_vector);
     return true;
 }

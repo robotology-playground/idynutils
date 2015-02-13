@@ -39,7 +39,7 @@ SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils
               ${kdl_codyco_LIBRARIES} ${kdl_parser_LIBRARIES}
               ${moveit_core_LIBRARIES}  ${orocos_kdl_LIBRARIES} 
               ${PCL_LIBRARIES} ${urdf_LIBRARIES} 
-              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES})
+              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES} )
 
 ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
 TARGET_LINK_LIBRARIES(interfacesTest ${TestLibs})

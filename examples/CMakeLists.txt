@@ -15,7 +15,6 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0017 NEW)
 endif(COMMAND cmake_policy)
 include(ExternalProject)
-PROJECT(OpenSoT)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -39,6 +38,6 @@ INCLUDE_DIRECTORIES(include ${iDynTree_INCLUDE_DIRS}
                             ${PCL_INCLUDE_DIRS}
                             ${YARP_INCLUDE_DIRS} )
 
-ADD_DEFINITIONS(${PCL_DEFINITIONS})
-
+add_executable(example_convex_hull example_convex_hull.cpp)
+target_link_libraries(example_convex_hull idynutils)
 # add required linker flags

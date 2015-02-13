@@ -284,11 +284,11 @@ public:
     const std::string getRobotSRDFPath() const;
 
    /**
-    * @brief getSupportPolygonPoints given a vector of reference frames that we consider in contact wit the ground,
-    * it return a list of points express in the specified frame referenceFrame.
-    * By default it is the frame COM, oriented like the world frame and with origin on the CoM
-    * Notice the polygon points are not projected on the support surface.
-    * @param points a list of points in the same reference frame
+    * @brief getSupportPolygonPoints given a reference frame referenceFrame,
+    * it returns a list of points expressed in that specified frame.
+    * By default the frame is COM, oriented as the world frame and with the origin on the CoM
+    * @param points [output] a list of points in the reference frame referenceFrame projected 
+    * @param projection_vector the vector expressed in referenceFrame used to represent the projection plane
     * @param referenceFrame the string defining the reference frame in which to express the
     * support polygon points. The possibilities are:
     * - "COM"
@@ -297,7 +297,7 @@ public:
     * @return false if the vector of reference frames is empty. True otherwise.
     */
    bool getSupportPolygonPoints(std::list<KDL::Vector>& points,
-                                const std::string referenceFrame = "COM");
+                                const std::string referenceFrame, KDL::Vector projection_vector=KDL::Vector(0,0,1));
 
    const std::list<std::string>& getLinksInContact();
 
