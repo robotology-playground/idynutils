@@ -26,7 +26,7 @@ yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
                                        std::string reference_frame)
     : _output(1), _useSI(useSI), _ok(false), _reference_frame(reference_frame)
 {
-    _output.resize(9,0.0);
+    _output.resize(12,0.0);
 
     std::string portName = "/" + readerName + "/inertial:i";
     if(imuReader.open(portName)) {
