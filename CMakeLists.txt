@@ -48,7 +48,7 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
-FIND_PACKAGE(PCL 1.7 COMPONENTS    #common
+FIND_PACKAGE(PCL 2.7 COMPONENTS    #common
                                    filters
                                    surface)
 
@@ -66,7 +66,7 @@ file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 if(PCL_FOUND)
     add_definitions(-DPCL_FOUND)
 else(PCL_FOUND)
-    message(">> Could not find PCL. Not compiling convex_hull.cpp")
+    message(">> Could not find PCL. Using convex_hull2D")
 endif(PCL_FOUND)
 
 ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
