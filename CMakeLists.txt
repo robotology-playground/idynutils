@@ -63,6 +63,12 @@ INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
 file(GLOB_RECURSE idynutils_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/python" *.py)
 
+if(PCL_FOUND)
+    add_definitions(-DPCL_FOUND)
+else(PCL_FOUND)
+    message(">> Could not find PCL. Not compiling convex_hull.cpp")
+endif(PCL_FOUND)
+
 ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/ComanUtils.cpp
                                 src/convex_hull.cpp
