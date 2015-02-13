@@ -148,9 +148,9 @@ std::list< KDL::Vector > convex_hull::projectKDL2Plane(const std::list<KDL::Vect
     unit_y=KDL::Vector(0,1,0);
     z=projection_vector;
     z.Normalize();
-    y=-unit_x*z;
+    y=unit_x*z;
     if (y.Norm()<0.01)
-        y=-unit_y*z;
+        y=unit_y*z;
     y.Normalize();
     x=y*z;
     temp.M.UnitX(x);
