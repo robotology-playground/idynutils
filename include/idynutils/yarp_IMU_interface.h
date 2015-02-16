@@ -42,6 +42,19 @@ public:
                        std::string robot_name,
                        bool useSI = true,
                        std::string reference_frame = "");
+
+    /**
+     * @brief yarp_IMU_interface creates a reader for the IMU port
+     * @note this is here to support the old interface
+     * @param readerName a unique ID for the reader
+     * @param useSI do we want to use SI units?
+     * @param robot_name the name of the robot
+     * @param reference_frame the name of the robot
+     */
+    yarp_IMU_interface(std::string readerName,
+                       bool useSI,
+                       std::string robot_name,
+                       std::string reference_frame = "");
     
     ~yarp_IMU_interface();
     /**

@@ -20,6 +20,15 @@
 #include <idynutils/yarp_IMU_interface.h>
 #include <iCub/iDynTree/yarp_kdl.h>
 
+
+yarp_IMU_interface::yarp_IMU_interface(std::string readerName, bool useSI, std::string robot_name, std::string reference_frame)
+:yarp_IMU_interface(readerName,robot_name,useSI,reference_frame)
+{
+
+}
+
+
+
 yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
                                        std::string robot_name,
                                        bool useSI,
