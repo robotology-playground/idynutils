@@ -407,14 +407,14 @@ const std::string& yarp_single_chain_interface::getChainName() const
 }
 
 bool walkman::yarp_single_chain_interface::setControlType(const ControlType &controlType)
-{
+{    
     if(controlType.toYarp().first == VOCAB_CM_UNKNOWN)
         return true;
     else {
         bool check = true;
 
         for(unsigned int i = 0; check && i < joints_number; ++i) {
-	    if(controlType.toYarp().second != VOCAB_IM_UNKNOWN)
+            if(controlType.toYarp().second != VOCAB_IM_UNKNOWN)
                 check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
             check = check && controlMode->setControlMode(i, controlType.toYarp().first);
             if(!check) {

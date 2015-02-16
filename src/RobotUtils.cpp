@@ -466,6 +466,12 @@ bool RobotUtils::isInPositionMode()
            (!hasHands() || handsAreInPositionMode());
 }
 
+bool RobotUtils::isInPositionDirectMode()
+{
+    return bodyIsInPositionDirectMode() &&
+            (!hasHands() || handsAreInPositionDirectMode());
+}
+
 bool RobotUtils::isInImpedanceMode()
 {
     return  torso.isInImpedanceMode() &&
@@ -495,12 +501,26 @@ bool RobotUtils::bodyIsInPositionMode()
             left_leg.isInPositionMode();
 }
 
+bool RobotUtils::bodyIsInPositionDirectMode()
+{
+    return  torso.isInPositionDirectMode() &&
+            right_arm.isInPositionDirectMode() &&
+            left_arm.isInPositionDirectMode() &&
+            right_leg.isInPositionDirectMode() &&
+            left_leg.isInPositionDirectMode();
+}
+
 bool RobotUtils::handsAreInPositionMode()
 {
     return  (right_hand.isAvailable && right_hand.isInPositionMode()) &&
             (left_hand.isAvailable && left_hand.isInPositionMode());
 }
 
+bool RobotUtils::handsAreInPositionDirectMode()
+{
+    return  (right_hand.isAvailable && right_hand.isInPositionDirectMode()) &&
+            (left_hand.isAvailable && left_hand.isInPositionDirectMode());
+}
 
 bool RobotUtils::hasIMU()
 {
