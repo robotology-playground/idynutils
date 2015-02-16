@@ -478,6 +478,12 @@ bool RobotUtils::isInPositionMode()
            (!hasHands() || handsAreInPositionMode());
 }
 
+bool RobotUtils::isInPositionDirectMode()
+{
+    return bodyIsInPositionDirectMode() &&
+            (!hasHands() || handsAreInPositionDirectMode());
+}
+
 bool RobotUtils::isInImpedanceMode()
 {
     return  
@@ -501,12 +507,20 @@ walkman::yarp_single_chain_interface* const RobotUtils::getChainByName(const std
 
 bool RobotUtils::bodyIsInPositionMode()
 {
-    return  
-        torso.isInPositionMode() &&
-        right_arm.isInPositionMode() &&
-        left_arm.isInPositionMode();// &&
-//        right_leg.isInPositionMode() &&
-//        left_leg.isInPositionMode();
+    return  torso.isInPositionMode() &&
+            right_arm.isInPositionMode() &&
+            left_arm.isInPositionMode() &&
+            //right_leg.isInPositionMode() &&
+            //left_leg.isInPositionMode();
+}
+
+bool RobotUtils::bodyIsInPositionDirectMode()
+{
+    return  torso.isInPositionDirectMode() &&
+            right_arm.isInPositionDirectMode() &&
+            left_arm.isInPositionDirectMode() &&
+            //right_leg.isInPositionDirectMode() &&
+            //left_leg.isInPositionDirectMode();
 }
 
 bool RobotUtils::handsAreInPositionMode()
@@ -515,6 +529,11 @@ bool RobotUtils::handsAreInPositionMode()
            (left_hand.isAvailable && left_hand.isInPositionMode());
 }
 
+bool RobotUtils::handsAreInPositionDirectMode()
+{
+    return  (right_hand.isAvailable && right_hand.isInPositionDirectMode()) &&
+            (left_hand.isAvailable && left_hand.isInPositionDirectMode());
+}
 
 bool RobotUtils::hasIMU()
 {

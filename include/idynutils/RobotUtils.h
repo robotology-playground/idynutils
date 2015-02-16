@@ -322,7 +322,7 @@ public:
     bool setPositionMode();
 
     /**
-     * @brief getPositionMode checks the control mode for all kinematic chains is position
+     * @brief isInPositionMode checks the control mode for all kinematic chains is position
      * @return true if all chains are in position mode
      */
     bool isInPositionMode();
@@ -332,6 +332,12 @@ public:
      * @return true if set PositionDirectMode() for all chains is successfull
      */
     bool setPositionDirectMode();
+
+    /**
+     * @brief isInPositionDirectMode checks the control mode for all kinematic chains is positionDirect
+     * @return true if all chains are in positionDirect mode
+     */
+    bool isInPositionDirectMode();
 
     /**
      * @brief setTorqueMode sets torque mode on all chains except hands
@@ -418,7 +424,11 @@ private:
 
     bool bodyIsInPositionMode();
 
+    bool bodyIsInPositionDirectMode();
+
     bool handsAreInPositionMode();
+
+    bool handsAreInPositionDirectMode();
 
     /**
      * @brief loadForceTorqueSensors checks whether the current robot has force/torque sensors (from the SRDF,

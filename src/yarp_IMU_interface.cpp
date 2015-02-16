@@ -21,10 +21,12 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 
 yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
-                                       bool useSI, std::string robot_name)
-    : _output(1), _useSI(useSI), _ok(false)
+                                       std::string robot_name,
+                                       bool useSI,
+                                       std::string reference_frame)
+    : _output(1), _useSI(useSI), _ok(false), _reference_frame(reference_frame)
 {
-    _output.resize(9,0.0);
+    _output.resize(12,0.0);
 
     std::string portName = "/" + readerName + "/inertial:i";
     if(imuReader.open(portName)) {
@@ -124,9 +126,9 @@ void yarp_IMU_interface::sense(KDL::Rotation &orientation,
                 yLinearAcceleration,
                 yAngularVelocity);
     orientation.Identity();
-    orientation.RPY(yOrientation(1),
-                    yOrientation(2),
-                    yOrientation(3));
+    orientation = KDL::Rotation::RPY(yOrientation(0),
+                                     yOrientation(1),
+                                     yOrientation(2));
     YarptoKDL(yLinearAcceleration, linearAcceleration);
     YarptoKDL(yAngularVelocity, angularVelocity);
 }

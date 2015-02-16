@@ -64,10 +64,8 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
 
-    if(setControlType(controlType))
-            _controlType = controlType;
-    else
-            std::cout << "PROBLEM initializing " << kinematic_chain << " with " << controlType << std::endl;
+    if(!setControlType(controlType))
+        std::cout << "PROBLEM initializing " << kinematic_chain << " with " << controlType << std::endl;
 }
 
 
@@ -348,26 +346,20 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
 {
     yarp::sig::Vector u_sent(u_d);
 
-    std::cout << yarp::os::Vocab::decode(_controlType.toYarp().first)<<std::endl;
     switch (_controlType.toYarp().first)
     {
         case VOCAB_CM_POSITION_DIRECT:
         case VOCAB_CM_IMPEDANCE_POS:
-	        std::cout << " ENTER VOCAB_CM_POSITION_DIRECT" <<std::endl;
-
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionDirect->setPositions(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
             break;
         case VOCAB_CM_POSITION:
-	    std::cout << " ENTER VOCAB_CM_POSITION" <<std::endl;
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionControl->positionMove(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Position Ctrl"<<std::endl;
             break;
         case VOCAB_CM_TORQUE:
-	    std::cout << " ENTER VOCAB_CM_TORQUE" <<std::endl;
-
             if(!torqueControl->setRefTorques(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
             break;
@@ -413,27 +405,33 @@ const std::string& yarp_single_chain_interface::getChainName() const
 }
 
 bool walkman::yarp_single_chain_interface::setControlType(const ControlType &controlType)
-{
-    if(controlType.toYarp().first == VOCAB_CM_UNKNOWN) {
-	std::cout << "ERROR trying to set VOCAB_CM_UNKNOWN " << std::endl;
-        return true;
-    }
+{    
+    if(controlType.toYarp().first == VOCAB_CM_UNKNOWN)
+        return getControlType(_controlType);
     else {
         bool check = true;
 
+        std::cout<<this->getChainName()<<":"<<std::endl;
+
         for(unsigned int i = 0; check && i < joints_number; ++i) {
-	    if(controlType.toYarp().second != VOCAB_IM_UNKNOWN) {
-		yarp::dev::InteractionModeEnum actual_interaction_mode;
-		interactionMode->getInteractionMode(i, &actual_interaction_mode);
-		if( actual_interaction_mode != controlType.toYarp().second ) {
-		    check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
-		    std::cout << "WARNING : trying to change InteractionMode on-the-fly : this feature is not yet supply by the firmwares" << std::endl;
-		}
-	    }
-                
-            check = check && controlMode->setControlMode(i, controlType.toYarp().first);
+            if(controlType.toYarp().second != VOCAB_IM_UNKNOWN){
+                yarp::dev::InteractionModeEnum actual_interaction_mode;
+                interactionMode->getInteractionMode(i, &actual_interaction_mode);
+                if( actual_interaction_mode != controlType.toYarp().second ) {
+                    check = check && interactionMode->setInteractionMode(i, controlType.toYarp().second);
+                    std::cout<<"    Changing Interaction Mode for joint "<<i<<std::endl;
+                }
+            }
+
+            int actual_control_mode;
+            controlMode->getControlMode(i, &actual_control_mode);
+            if( actual_control_mode != controlType.toYarp().first ) {
+                check = check && controlMode->setControlMode(i, controlType.toYarp().first);
+                std::cout<<"    Changing Control Mode for joint "<<i<<std::endl;
+            }
+
             if(!check) {
-                std::cout << "ERROR setting " << kinematic_chain << " to " << controlType <<
+                std::cout << "  ERROR setting " << kinematic_chain << " to " << controlType <<
                              ". Kinematic chain in inconsistent state at joint " << i;
             }
         }
@@ -442,25 +440,27 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
 
         ControlType currentControlType;
         if(!this->getControlType(currentControlType)) {
-            std::cout << "ERROR asking the current control Type for verification. Something went wrong" << std::endl;
+            std::cout << "  ERROR asking the current control Type for verification. Something went wrong" << std::endl;
             return false;
         }
 
         _controlType = currentControlType;
 
         if(controlType != currentControlType) {
-            std::cout << "ERROR: we were able to set the desired control type, but upon check the robot"
+            std::cout << "  ERROR: we were able to set the desired control type, but upon check the robot"
                       << " returns the control type was not updated." << std::endl;
             return false;
         }
+        std::cout<<"    Changed Control Type for "<<this->getChainName()<<": "<<_controlType.toString()<<std::endl;
+        std::cout<<std::endl;
+
         return true;
     }
 }
 
 walkman::ControlType walkman::yarp_single_chain_interface::getControlType() throw()
 {
-    ControlType controlType;
-    if(getControlType(controlType)) return controlType;
+    if(getControlType(_controlType)) return _controlType;
     throw("Unable to correctly read control type");
 }
 

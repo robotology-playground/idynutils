@@ -212,7 +212,8 @@ public:
     const std::string &getChainName() const;
 
     /**
-     * @brief setControlType sets the desired control type, if possible
+     * @brief setControlType sets the desired control type, if possible. If desired controlType is none, the
+     * actual control type will not be changed. It updates the internal control type.
      * @param controlType the desired control type for this kinematic chain
      * @return true on success
      */
@@ -220,6 +221,7 @@ public:
 
     /**
      * @brief getControlType returns the current control type for this kinematic chain.
+     * Update the internal control type.
      * Throws an exception in case there is an error getting the control type
      * @return controlType the control type actually set for this kinematic chain
      */
