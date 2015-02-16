@@ -22,7 +22,7 @@
 
 
 yarp_IMU_interface::yarp_IMU_interface(std::string readerName, bool useSI, std::string robot_name, std::string reference_frame)
-:yarp_IMU_interface(readerName,useSI,robot_name,reference_frame)
+:yarp_IMU_interface(readerName,robot_name,useSI,reference_frame)
 {
 
 }
