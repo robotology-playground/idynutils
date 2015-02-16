@@ -509,7 +509,7 @@ bool RobotUtils::bodyIsInPositionMode()
 {
     return  torso.isInPositionMode() &&
             right_arm.isInPositionMode() &&
-            left_arm.isInPositionMode() &&
+            left_arm.isInPositionMode();
             //right_leg.isInPositionMode() &&
             //left_leg.isInPositionMode();
 }
@@ -518,7 +518,7 @@ bool RobotUtils::bodyIsInPositionDirectMode()
 {
     return  torso.isInPositionDirectMode() &&
             right_arm.isInPositionDirectMode() &&
-            left_arm.isInPositionDirectMode() &&
+            left_arm.isInPositionDirectMode();
             //right_leg.isInPositionDirectMode() &&
             //left_leg.isInPositionDirectMode();
 }
