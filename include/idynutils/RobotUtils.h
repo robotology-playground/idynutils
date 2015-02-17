@@ -63,7 +63,7 @@ public:
 
     walkman::yarp_single_chain_interface right_hand, left_hand;
     walkman::yarp_single_chain_interface right_arm, left_arm;
-    walkman::yarp_single_chain_interface torso;
+//     walkman::yarp_single_chain_interface torso;
 //    walkman::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
 
@@ -295,15 +295,15 @@ public:
     
     void fromIdynToRobot( const yarp::sig::Vector& _q,
                           yarp::sig::Vector& _right_arm,
-                          yarp::sig::Vector& _left_arm,
-                          yarp::sig::Vector& _torso);//,
+                          yarp::sig::Vector& _left_arm);
+//                           yarp::sig::Vector& _torso);//,
 //                          yarp::sig::Vector& _right_leg,
 //                          yarp::sig::Vector& _left_leg);
 
     void fromRobotToIdyn(
                           const yarp::sig::Vector &_right_arm,
                           const yarp::sig::Vector &_left_arm,
-                          const yarp::sig::Vector &_torso,
+//                           const yarp::sig::Vector &_torso,
 //                          const yarp::sig::Vector &_right_leg,
 //                          const yarp::sig::Vector &_left_leg,
                          yarp::sig::Vector& _q);
@@ -384,7 +384,7 @@ private:
     /// @brief q_commanded_right_leg q sento to the right leg, in robot joint ordering
 //    yarp::sig::Vector q_commanded_right_leg;
     /// @brief q_commanded_torso q sento to the torso, in robot joint ordering
-    yarp::sig::Vector q_commanded_torso;
+//     yarp::sig::Vector q_commanded_torso;
 
     yarp::sig::Vector q_sensed;
 
@@ -394,7 +394,7 @@ private:
     yarp::sig::Vector q_sensed_right_arm;
 //    yarp::sig::Vector q_sensed_left_leg;
 //    yarp::sig::Vector q_sensed_right_leg;
-    yarp::sig::Vector q_sensed_torso;
+//     yarp::sig::Vector q_sensed_torso;
 
     yarp::sig::Vector qdot_sensed;
 
@@ -402,7 +402,7 @@ private:
     yarp::sig::Vector qdot_sensed_right_arm;
 //    yarp::sig::Vector qdot_sensed_left_leg;
 //    yarp::sig::Vector qdot_sensed_right_leg;
-    yarp::sig::Vector qdot_sensed_torso;
+//     yarp::sig::Vector qdot_sensed_torso;
 
     yarp::sig::Vector tau_sensed;
 
@@ -410,7 +410,7 @@ private:
     yarp::sig::Vector tau_sensed_right_arm;
 //    yarp::sig::Vector tau_sensed_left_leg;
 //    yarp::sig::Vector tau_sensed_right_leg;
-    yarp::sig::Vector tau_sensed_torso;
+//     yarp::sig::Vector tau_sensed_torso;
 
     std::string _moduleName;
 

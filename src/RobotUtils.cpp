@@ -32,19 +32,19 @@ RobotUtils::RobotUtils(const std::string moduleName,
     left_hand(walkman::robot::left_hand, moduleName, robotName, true, walkman::controlTypes::none),
     left_arm(walkman::robot::left_arm, moduleName, robotName, true, walkman::controlTypes::none),
 //    left_leg(walkman::robot::left_leg, moduleName, robotName, true, walkman::controlTypes::none),
-     torso(walkman::robot::torso, moduleName, robotName, true, walkman::controlTypes::none),
+//      torso(walkman::robot::torso, moduleName, robotName, true, walkman::controlTypes::none),
     q_sensed_right_hand( 1 ),
     q_sensed_left_hand( 1 ),
     q_sensed_right_arm( right_arm.getNumberOfJoints() ),
     q_sensed_left_arm( left_arm.getNumberOfJoints() ),
-    q_sensed_torso( torso.getNumberOfJoints() ),
+//     q_sensed_torso( torso.getNumberOfJoints() ),
 //    q_sensed_right_leg( right_leg.getNumberOfJoints() ),
 //    q_sensed_left_leg( left_leg.getNumberOfJoints() ),
     q_commanded_right_hand( 1 ),
     q_commanded_left_hand( 1 ),
     q_commanded_right_arm( right_arm.getNumberOfJoints() ),
     q_commanded_left_arm( left_arm.getNumberOfJoints() ),
-    q_commanded_torso( torso.getNumberOfJoints() ),
+//     q_commanded_torso( torso.getNumberOfJoints() ),
 //    q_commanded_right_leg( right_leg.getNumberOfJoints() ),
 //    q_commanded_left_leg( left_leg.getNumberOfJoints() ),
     idynutils( robotName, urdf_path, srdf_path ),
@@ -88,12 +88,12 @@ void RobotUtils::move(const yarp::sig::Vector &_q) {
 
     fromIdynToRobot(_q,
                     q_commanded_right_arm,
-                    q_commanded_left_arm,
-                    q_commanded_torso);//,
+                    q_commanded_left_arm);
+//                     q_commanded_torso);//,
 //                    q_commanded_right_leg,
 //                    q_commanded_left_leg);
 
-    torso.move(q_commanded_torso);
+//     torso.move(q_commanded_torso);
     left_arm.move(q_commanded_left_arm);
     right_arm.move(q_commanded_right_arm);
 //    left_leg.move(q_commanded_left_leg);
@@ -103,7 +103,7 @@ void RobotUtils::move(const yarp::sig::Vector &_q) {
 bool RobotUtils::moveDone()
 {
     bool moveDone = 
-        torso.moveDone() &&
+//         torso.moveDone() &&
         left_arm.moveDone() &&
         right_arm.moveDone();// &&
 //		  left_leg.moveDone() &&
@@ -138,18 +138,18 @@ bool RobotUtils::setReferenceSpeeds(const yarp::sig::Vector &maximum_velocity)
     }
 
     yarp::sig::Vector 
-                      velocity_torso,
+//                       velocity_torso,
                       velocity_right_arm,
                       velocity_left_arm;//,
 //                      velocity_right_leg,
 //                      velocity_left_leg;
-    idynutils.fromIDynToRobot(maximum_velocity, velocity_torso, idynutils.torso);
+//     idynutils.fromIDynToRobot(maximum_velocity, velocity_torso, idynutils.torso);
     idynutils.fromIDynToRobot(maximum_velocity, velocity_right_arm, idynutils.right_arm);
     idynutils.fromIDynToRobot(maximum_velocity, velocity_left_arm, idynutils.left_arm);
 //    idynutils.fromIDynToRobot(maximum_velocity, velocity_right_leg, idynutils.right_leg);
 //    idynutils.fromIDynToRobot(maximum_velocity, velocity_left_leg, idynutils.left_leg);
     return  
-        torso.setReferenceSpeeds(velocity_torso) &&
+//         torso.setReferenceSpeeds(velocity_torso) &&
         right_arm.setReferenceSpeeds(velocity_right_arm) &&
         left_arm.setReferenceSpeeds(velocity_left_arm);// &&
 //        right_leg.setReferenceSpeeds(velocity_right_leg) &&
@@ -180,7 +180,7 @@ bool RobotUtils::setReferenceSpeed(const double &maximum_velocity)
     return  
         (right_hand.isAvailable ? right_hand.setReferenceSpeed(maximum_velocity) : true) &&
         (left_hand.isAvailable ? left_hand.setReferenceSpeed(maximum_velocity) : true) &&
-        torso.setReferenceSpeed(maximum_velocity) &&
+//         torso.setReferenceSpeed(maximum_velocity) &&
         right_arm.setReferenceSpeed(maximum_velocity) &&
         left_arm.setReferenceSpeed(maximum_velocity);// &&
 //            right_leg.setReferenceSpeed(maximum_velocity) &&
@@ -198,13 +198,13 @@ bool RobotUtils::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vect
         return false;
     }
     yarp::sig::Vector 
-        Kq_torso, Dq_torso,
+//         Kq_torso, Dq_torso,
         Kq_right_arm, Dq_right_arm,
         Kq_left_arm, Dq_left_arm;//,
 //        Kq_right_leg, Dq_right_leg,
 //        Kq_left_leg, Dq_left_leg;
-    idynutils.fromIDynToRobot(Kq, Kq_torso, idynutils.torso);
-    idynutils.fromIDynToRobot(Dq, Dq_torso, idynutils.torso);
+//     idynutils.fromIDynToRobot(Kq, Kq_torso, idynutils.torso);
+//     idynutils.fromIDynToRobot(Dq, Dq_torso, idynutils.torso);
     idynutils.fromIDynToRobot(Kq, Kq_right_arm, idynutils.right_arm);
     idynutils.fromIDynToRobot(Dq, Dq_right_arm, idynutils.right_arm);
     idynutils.fromIDynToRobot(Kq, Kq_left_arm, idynutils.left_arm);
@@ -215,7 +215,7 @@ bool RobotUtils::setImpedance(const yarp::sig::Vector &Kq, const yarp::sig::Vect
 //    idynutils.fromIDynToRobot(Dq, Dq_left_leg, idynutils.left_leg);
 
     return      
-        torso.setImpedance(Kq_torso, Dq_torso) &&
+//         torso.setImpedance(Kq_torso, Dq_torso) &&
         right_arm.setImpedance(Kq_right_arm, Dq_right_arm) &&
         left_arm.setImpedance(Kq_left_arm, Dq_left_arm);// &&
 //        right_leg.setImpedance(Kq_right_leg, Dq_right_leg) &&
@@ -248,12 +248,12 @@ bool RobotUtils::getImpedance(std::map<std::string, std::pair<yarp::sig::Vector,
     bool atLeastAChainInImpedanceMode = false;
     impedance_map.clear();
 
-    if(torso.isInImpedanceMode()) {
-        yarp::sig::Vector Kq, Dq;
-        torso.getImpedance(Kq,Dq);
-        impedance_map[torso.getChainName()] = Impedance(Kq,Dq);
-        atLeastAChainInImpedanceMode = true;
-    }
+//     if(torso.isInImpedanceMode()) {
+//         yarp::sig::Vector Kq, Dq;
+//         torso.getImpedance(Kq,Dq);
+//         impedance_map[torso.getChainName()] = Impedance(Kq,Dq);
+//         atLeastAChainInImpedanceMode = true;
+//     }
 
     if(right_arm.isInImpedanceMode()) {
         yarp::sig::Vector Kq, Dq;
@@ -313,14 +313,14 @@ yarp::sig::Vector &RobotUtils::sensePosition()
 {
     right_arm.sensePosition(q_sensed_right_arm);
     left_arm.sensePosition(q_sensed_left_arm);
-    torso.sensePosition(q_sensed_torso);
+//     torso.sensePosition(q_sensed_torso);
 //    right_leg.sensePosition(q_sensed_right_leg);
 //    left_leg.sensePosition(q_sensed_left_leg);
 
     fromRobotToIdyn(
         q_sensed_right_arm,
         q_sensed_left_arm,
-        q_sensed_torso,
+//         q_sensed_torso,
 //        q_sensed_right_leg,
 //        q_sensed_left_leg,
         q_sensed);
@@ -332,14 +332,14 @@ yarp::sig::Vector &RobotUtils::senseVelocity()
 {
     right_arm.senseVelocity(qdot_sensed_right_arm);
     left_arm.senseVelocity(qdot_sensed_left_arm);
-    torso.senseVelocity(qdot_sensed_torso);
+//     torso.senseVelocity(qdot_sensed_torso);
 //    right_leg.senseVelocity(qdot_sensed_right_leg);
 //    left_leg.senseVelocity(qdot_sensed_left_leg);
 
     fromRobotToIdyn(
         qdot_sensed_right_arm,
         qdot_sensed_left_arm,
-        qdot_sensed_torso,
+//         qdot_sensed_torso,
 //        qdot_sensed_right_leg,
 //        qdot_sensed_left_leg,
         qdot_sensed);
@@ -351,14 +351,14 @@ yarp::sig::Vector &RobotUtils::senseTorque()
 {
     right_arm.senseTorque(tau_sensed_right_arm);
     left_arm.senseTorque(tau_sensed_left_arm);
-    torso.senseTorque(tau_sensed_torso);
+//     torso.senseTorque(tau_sensed_torso);
 //    right_leg.senseTorque(tau_sensed_right_leg);
 //    left_leg.senseTorque(tau_sensed_left_leg);
 
     fromRobotToIdyn(
         tau_sensed_right_arm,
         tau_sensed_left_arm,
-        tau_sensed_torso,
+//         tau_sensed_torso,
 //        tau_sensed_right_leg,
 //        tau_sensed_left_leg,
         tau_sensed);
@@ -405,15 +405,15 @@ bool RobotUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
 
 void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
                                  yarp::sig::Vector &_right_arm,
-                                 yarp::sig::Vector &_left_arm,
+                                 yarp::sig::Vector &_left_arm)
 //                                 yarp::sig::Vector &_torso,
-                                 yarp::sig::Vector &_torso)
+//                                  yarp::sig::Vector &_torso)
 //                                 yarp::sig::Vector &_right_leg,
 //                                 yarp::sig::Vector &_left_leg)
 {
     idynutils.fromIDynToRobot(_q, _right_arm, idynutils.right_arm);
     idynutils.fromIDynToRobot(_q, _left_arm, idynutils.left_arm);
-    idynutils.fromIDynToRobot(_q, _torso, idynutils.torso);
+//     idynutils.fromIDynToRobot(_q, _torso, idynutils.torso);
 //    idynutils.fromIDynToRobot(_q, _right_leg, idynutils.right_leg);
 //    idynutils.fromIDynToRobot(_q, _left_leg, idynutils.left_leg);
 }
@@ -421,14 +421,14 @@ void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
 void RobotUtils::fromRobotToIdyn(
                                  const yarp::sig::Vector &_right_arm,
                                  const yarp::sig::Vector &_left_arm,
-                                 const yarp::sig::Vector &_torso,
+//                                  const yarp::sig::Vector &_torso,
 //                                 const yarp::sig::Vector &_right_leg,
 //                                 const yarp::sig::Vector &_left_leg,
                                  yarp::sig::Vector &_q)
 {
     idynutils.fromRobotToIDyn(_right_arm, _q, idynutils.right_arm);
     idynutils.fromRobotToIDyn(_left_arm, _q, idynutils.left_arm);
-    idynutils.fromRobotToIDyn(_torso, _q, idynutils.torso);
+//     idynutils.fromRobotToIDyn(_torso, _q, idynutils.torso);
 //    idynutils.fromRobotToIDyn(_right_leg, _q, idynutils.right_leg);
 //    idynutils.fromRobotToIDyn(_left_leg, _q, idynutils.left_leg);
 }
@@ -439,7 +439,7 @@ bool RobotUtils::setControlType(const walkman::ControlType& controlType)
     return  
              (right_hand.isAvailable ? right_hand.setControlType(controlType) : true) &&
              (left_hand.isAvailable ? left_hand.setControlType(controlType) : true) &&
-             torso.setControlType(controlType) &&
+//              torso.setControlType(controlType) &&
              right_arm.setControlType(controlType) &&
              left_arm.setControlType(controlType);// &&
 //            right_leg.setControlType(controlType) &&
@@ -487,7 +487,7 @@ bool RobotUtils::isInPositionDirectMode()
 bool RobotUtils::isInImpedanceMode()
 {
     return  
-            torso.isInImpedanceMode() &&
+//             torso.isInImpedanceMode() &&
             right_arm.isInImpedanceMode() &&
             left_arm.isInImpedanceMode();// &&
 //            right_leg.isInImpedanceMode() &&
@@ -499,7 +499,7 @@ walkman::yarp_single_chain_interface* const RobotUtils::getChainByName(const std
     if(chain_name == walkman::robot::right_arm) return &right_arm;
 //    if(chain_name == walkman::robot::left_leg) return &left_leg;
 //    if(chain_name == walkman::robot::right_leg) return &right_leg;
-    if(chain_name == walkman::robot::torso) return &torso;
+//     if(chain_name == walkman::robot::torso) return &torso;
     if(chain_name == walkman::robot::right_hand) return &right_hand;
     if(chain_name == walkman::robot::left_hand) return &left_hand;
     return NULL;
@@ -507,7 +507,7 @@ walkman::yarp_single_chain_interface* const RobotUtils::getChainByName(const std
 
 bool RobotUtils::bodyIsInPositionMode()
 {
-    return  torso.isInPositionMode() &&
+    return  /*torso.isInPositionMode() &&*/
             right_arm.isInPositionMode() &&
             left_arm.isInPositionMode();
             //right_leg.isInPositionMode() &&
@@ -516,7 +516,7 @@ bool RobotUtils::bodyIsInPositionMode()
 
 bool RobotUtils::bodyIsInPositionDirectMode()
 {
-    return  torso.isInPositionDirectMode() &&
+    return  /*torso.isInPositionDirectMode() &&*/
             right_arm.isInPositionDirectMode() &&
             left_arm.isInPositionDirectMode();
             //right_leg.isInPositionDirectMode() &&
@@ -612,7 +612,7 @@ bool RobotUtils::loadIMUSensors()
 RobotUtils::KinematicChains RobotUtils::getKinematicChains()
 {
     KinematicChains k_chains;
-    k_chains.push_back(&idynutils.torso);
+//     k_chains.push_back(&idynutils.torso);
     k_chains.push_back(&idynutils.right_arm);
     k_chains.push_back(&idynutils.left_arm);
 //    k_chains.push_back(&idynutils.right_leg);
