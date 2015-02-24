@@ -40,6 +40,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     left_arm(walkman::robot::left_arm),
     left_leg(walkman::robot::left_leg),
     torso(walkman::robot::torso),
+    head(walkman::robot::head),
     robot_name(robot_name_),
     g(3,0.0),
     anchor_name("l_sole"),
@@ -186,38 +187,43 @@ bool iDynUtils::setJointNames()
     bool expected_left_leg = false;
     bool expected_right_leg = false;
     bool expected_torso = false;
+    bool expected_head = false;
 
     std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
-    std::vector<srdf::Model::Group> coman_groups = robot_srdf->getGroups();
-    for(auto group: coman_groups)
+    std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
+    for(auto group: robot_groups)
     {
         if (group.name_==walkman::robot::chains)
         {
             int group_index=-1;
-            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::left_arm,group_index))
-                expected_left_arm=setChainJointNames(coman_groups[group_index],left_arm);
-            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::left_leg,group_index))
-                expected_left_leg=setChainJointNames(coman_groups[group_index],left_leg);
-            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::right_arm,group_index))
-                expected_right_arm=setChainJointNames(coman_groups[group_index],right_arm);
-            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::right_leg,group_index))
-                expected_right_leg=setChainJointNames(coman_groups[group_index],right_leg);
-            if (findGroupChain(group.subgroups_,coman_groups,walkman::robot::torso,group_index))
-                expected_torso=setChainJointNames(coman_groups[group_index],torso);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::left_arm,group_index))
+                expected_left_arm=setChainJointNames(robot_groups[group_index],left_arm);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::left_leg,group_index))
+                expected_left_leg=setChainJointNames(robot_groups[group_index],left_leg);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::right_arm,group_index))
+                expected_right_arm=setChainJointNames(robot_groups[group_index],right_arm);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::right_leg,group_index))
+                expected_right_leg=setChainJointNames(robot_groups[group_index],right_leg);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::torso,group_index))
+                expected_torso=setChainJointNames(robot_groups[group_index],torso);
+            if (findGroupChain(group.subgroups_,robot_groups,walkman::robot::head,group_index))
+                expected_head=setChainJointNames(robot_groups[group_index],head);
         }
     }
 
-    if(!expected_left_arm) std::cout<<walkman::robot::left_arm<<" joint group is missing in SRDF"<<std::endl;
-    if(!expected_right_arm) std::cout<<walkman::robot::right_arm<<" joint group is missing in SRDF"<<std::endl;
-    if(!expected_left_leg) std::cout<<walkman::robot::left_leg<<" joint group is missing in SRDF"<<std::endl;
-    if(!expected_right_leg) std::cout<<walkman::robot::right_leg<<" joint group is missing in SRDF"<<std::endl;
-    if(!expected_torso) std::cout<<walkman::robot::torso<<" joint group is missing in SRDF"<<std::endl;
+    if(!expected_left_arm) std::cout<<walkman::robot::left_arm<<" joint group left_arm is missing in SRDF"<<std::endl;
+    if(!expected_right_arm) std::cout<<walkman::robot::right_arm<<" joint group right_arm is missing in SRDF"<<std::endl;
+    if(!expected_left_leg) std::cout<<walkman::robot::left_leg<<" joint group left_leg is missing in SRDF"<<std::endl;
+    if(!expected_right_leg) std::cout<<walkman::robot::right_leg<<" joint group right_leg is missing in SRDF"<<std::endl;
+    if(!expected_torso) std::cout<<walkman::robot::torso<<" joint group torso is missing in SRDF"<<std::endl;
+    if(!expected_head) std::cout<<walkman::robot::head<<" joint group head is missing in SRDF"<<std::endl;
 
     if(expected_left_arm  &&
        expected_left_leg  &&
        expected_right_arm &&
        expected_right_leg &&
-       expected_torso) return true;
+       expected_torso     &&
+       expected_head) return true;
     return false;
 
 }
@@ -282,7 +288,7 @@ bool iDynUtils::iDyn3Model()
     iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
-    int nJ = iDyn3_model.getNrOfDOFs(); //29
+    int nJ = iDyn3_model.getNrOfDOFs();
     yarp::sig::Vector qMax; qMax.resize(nJ,0.0);
     yarp::sig::Vector qMin; qMin.resize(nJ,0.0);
     
@@ -501,8 +507,10 @@ void iDynUtils::setControlledKinematicChainsJointNumbers()
     setJointNumbers(left_arm);
     setJointNumbers(left_leg);
     setJointNumbers(torso);
+    setJointNumbers(head);
 }
 
+///TODO: REMOVE THIS!
 yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
     yarp::sig::Matrix J_left_foot, J_right_foot, J_left_hand, J_right_hand;
     yarp::sig::Matrix J_contacts;
@@ -540,6 +548,7 @@ yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
 
 }
 
+///TODO: REMOVE THIS!
 yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts) {
     int nJ = this->iDyn3_model.getNrOfDOFs();
     /**
