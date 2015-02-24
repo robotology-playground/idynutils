@@ -65,6 +65,7 @@ public:
     walkman::yarp_single_chain_interface right_arm, left_arm;
     walkman::yarp_single_chain_interface torso;
     walkman::yarp_single_chain_interface right_leg, left_leg;
+    walkman::yarp_single_chain_interface head;
     iDynUtils idynutils;
 
     std::vector<std::string> ft_reference_frames;
@@ -298,13 +299,15 @@ public:
                            yarp::sig::Vector& _left_arm,
                            yarp::sig::Vector& _torso,
                            yarp::sig::Vector& _right_leg,
-                           yarp::sig::Vector& _left_leg);
+                           yarp::sig::Vector& _left_leg,
+                           yarp::sig::Vector& _head);
 
     void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
                          const yarp::sig::Vector &_left_arm,
                          const yarp::sig::Vector &_torso,
                          const yarp::sig::Vector &_right_leg,
                          const yarp::sig::Vector &_left_leg,
+                         const yarp::sig::Vector &_head,
                          yarp::sig::Vector& _q);
     
     /**
@@ -385,6 +388,8 @@ private:
     /// @brief q_commanded_torso q sento to the torso, in robot joint ordering
     yarp::sig::Vector q_commanded_torso;
 
+    yarp::sig::Vector q_commanded_head;
+
     yarp::sig::Vector q_sensed;
 
     yarp::sig::Vector q_sensed_left_hand;
@@ -394,6 +399,7 @@ private:
     yarp::sig::Vector q_sensed_left_leg;
     yarp::sig::Vector q_sensed_right_leg;
     yarp::sig::Vector q_sensed_torso;
+    yarp::sig::Vector q_sensed_head;
 
     yarp::sig::Vector qdot_sensed;
 
@@ -402,6 +408,7 @@ private:
     yarp::sig::Vector qdot_sensed_left_leg;
     yarp::sig::Vector qdot_sensed_right_leg;
     yarp::sig::Vector qdot_sensed_torso;
+    yarp::sig::Vector qdot_sensed_head;
 
     yarp::sig::Vector tau_sensed;
 
@@ -410,6 +417,7 @@ private:
     yarp::sig::Vector tau_sensed_left_leg;
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
+    yarp::sig::Vector tau_sensed_head;
 
     std::string _moduleName;
 
