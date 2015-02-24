@@ -36,22 +36,22 @@ yarp_ft_interface::yarp_ft_interface(std::string deviceId,
     if (!result) 
     {
         std::cout<<"FT SENSORS: check that the ports are free and not already used, robot_name="<<robot_name<<std::endl;
-        assert(result && "could not open polydriver between /robot_name/deviceId/analog:o/forceTorque and \
-            /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
+//         assert(result && "could not open polydriver between /robot_name/deviceId/analog:o/forceTorque and \
+//             /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
     }
     result =polyDriver_FT.isValid();
     if (!result)
     {
         std::cout<<"FT SENSORS: error opening analogSensor"<<std::endl;
-        assert(result && "polydriver is not valid between /robot_name/deviceId/analog:o/forceTorque and \
-        /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
+//         assert(result && "polydriver is not valid between /robot_name/deviceId/analog:o/forceTorque and \
+//         /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
     }
     result = polyDriver_FT.view(this->FT_sensor);
     if (!result)
     {
         std::cout<<"FT SENSORS: error viewing the analog yarp interface"<<std::endl;
-        assert(result && "polydriver did not provide an analog interface between /robot_name/deviceId/analog:o/forceTorque and \
-        /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
+//         assert(result && "polydriver did not provide an analog interface between /robot_name/deviceId/analog:o/forceTorque and \
+//         /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
     }
     ft_channels = FT_sensor->getChannels();
 

@@ -61,8 +61,8 @@ public:
 	        const std::string urdf_path = "",
 	        const std::string srdf_path = "" );
 
-    walkman::yarp_single_chain_interface right_hand, left_hand;
-    walkman::yarp_single_chain_interface right_arm, left_arm;
+    walkman::yarp_single_chain_interface right_hand;/*, left_hand;*/
+    walkman::yarp_single_chain_interface right_arm;/*, left_arm;*/
     walkman::yarp_single_chain_interface torso;
 //    walkman::yarp_single_chain_interface right_leg, left_leg;
     iDynUtils idynutils;
@@ -149,7 +149,7 @@ public:
      * @param q_right_hand a vector where the right hand position will be stored
      * @return true if hands are available
      */
-    bool senseHandsPosition(yarp::sig::Vector &q_left_hand,
+    bool senseHandsPosition(/*yarp::sig::Vector &q_left_hand,*/
                             yarp::sig::Vector &q_right_hand);
 
 
@@ -167,7 +167,7 @@ public:
      * @param q_right_hand the desired joint position vector for the right hand
      * @return true if hands are available
      */
-    bool moveHands(const yarp::sig::Vector &q_left_hand,
+    bool moveHands(/*const yarp::sig::Vector &q_left_hand,*/
                    const yarp::sig::Vector &q_right_hand);
 
 //    /**
@@ -295,14 +295,14 @@ public:
     
     void fromIdynToRobot( const yarp::sig::Vector& _q,
                           yarp::sig::Vector& _right_arm,
-                          yarp::sig::Vector& _left_arm,
+//                           yarp::sig::Vector& _left_arm,
                           yarp::sig::Vector& _torso);//,
 //                          yarp::sig::Vector& _right_leg,
 //                          yarp::sig::Vector& _left_leg);
 
     void fromRobotToIdyn(
                           const yarp::sig::Vector &_right_arm,
-                          const yarp::sig::Vector &_left_arm,
+//                           const yarp::sig::Vector &_left_arm,
                           const yarp::sig::Vector &_torso,
 //                          const yarp::sig::Vector &_right_leg,
 //                          const yarp::sig::Vector &_left_leg,
@@ -374,9 +374,9 @@ private:
     /// @brief q_commanded_right_arm q sento to the right hand, in robot joint ordering
     yarp::sig::Vector q_commanded_right_hand;
     /// @brief q_commanded_left_arm q sent to the left hand, in robot joint ordering
-    yarp::sig::Vector q_commanded_left_hand;
+//     yarp::sig::Vector q_commanded_left_hand;
     /// @brief q_commanded_left_arm q sent to the left arm, in robot joint ordering
-    yarp::sig::Vector q_commanded_left_arm;
+//     yarp::sig::Vector q_commanded_left_arm;
     /// @brief q_commanded_right_arm q sento to the right arm, in robot joint ordering
     yarp::sig::Vector q_commanded_right_arm;
     /// @brief q_commanded_left_leg q sento to the left leg, in robot joint ordering
@@ -388,9 +388,9 @@ private:
 
     yarp::sig::Vector q_sensed;
 
-    yarp::sig::Vector q_sensed_left_hand;
+//     yarp::sig::Vector q_sensed_left_hand;
     yarp::sig::Vector q_sensed_right_hand;
-    yarp::sig::Vector q_sensed_left_arm;
+//     yarp::sig::Vector q_sensed_left_arm;
     yarp::sig::Vector q_sensed_right_arm;
 //    yarp::sig::Vector q_sensed_left_leg;
 //    yarp::sig::Vector q_sensed_right_leg;
@@ -398,7 +398,7 @@ private:
 
     yarp::sig::Vector qdot_sensed;
 
-    yarp::sig::Vector qdot_sensed_left_arm;
+//     yarp::sig::Vector qdot_sensed_left_arm;
     yarp::sig::Vector qdot_sensed_right_arm;
 //    yarp::sig::Vector qdot_sensed_left_leg;
 //    yarp::sig::Vector qdot_sensed_right_leg;
@@ -406,7 +406,7 @@ private:
 
     yarp::sig::Vector tau_sensed;
 
-    yarp::sig::Vector tau_sensed_left_arm;
+//     yarp::sig::Vector tau_sensed_left_arm;
     yarp::sig::Vector tau_sensed_right_arm;
 //    yarp::sig::Vector tau_sensed_left_leg;
 //    yarp::sig::Vector tau_sensed_right_leg;
