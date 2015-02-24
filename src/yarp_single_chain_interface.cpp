@@ -348,25 +348,25 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
 {
     yarp::sig::Vector u_sent(u_d);
 
-    std::cout << yarp::os::Vocab::decode(_controlType.toYarp().first)<<std::endl;
+// //     std::cout << yarp::os::Vocab::decode(_controlType.toYarp().first)<<std::endl;
     switch (_controlType.toYarp().first)
     {
         case VOCAB_CM_POSITION_DIRECT:
         case VOCAB_CM_IMPEDANCE_POS:
-	        std::cout << " ENTER VOCAB_CM_POSITION_DIRECT" <<std::endl;
+// 	        std::cout << " ENTER VOCAB_CM_POSITION_DIRECT" <<std::endl;
 
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionDirect->setPositions(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
             break;
         case VOCAB_CM_POSITION:
-	    std::cout << " ENTER VOCAB_CM_POSITION" <<std::endl;
+// 	    std::cout << " ENTER VOCAB_CM_POSITION" <<std::endl;
             if(_useSI) convertMotorCommandFromSI(u_sent);
             if(!positionControl->positionMove(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Position Ctrl"<<std::endl;
             break;
         case VOCAB_CM_TORQUE:
-	    std::cout << " ENTER VOCAB_CM_TORQUE" <<std::endl;
+// 	    std::cout << " ENTER VOCAB_CM_TORQUE" <<std::endl;
 
             if(!torqueControl->setRefTorques(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
