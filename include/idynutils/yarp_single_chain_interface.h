@@ -43,6 +43,7 @@ namespace walkman{
         static const std::string left_leg = "left_leg";
         static const std::string right_leg = "right_leg";
         static const std::string torso = "torso";
+        static const std::string head = "head";
         static const std::string chains = "chains";
         static const std::string force_torque_sensors = "force_torque_sensors";
         static const std::string imu_sensors = "imu_sensors";
