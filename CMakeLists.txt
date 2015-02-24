@@ -137,5 +137,5 @@ add_subdirectory(examples)
 #######################
 # Add Testing target  #
 #######################
-enable_testing()
-add_subdirectory(tests)
+#enable_testing()
+#add_subdirectory(tests)
