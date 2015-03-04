@@ -79,7 +79,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     bool setJointNames_ok = setJointNames();
     if(!setJointNames_ok){
         std::cout<<"Problems Setting Joint names"<<std::endl;
-        assert(setJointNames_ok);}
+        assert(setJointNames_ok && "No chains found!");}
 
     setControlledKinematicChainsJointNumbers();
 
@@ -218,11 +218,11 @@ bool iDynUtils::setJointNames()
     if(!expected_torso) std::cout<<walkman::robot::torso<<" joint group torso is missing in SRDF"<<std::endl;
     if(!expected_head) std::cout<<walkman::robot::head<<" joint group head is missing in SRDF"<<std::endl;
 
-    if(expected_left_arm  &&
-       expected_left_leg  &&
-       expected_right_arm &&
-       expected_right_leg &&
-       expected_torso     &&
+    if(expected_left_arm  ||
+       expected_left_leg  ||
+       expected_right_arm ||
+       expected_right_leg ||
+       expected_torso     ||
        expected_head) return true;
     return false;
 

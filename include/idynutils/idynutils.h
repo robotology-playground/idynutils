@@ -357,7 +357,7 @@ protected:
 
     /**
      * @brief setJointNames get joint names from stored srdf
-     * @return return true if all the needed kinematic chains are found
+     * @return return true if at least a kinematic chain is found
      */
     bool setJointNames();
 
