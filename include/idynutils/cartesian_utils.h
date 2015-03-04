@@ -179,6 +179,16 @@ public:
                                         const yarp::sig::Vector& ZMPL, const yarp::sig::Vector& ZMPR,
                                         const double fz_threshold);
 
+    /**
+     * @brief computePanTiltMatrix given a gaze vector computes the Homogeneous Matrix to control the
+     * YAW-PITCH angles.
+     * The algorithm used is based on the paper: "Adaptive Predictive Gaze Control of a Redundant Humanoid
+     * Robot Head, IROS2011".
+     *
+     * @param gaze vector [3x1]
+     * @param pan_tilt_matrix Homogeneous Matrix [4x4] in the same reference frame of the gaze vector
+     */
+    static void computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix);
 
     /**
      * @brief computeCartesianError orientation and position error
