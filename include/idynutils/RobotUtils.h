@@ -299,8 +299,22 @@ public:
                            yarp::sig::Vector& _left_arm,
                            yarp::sig::Vector& _torso,
                            yarp::sig::Vector& _right_leg,
+                           yarp::sig::Vector& _left_leg);
+
+    void fromIdynToRobot(const yarp::sig::Vector& _q,
+                           yarp::sig::Vector& _right_arm,
+                           yarp::sig::Vector& _left_arm,
+                           yarp::sig::Vector& _torso,
+                           yarp::sig::Vector& _right_leg,
                            yarp::sig::Vector& _left_leg,
                            yarp::sig::Vector& _head);
+
+    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+                         const yarp::sig::Vector &_left_arm,
+                         const yarp::sig::Vector &_torso,
+                         const yarp::sig::Vector &_right_leg,
+                         const yarp::sig::Vector &_left_leg,
+                         yarp::sig::Vector& _q);
 
     void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
                          const yarp::sig::Vector &_left_arm,

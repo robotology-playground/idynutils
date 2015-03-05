@@ -423,6 +423,19 @@ bool RobotUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
     return hasHands();
 }
 
+void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
+                                 yarp::sig::Vector &_right_arm,
+                                 yarp::sig::Vector &_left_arm,
+                                 yarp::sig::Vector &_torso,
+                                 yarp::sig::Vector &_right_leg,
+                                 yarp::sig::Vector &_left_leg)
+{
+    idynutils.fromIDynToRobot(_q, _right_arm, idynutils.right_arm);
+    idynutils.fromIDynToRobot(_q, _left_arm, idynutils.left_arm);
+    idynutils.fromIDynToRobot(_q, _torso, idynutils.torso);
+    idynutils.fromIDynToRobot(_q, _right_leg, idynutils.right_leg);
+    idynutils.fromIDynToRobot(_q, _left_leg, idynutils.left_leg);
+}
 
 void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
                                  yarp::sig::Vector &_right_arm,
@@ -439,6 +452,20 @@ void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
     idynutils.fromIDynToRobot(_q, _left_leg, idynutils.left_leg);
     if(idynutils.head.joint_numbers.size() > 0)
         idynutils.fromIDynToRobot(_q, _head, idynutils.head);
+}
+
+void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+                                 const yarp::sig::Vector &_left_arm,
+                                 const yarp::sig::Vector &_torso,
+                                 const yarp::sig::Vector &_right_leg,
+                                 const yarp::sig::Vector &_left_leg,
+                                 yarp::sig::Vector &_q)
+{
+    idynutils.fromRobotToIDyn(_right_arm, _q, idynutils.right_arm);
+    idynutils.fromRobotToIDyn(_left_arm, _q, idynutils.left_arm);
+    idynutils.fromRobotToIDyn(_torso, _q, idynutils.torso);
+    idynutils.fromRobotToIDyn(_right_leg, _q, idynutils.right_leg);
+    idynutils.fromRobotToIDyn(_left_leg, _q, idynutils.left_leg);
 }
 
 void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
