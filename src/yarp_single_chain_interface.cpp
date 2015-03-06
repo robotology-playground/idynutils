@@ -33,7 +33,11 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     kinematic_chain(kinematic_chain),
     isAvailable(internal_isAvailable),
     _useSI(useSI),
-    _robot_name(robot_name)
+    _robot_name(robot_name),
+    joints_number(0),
+    q_buffer(1,0.0),
+    qdot_buffer(1,0.0),
+    tau_buffer(1,0.0)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
