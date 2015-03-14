@@ -4,6 +4,7 @@
 #include <idynutils/tests_utils.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
+#include <yarp/os/Time.h>
 #include <kdl/frames_io.hpp>
 
 #include <iostream>
@@ -115,7 +116,9 @@ TEST_F(testFoo, testInitialization)
         EXPECT_TRUE(idynutils.getJointNames()[i] ==
                     idynutils.moveit_robot_model->getActiveJointModels()[i]->getName());
 
-
+    for(unsigned int i = 0; i < idynutils.getJointNames().size(); ++i)
+        ASSERT_EQ(  idynutils.iDyn3_model.getDOFIndex(idynutils.getJointNames()[i]),
+                    i);
 
     std::vector<std::string> expected_kinematic_chains;
     expected_kinematic_chains.push_back("left_arm");
@@ -401,7 +404,26 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
     }
 }
 
+TEST_F(testIDynUtils, testCheckSelfCollision)
+{
+    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf";
+    std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf";
 
+    iDynUtils idynutils("coman", urdf_file, srdf_file);
+
+    double begin = yarp::os::Time::now();
+    EXPECT_TRUE(idynutils.checkSelfCollision());
+    std::cout << "Single self-collision (during collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+
+    yarp::sig::Vector q = idynutils.iDyn3_model.getAng();
+    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
+    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = 0.15;
+    begin = yarp::os::Time::now();
+    EXPECT_FALSE(idynutils.checkSelfCollisionAt(q));
+    std::cout << "Single self-collision (not in collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+}
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
 {

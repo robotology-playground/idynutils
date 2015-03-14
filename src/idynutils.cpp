@@ -258,6 +258,12 @@ bool iDynUtils::iDyn3Model()
             moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
             std::ostringstream robot_info;
             moveit_robot_model->printModelInfo(robot_info);
+            moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
+            allowed_collision_matrix.reset(
+                new collision_detection::AllowedCollisionMatrix(
+                    moveit_robot_model->getLinkModelNames(), false));
+            moveit_collision_robot.reset(new collision_detection::CollisionRobotFCL(moveit_robot_model));
+
             //ROS_INFO(robot_info.str().c_str());
         }
     }
@@ -648,6 +654,43 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
     if(!tmp_list.empty())
         links_in_contact = tmp_list;
 }
+
+bool iDynUtils::checkSelfCollision()
+{
+    return checkSelfCollisionAt(iDyn3_model.getAng());
+}
+
+bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
+{
+    collision_detection::CollisionRequest req;
+    req.contacts = true;
+    req.max_contacts = 100;
+    collision_detection::CollisionResult res;
+    for(unsigned int i = 0; i < joint_names.size(); ++i) {
+        // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
+        moveit_robot_state->setJointPositions(joint_names[i],
+                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
+    }
+    moveit_robot_state->updateCollisionBodyTransforms();
+    moveit_collision_robot->checkSelfCollision(req, res,
+                                               *moveit_robot_state,
+                                               *allowed_collision_matrix);
+
+    for(collision_detection::CollisionResult::ContactMap::const_iterator it = res.contacts.begin();
+        it != res.contacts.end();
+        ++it)
+    {
+      std::cout << "Contact between: "
+                << it->first.first.c_str()
+                << "and "
+                << it->first.second.c_str();
+    }
+
+
+    return res.collision;
+
+}
+
 
 
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
