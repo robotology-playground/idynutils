@@ -103,11 +103,10 @@ class testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching : public testIDynUti
 
 TEST_F(testFoo, testInitialization)
 {
-    const char* WALKMAN_ROOT = std::getenv("WALKMAN_ROOT");
-    assert((WALKMAN_ROOT != NULL) &&
-           "Error: $WALKMAN_ROOT is not defined. Please set this environment variable before launching tests.");
-    std::string urdf_file = std::string(WALKMAN_ROOT) + "/drc/idynutils/tests/bigman.urdf";
-    std::string srdf_file = std::string(WALKMAN_ROOT) + "/drc/idynutils/tests/bigman.srdf";
+    assert((IDYNUTILS_TESTS_ROBOTS_DIR != NULL) &&
+        "Error: IDYNUTILS_TESTS_ROBOTS_DIR is not defined. Please check tests/CMakeLists.txt");
+    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf";
+    std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
 
     iDynUtils idynutils("bigman", urdf_file, srdf_file);
 

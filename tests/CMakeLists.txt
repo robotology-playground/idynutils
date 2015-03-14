@@ -41,6 +41,8 @@ SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils
               ${PCL_LIBRARIES} ${urdf_LIBRARIES} 
               ${srdfdom_LIBRARIES} ${YARP_LIBRARIES})
 
+add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
+
 ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
 TARGET_LINK_LIBRARIES(interfacesTest ${TestLibs})
 add_dependencies(interfacesTest GTest-ext idynutils)
@@ -70,3 +72,6 @@ add_test(NAME idyn_utils_tests COMMAND iDynUtilsTest)
 add_test(NAME robot_utils_tests COMMAND RobotUtilsTest)
 add_test(NAME tests_utils_tests COMMAND testUtilsTest)
 add_test(NAME yarp_single_chain_interface_tests COMMAND YSCITest)
+
+add_custom_target(copy_robot_model_files ALL
+                  ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/robots" "${CMAKE_CURRENT_BINARY_DIR}/robots")
