@@ -429,7 +429,6 @@ protected:
 
     void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
 
-    //bool disableConsecutiveLinksInACM(collision_detection::AllowedCollisionMatrixPtr acm);
     /**
      * @brief worldT Transformation between world and base_link
      */

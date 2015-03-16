@@ -668,8 +668,6 @@ bool iDynUtils::checkSelfCollision()
 bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
 {
     collision_detection::CollisionRequest req;
-//    req.contacts = true;
-//    req.max_contacts = 100;
     collision_detection::CollisionResult res;
     for(unsigned int i = 0; i < joint_names.size(); ++i) {
         // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
@@ -680,16 +678,6 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
     moveit_collision_robot->checkSelfCollision(req, res,
                                                *moveit_robot_state,
                                                *allowed_collision_matrix);
-
-//    for(collision_detection::CollisionResult::ContactMap::const_iterator it = res.contacts.begin();
-//        it != res.contacts.end();
-//        ++it)
-//    {
-//      std::cout << "Contact between: "
-//                << it->first.first.c_str()
-//                << " and "
-//                << it->first.second.c_str() << std::endl;
-//    }
 
     return res.collision;
 
@@ -702,27 +690,6 @@ void iDynUtils::loadDisabledCollisionsFromSRDF(collision_detection::AllowedColli
          ++dc)
         acm->setEntry(dc->link1_, dc->link2_, true);
 }
-
-//bool iDynUtils::disableConsecutiveLinksInACM(collision_detection::AllowedCollisionMatrixPtr acm)
-//{
-//    for(std::vector<robot_model::JointModel*>::const_iterator j =
-//            moveit_robot_model->getJointModels().begin();
-//        j != moveit_robot_model->getJointModels().end();
-//        ++j)
-//    {
-//        if(*j != NULL)
-//        {
-//            const robot_model::LinkModel* parent = (*j)->getParentLinkModel();
-//            const robot_model::LinkModel* child = (*j)->getChildLinkModel();
-//            if(parent != NULL && child != NULL)
-//            {
-//                acm->setEntry(parent->getName(), child->getName(), true);
-////                std::cout << "Disabling collision between " << parent->getName()
-////                          << " and " << child->getName() << std::endl;
-//            }
-//        }
-//    }
-//}
 
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
                                         const std::string referenceFrame)
