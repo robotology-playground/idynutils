@@ -23,24 +23,25 @@
     <joint name="r_arm_ft_joint"/>
   </group>
   <group name="left_arm">
-    <joint name="l_arm_ft_joint"/>
     <chain base_link="DWYTorso" tip_link="l_wrist"/>
   </group>
   <group name="right_arm">
-    <joint name="r_arm_ft_joint"/>
     <chain base_link="DWYTorso" tip_link="r_wrist"/>
   </group>
+  <group name="imu_sensors">
+    <link name="imu_link"/>
+  </group>
   <group name="left_leg">
-    <joint name="pippo"/> <!-- Just for test -->
-    <joint name="l_leg_ft_joint"/>
     <chain base_link="Waist" tip_link="l_sole"/>
   </group>
   <group name="right_leg">
-    <joint name="r_leg_ft_joint"/>
     <chain base_link="Waist" tip_link="r_sole"/>
   </group>
   <group name="torso">
-    <chain base_link="Waist" tip_link="torso"/>
+    <chain base_link="Waist" tip_link="DWYTorso"/>
+  </group>
+  <group name="head">
+    <chain base_link="DWYTorso" tip_link="NeckPitch"/>
   </group>
   <group name="chains">
     <!--THIS HAS TO BE THE LAST GROUP IN THE FILE -->
@@ -49,6 +50,7 @@
     <group name="left_leg"/>
     <group name="right_leg"/>
     <group name="torso"/>
+    <group name="head"/>
   </group>
 </robot>
 

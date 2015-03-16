@@ -143,7 +143,7 @@ TEST_F(testFoo, testInitialization)
     expected_joints_left_arm.push_back("LWrj2");
     std::vector<std::string> expected_fixed_joints_left_arm;
     expected_fixed_joints_left_arm.push_back("l_wrist_joint");
-    expected_fixed_joints_left_arm.push_back("l_arm_ft_joint");
+//    expected_fixed_joints_left_arm.push_back("l_arm_ft_joint");
     std::vector<std::string> expected_joints_right_arm;
     expected_joints_right_arm.push_back("RShSag");
     expected_joints_right_arm.push_back("RShLat");
@@ -154,13 +154,13 @@ TEST_F(testFoo, testInitialization)
     expected_joints_right_arm.push_back("RWrj2");
     std::vector<std::string> expected_fixed_joints_right_arm;
     expected_fixed_joints_right_arm.push_back("r_wrist_joint");
-    expected_fixed_joints_right_arm.push_back("r_arm_ft_joint");
+//    expected_fixed_joints_right_arm.push_back("r_arm_ft_joint");
     std::vector<std::string> expected_joints_torso;
     expected_joints_torso.push_back("WaistLat");
     expected_joints_torso.push_back("WaistSag");
     expected_joints_torso.push_back("WaistYaw");
     std::vector<std::string> expected_fixed_joints_torso;
-    expected_fixed_joints_torso.push_back("torso_joint");
+//    expected_fixed_joints_torso.push_back("torso_joint");
     std::vector<std::string> expected_joints_left_leg;
     expected_joints_left_leg.push_back("LHipLat");
     expected_joints_left_leg.push_back("LHipYaw");
@@ -170,7 +170,7 @@ TEST_F(testFoo, testInitialization)
     expected_joints_left_leg.push_back("LAnkLat");
     std::vector<std::string> expected_fixed_joints_left_leg;
     expected_fixed_joints_left_leg.push_back("l_sole_joint");
-    expected_fixed_joints_left_leg.push_back("l_leg_ft_joint");
+//    expected_fixed_joints_left_leg.push_back("l_leg_ft_joint");
     std::vector<std::string> expected_joints_right_leg;
     expected_joints_right_leg.push_back("RHipLat");
     expected_joints_right_leg.push_back("RHipYaw");
@@ -180,7 +180,7 @@ TEST_F(testFoo, testInitialization)
     expected_joints_right_leg.push_back("RAnkLat");
     std::vector<std::string> expected_fixed_joints_right_leg;
     expected_fixed_joints_right_leg.push_back("r_sole_joint");
-    expected_fixed_joints_right_leg.push_back("r_leg_ft_joint");
+//    expected_fixed_joints_right_leg.push_back("r_leg_ft_joint");
 
     for(unsigned int i = 0; i < expected_joints_left_arm.size(); ++i){
         EXPECT_TRUE(expected_joints_left_arm[i] == idynutils.left_arm.joint_names[i]);
@@ -240,7 +240,16 @@ TEST_F(testFoo, testInitialization)
                 found = true;
         }
 
-        EXPECT_TRUE(found);}
+        if(!found)
+        {
+            it = std::find(idynutils.head.joint_names.begin(), idynutils.head.joint_names.end(),
+                           idynutils.getJointNames()[i]);
+            if (it != idynutils.head.joint_names.end())
+                found = true;
+        }
+
+        EXPECT_TRUE(found) << "Joint " << idynutils.getJointNames()[i] << " not found";
+    }
 
         std::vector<std::string> fixed_joints;
         fixed_joints.push_back("base_joint");
@@ -251,6 +260,7 @@ TEST_F(testFoo, testInitialization)
         fixed_joints.push_back("l_foot_upper_left_joint");
         fixed_joints.push_back("l_foot_upper_right_joint");
         fixed_joints.push_back("l_toe_joint");
+        fixed_joints.push_back("LRaisingSupport_joint");
         fixed_joints.push_back("l_leg_ft_joint");
         fixed_joints.push_back("r_ankle_joint");
         fixed_joints.push_back("r_sole_joint");
@@ -259,20 +269,31 @@ TEST_F(testFoo, testInitialization)
         fixed_joints.push_back("r_foot_upper_left_joint");
         fixed_joints.push_back("r_foot_upper_right_joint");
         fixed_joints.push_back("r_toe_joint");
+        fixed_joints.push_back("RRaisingSupport_joint");
         fixed_joints.push_back("r_leg_ft_joint");
         fixed_joints.push_back("l_arm_ft_joint");
         fixed_joints.push_back("l_handj");
+        fixed_joints.push_back("l_handj2");
+        fixed_joints.push_back("l_handj3");
         fixed_joints.push_back("l_hand_lower_left_joint");
         fixed_joints.push_back("l_hand_lower_right_joint");
         fixed_joints.push_back("l_hand_upper_left_joint");
         fixed_joints.push_back("l_hand_upper_right_joint");
+        fixed_joints.push_back("l_forearm_backward_contact_joint");
+        fixed_joints.push_back("l_forearm_central_contact_joint");
+        fixed_joints.push_back("l_forearm_forward_contact_joint");
         fixed_joints.push_back("l_wrist_joint");
         fixed_joints.push_back("r_arm_ft_joint");
         fixed_joints.push_back("r_handj");
+        fixed_joints.push_back("r_handj2");
+        fixed_joints.push_back("r_handj3");
         fixed_joints.push_back("r_hand_lower_left_joint");
         fixed_joints.push_back("r_hand_lower_right_joint");
         fixed_joints.push_back("r_hand_upper_left_joint");
         fixed_joints.push_back("r_hand_upper_right_joint");
+        fixed_joints.push_back("r_forearm_backward_contact_joint");
+        fixed_joints.push_back("r_forearm_central_contact_joint");
+        fixed_joints.push_back("r_forearm_forward_contact_joint");
         fixed_joints.push_back("r_wrist_joint");
         fixed_joints.push_back("neck_joint");
         fixed_joints.push_back("center_bottom_led_frame_joint");
@@ -410,13 +431,17 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf";
 
     iDynUtils idynutils("coman", urdf_file, srdf_file);
+    q = idynutils.iDyn3_model.getAng();
+    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = 0.15;
+    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = -0.15;
+    idynutils.updateiDyn3Model(q, true);
 
     double begin = yarp::os::Time::now();
     EXPECT_TRUE(idynutils.checkSelfCollision());
     std::cout << "Single self-collision (during collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
 
-    yarp::sig::Vector q = idynutils.iDyn3_model.getAng();
+    q = idynutils.iDyn3_model.getAng();
     q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
     q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = 0.15;
     begin = yarp::os::Time::now();

@@ -427,6 +427,9 @@ protected:
      */
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
 
+    void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
+
+    //bool disableConsecutiveLinksInACM(collision_detection::AllowedCollisionMatrixPtr acm);
     /**
      * @brief worldT Transformation between world and base_link
      */
