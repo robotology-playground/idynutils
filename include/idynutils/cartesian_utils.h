@@ -197,8 +197,8 @@ public:
      * @param position_error position error [3x1]
      * @param orientation_error orientation error [3x1]
      */
-    static void computeCartesianError(yarp::sig::Matrix &T,
-                                      yarp::sig::Matrix &Td,
+    static void computeCartesianError(const yarp::sig::Matrix &T,
+                                      const yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
                                       yarp::sig::Vector& orientation_error);
 

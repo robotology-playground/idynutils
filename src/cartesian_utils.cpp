@@ -81,8 +81,8 @@ void cartesian_utils::homogeneousMatrixFromQuaternion(yarp::sig::Matrix &T,
     fromKDLFrameToYARPMatrix(tmp, T);
 }
 
-void cartesian_utils::computeCartesianError(yarp::sig::Matrix &T,
-                                            yarp::sig::Matrix &Td,
+void cartesian_utils::computeCartesianError(const yarp::sig::Matrix &T,
+                                            const yarp::sig::Matrix &Td,
                                             yarp::sig::Vector& position_error,
                                             yarp::sig::Vector& orientation_error)
 {   
