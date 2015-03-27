@@ -57,7 +57,7 @@ FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
 #endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
-                            ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+                            ${PCL_INCLUDE_DIRS})
 
 # for every file in idynutils_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
