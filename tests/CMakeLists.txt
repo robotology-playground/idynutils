@@ -50,7 +50,7 @@ if(YCM_EP_DEVEL_MODE_idynutils)
                                 YSCITest)
 endif()
 SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils 
-              ${kdl_codyco_LIBRARIES} ${kdl_parser_LIBRARIES}
+              ${kdl_parser_LIBRARIES}
               ${moveit_core_LIBRARIES}  ${orocos_kdl_LIBRARIES} 
               ${PCL_LIBRARIES} ${urdf_LIBRARIES} 
               ${srdfdom_LIBRARIES} ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
