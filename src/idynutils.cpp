@@ -307,8 +307,20 @@ bool iDynUtils::iDyn3Model()
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
         int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
-            qMax[jIndex] = i->second->limits->upper;
-            qMin[jIndex] = i->second->limits->lower;
+            if (i->second->type != urdf::Joint::CONTINUOUS)
+            {
+                if (i->second->limits)
+                {
+                    qMax[jIndex] = i->second->limits->upper;
+                    qMin[jIndex] = i->second->limits->lower;
+                }
+                else
+                {
+                    std::cout<<"missing joint limits for joint "<<i->first<<std::endl;
+                    qMax[jIndex] = M_PI;
+                    qMin[jIndex] = -M_PI;
+                }
+            }
         }
     }
     
@@ -319,7 +331,13 @@ bool iDynUtils::iDyn3Model()
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
         int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
-            tauMax[jIndex] = i->second->limits->effort;
+            if (i->second->type != urdf::Joint::CONTINUOUS)
+            {
+                if (i->second->limits)
+                    tauMax[jIndex] = i->second->limits->effort;
+                else
+                    tauMax[jIndex] = 0;
+            }
         }
     }
     
