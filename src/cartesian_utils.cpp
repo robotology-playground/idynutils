@@ -212,30 +212,44 @@ void cartesian_utils::printVelocityVector(const yarp::sig::Vector& v)
     std::cout<<"Angular Velocity: ["<<v[3]<<" "<<v[4]<<" "<<v[5]<<" ] [rad/sec]"<<std::endl;
 }
 
-yarp::sig::Vector& cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
                                                     CostFunction& fun,
                                                     const double& step) {
-    static yarp::sig::Vector gradient(x.size(),0.0);
-    static yarp::sig::Vector deltas(x.size(),0.0);
+    std::vector<bool> jointMask(x.size(), true);
+    return computeGradient(x, fun, jointMask, step);
+}
+
+yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+                                                    CostFunction& fun,
+                                                    const std::vector<bool>& jointMask,
+                                                    const double& step) {
+    yarp::sig::Vector gradient(x.size(),0.0);
+    yarp::sig::Vector deltas(x.size(),0.0);
+    assert(jointMask.size() == x.size() &&
+           "jointMask must have the same size as x");
     const double h = step;
     for(unsigned int i = 0; i < gradient.size(); ++i)
     {
-        deltas[i] = h;
-        double fun_a = fun.compute(x+deltas);
-        double fun_b = fun.compute(x-deltas);
+        if(jointMask[i])
+        {
+            deltas[i] = h;
+            double fun_a = fun.compute(x+deltas);
+            double fun_b = fun.compute(x-deltas);
 
-        gradient[i] = (fun_a - fun_b)/(2.0*h);
-        deltas[i] = 0.0;
+            gradient[i] = (fun_a - fun_b)/(2.0*h);
+            deltas[i] = 0.0;
+        } else
+            gradient[i] = 0.0;
     }
 
     return gradient;
 }
 
-yarp::sig::Matrix& cartesian_utils::computeHessian(const yarp::sig::Vector &x,
+yarp::sig::Matrix cartesian_utils::computeHessian(const yarp::sig::Vector &x,
                                                    GradientVector& vec,
                                                    const double& step) {
-    static yarp::sig::Matrix hessian(vec.size(),x.size());
-    static yarp::sig::Vector deltas(x.size(),0.0);
+    yarp::sig::Matrix hessian(vec.size(),x.size());
+    yarp::sig::Vector deltas(x.size(),0.0);
     const double h = step;
     for(unsigned int i = 0; i < vec.size(); ++i)
     {

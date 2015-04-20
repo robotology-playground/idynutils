@@ -22,6 +22,7 @@
 
 #include <yarp/sig/all.h>
 #include <kdl/frames.hpp>
+#include <vector>
 
 /**
   This class implements quaternion error as in the paper:
@@ -337,9 +338,27 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector& computeGradient(const yarp::sig::Vector &x,
+    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
                                               CostFunction &fun,
                                               const double &step = 1E-3);
+
+    /**
+     * @brief computeGradient compute numerical gradient of a function using 2 points formula:
+     *
+     *           f(x+h) - f(x-h)
+     *   df(x)= ----------------
+     *                2h
+     * @param x points around gradient is compute
+     * @param fun function to derive
+     * @param jointMask the joints over which we want to compute the gradient
+     * @param step step of gradient
+     * @return vector of gradient
+     */
+    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
+                                              CostFunction &fun,
+                                              const std::vector<bool>& jointMask,
+                                              const double &step = 1E-3);
+
 
     /**
      * @brief computeGradient compute numerical gradient of a function using 2 points formula:
@@ -352,7 +371,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Matrix& computeHessian( const yarp::sig::Vector &x,
+    static yarp::sig::Matrix computeHessian( const yarp::sig::Vector &x,
                                               GradientVector &vec,
                                               const double &step = 1E-3);
 
