@@ -37,7 +37,11 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     joints_number(0),
     q_buffer(1,0.0),
     qdot_buffer(1,0.0),
-    tau_buffer(1,0.0)
+    tau_buffer(1,0.0),
+    // init list for control interfaces
+    encodersMotor(NULL), controlLimits(NULL), controlMode(NULL),
+    interactionMode(NULL), pidControl(NULL), positionControl(NULL),
+    positionDirect(NULL), impedancePositionControl(NULL), torqueControl(NULL)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -56,6 +60,16 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
         internal_isAvailable = temp;
+
+        // optional interfaces
+        if(polyDriver.view(pidControl))
+            std::cout << "Loaded PID control interface for "
+                      << _robot_name << "/"
+                      << kinematic_chain << std::endl;
+        if(polyDriver.view(controlLimits))
+            std::cout << "Loaded control limits interface for "
+                      << _robot_name << "/"
+                      << kinematic_chain << std::endl;
     }
     if (!internal_isAvailable)
     {
@@ -517,6 +531,28 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
 
     controlType = ControlType::fromYarp(ctrlMode0, intMode0);
     return true;
+}
+
+bool walkman::yarp_single_chain_interface::getJointLimits(yarp::sig::Vector &lowerLimits, yarp::sig::Vector &upperLimits)
+{
+    if(controlLimits != NULL)
+    {
+        lowerLimits.resize(this->joints_number);
+        upperLimits.resize(this->joints_number);
+        bool res = true;
+
+        for(unsigned int i = 0; i < this->joints_number; ++i)
+        {
+            bool limitsQueryOk = controlLimits->getLimits(i, &lowerLimits[i], &upperLimits[i]);
+            res = res && limitsQueryOk;
+            if(!limitsQueryOk)
+                std::cout << this->_robot_name << "/"
+                          << this->kinematic_chain << " : "
+                          << "Error while querying joint limits for axis " << i << std::endl;
+        }
+
+        return res;
+    } else return false;
 }
 
 bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver& polyDriver)

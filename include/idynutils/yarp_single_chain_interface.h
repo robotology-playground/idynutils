@@ -31,6 +31,7 @@
 #include <yarp/dev/IInteractionMode.h>
 #include <idynutils/ControlType.hpp>
 
+
 /**
  * These strings are supposed to be found into the SRDF of any robot we are working with
  */
@@ -228,13 +229,24 @@ public:
      */
     walkman::ControlType getControlType() throw();
 
+    /**
+     * @brief getJointLimits returns joint limits as given by the firmware
+     * @param lowerLimits a vector of lower joint limits.
+     *        If the method returns true, the vector is guaranteed to be of the correct size.
+     * @param upperLimits a vector of upper joint limits.
+     *        If the method returns true, the vector is guaranteed to be of the correct size.
+     * @return true if we are able to ask the firmware for joint limits
+     */
+    bool getJointLimits(yarp::sig::Vector& lowerLimits,
+                        yarp::sig::Vector& upperLimits);
+
     bool setPositionMode();
 
     bool isInPositionMode();
 
     bool setPositionDirectMode();
 
-    bool  isInPositionDirectMode();
+    bool isInPositionDirectMode();
 
     bool setTorqueMode();
 
@@ -327,8 +339,10 @@ private:
     double convertMotorCommandFromSI(const double& in) const;
 
     yarp::dev::IEncodersTimed *encodersMotor;
+    yarp::dev::IControlLimits2 *controlLimits;
     yarp::dev::IControlMode2 *controlMode;
     yarp::dev::IInteractionMode *interactionMode;
+    yarp::dev::IPidControl *pidControl;
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
