@@ -235,7 +235,8 @@ public:
      *        If the method returns true, the vector is guaranteed to be of the correct size.
      * @param upperLimits a vector of upper joint limits.
      *        If the method returns true, the vector is guaranteed to be of the correct size.
-     * @return true if we are able to ask the firmware for joint limits
+     * @return true if we are able to ask the firmware for joint limits.
+     *         If false, the limits vectors might contain garbage.
      */
     bool getJointLimits(yarp::sig::Vector& lowerLimits,
                         yarp::sig::Vector& upperLimits);

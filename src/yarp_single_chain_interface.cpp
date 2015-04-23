@@ -544,11 +544,18 @@ bool walkman::yarp_single_chain_interface::getJointLimits(yarp::sig::Vector &low
         for(unsigned int i = 0; i < this->joints_number; ++i)
         {
             bool limitsQueryOk = controlLimits->getLimits(i, &lowerLimits[i], &upperLimits[i]);
+
             res = res && limitsQueryOk;
             if(!limitsQueryOk)
                 std::cout << this->_robot_name << "/"
                           << this->kinematic_chain << " : "
                           << "Error while querying joint limits for axis " << i << std::endl;
+        }
+
+        if(res && _useSI)
+        {
+            convertEncoderToSI(lowerLimits);
+            convertEncoderToSI(upperLimits);
         }
 
         return res;
