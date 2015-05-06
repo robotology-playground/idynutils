@@ -67,7 +67,8 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     q_buffer.resize(joints_number);
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
-
+    q_ref_feedback_buffer.resize(joints_number);
+    
     if(!setControlType(controlType))
         std::cout << "PROBLEM initializing " << kinematic_chain << " with " << controlType << std::endl;
 }
@@ -337,6 +338,19 @@ yarp::sig::Vector yarp_single_chain_interface::sense() {
     encodersMotor->getEncoders(q_buffer.data());
     if(_useSI) convertEncoderToSI(q_buffer);
     return q_buffer;
+}
+
+void yarp_single_chain_interface::sensePositionRefFeedback(yarp::sig::Vector& q_position_ref_feedback) {
+    if(q_position_ref_feedback.size() != this->joints_number)
+        q_position_ref_feedback.resize(this->joints_number);
+    pidControl->getReferences(q_position_ref_feedback.data());
+    if(_useSI) convertEncoderToSI(q_position_ref_feedback);
+}
+
+yarp::sig::Vector yarp_single_chain_interface::sensePositionRefFeedback() {
+    pidControl->getReferences(q_ref_feedback_buffer.data());
+    if(_useSI) convertEncoderToSI(q_ref_feedback_buffer);
+    return q_ref_feedback_buffer;
 }
 
 void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {

@@ -31,6 +31,7 @@
 #include <yarp/dev/IInteractionMode.h>
 #include <idynutils/ControlType.hpp>
 
+
 /**
  * These strings are supposed to be found into the SRDF of any robot we are working with
  */
@@ -91,6 +92,23 @@ public:
      * \f$[deg]\f$ is useSI is false
      */
     virtual void sense(yarp::sig::Vector& q_sensed);
+    
+   /**
+     * @brief sensePositionRefFeedback returns joint position ref feedback    
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual yarp::sig::Vector sensePositionRefFeedback();
+    
+   /**
+     * @brief sensePositionRefFeedback returns joint position ref feedback 
+     * @param q_position_ref_feedback \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual void sensePositionRefFeedback(yarp::sig::Vector& q_position_ref_feedback);
+    
 
     /**
      * @brief sensePosition returns joint positions
@@ -313,6 +331,7 @@ private:
     yarp::sig::Vector q_buffer;
     yarp::sig::Vector qdot_buffer;
     yarp::sig::Vector tau_buffer;
+    yarp::sig::Vector q_ref_feedback_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
     bool _useSI;
@@ -327,8 +346,10 @@ private:
     double convertMotorCommandFromSI(const double& in) const;
 
     yarp::dev::IEncodersTimed *encodersMotor;
+    yarp::dev::IControlLimits2 *controlLimits;
     yarp::dev::IControlMode2 *controlMode;
     yarp::dev::IInteractionMode *interactionMode;
+    yarp::dev::IPidControl *pidControl;
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
