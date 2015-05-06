@@ -127,6 +127,12 @@ public:
      * @return
      */
     yarp::sig::Vector& senseTorque();
+    
+    /**
+     * @brief sensePositionRefFeedback returns the last position ref feedback sent to the firmware
+     * @return 
+     */
+    yarp::sig::Vector& sensePositionRefFeedback();
 
     /**
      * @brief senseftSensors senses all available ft sensors
@@ -432,6 +438,17 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
     yarp::sig::Vector tau_sensed_head;
+    
+    yarp::sig::Vector q_ref_feedback_sensed;
+
+    yarp::sig::Vector q_ref_feedback_sensed_left_hand;
+    yarp::sig::Vector q_ref_feedback_sensed_right_hand;
+    yarp::sig::Vector q_ref_feedback_sensed_left_arm;
+    yarp::sig::Vector q_ref_feedback_sensed_right_arm;
+    yarp::sig::Vector q_ref_feedback_sensed_left_leg;
+    yarp::sig::Vector q_ref_feedback_sensed_right_leg;
+    yarp::sig::Vector q_ref_feedback_sensed_torso;
+    yarp::sig::Vector q_ref_feedback_sensed_head;
 
     std::string _moduleName;
 

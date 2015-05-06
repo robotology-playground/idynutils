@@ -50,6 +50,14 @@ RobotUtils::RobotUtils(const std::string moduleName,
     q_commanded_right_leg( right_leg.getNumberOfJoints() ),
     q_commanded_left_leg( left_leg.getNumberOfJoints() ),
     q_commanded_head(std::max(1,head.getNumberOfJoints())),
+    q_ref_feedback_sensed_right_hand( 1 ),
+    q_ref_feedback_sensed_left_hand( 1 ),
+    q_ref_feedback_sensed_right_arm( right_arm.getNumberOfJoints() ),
+    q_ref_feedback_sensed_left_arm( left_arm.getNumberOfJoints() ),
+    q_ref_feedback_sensed_torso( torso.getNumberOfJoints() ),
+    q_ref_feedback_sensed_right_leg( right_leg.getNumberOfJoints() ),
+    q_ref_feedback_sensed_left_leg( left_leg.getNumberOfJoints() ),
+    q_ref_feedback_sensed_head(head.getNumberOfJoints()),
     idynutils( robotName, urdf_path, srdf_path ),
     _moduleName(moduleName)
 {
@@ -57,6 +65,7 @@ RobotUtils::RobotUtils(const std::string moduleName,
     q_sensed.resize(this->number_of_joints,0.0);
     qdot_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
+    q_ref_feedback_sensed.resize(this->number_of_joints,0.0);
 
     loadIMUSensors();
     loadForceTorqueSensors();
@@ -386,6 +395,27 @@ yarp::sig::Vector &RobotUtils::senseTorque()
 
     return tau_sensed;
 }
+
+yarp::sig::Vector& RobotUtils::sensePositionRefFeedback()
+{
+    right_arm.sensePositionRefFeedback(q_ref_feedback_sensed_right_arm);
+    left_arm.sensePositionRefFeedback(q_ref_feedback_sensed_left_arm);
+    torso.sensePositionRefFeedback(q_ref_feedback_sensed_torso);
+    right_leg.sensePositionRefFeedback(q_ref_feedback_sensed_right_leg);
+    left_leg.sensePositionRefFeedback(q_ref_feedback_sensed_left_leg);
+    if(head.isAvailable) head.sensePositionRefFeedback(q_ref_feedback_sensed_head);
+
+    fromRobotToIdyn(q_ref_feedback_sensed_right_arm,
+                    q_ref_feedback_sensed_left_arm,
+                    q_ref_feedback_sensed_torso,
+                    q_ref_feedback_sensed_right_leg,
+                    q_ref_feedback_sensed_left_leg,
+                    q_ref_feedback_sensed_head,
+                    q_ref_feedback_sensed);
+
+    return q_ref_feedback_sensed;
+}
+
 
 RobotUtils::ftReadings& RobotUtils::senseftSensors()
 {
