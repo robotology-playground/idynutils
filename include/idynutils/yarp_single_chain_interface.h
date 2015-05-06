@@ -246,13 +246,25 @@ public:
      */
     walkman::ControlType getControlType() throw();
 
+    /**
+     * @brief getJointLimits returns joint limits as given by the firmware
+     * @param lowerLimits a vector of lower joint limits.
+     *        If the method returns true, the vector is guaranteed to be of the correct size.
+     * @param upperLimits a vector of upper joint limits.
+     *        If the method returns true, the vector is guaranteed to be of the correct size.
+     * @return true if we are able to ask the firmware for joint limits.
+     *         If false, the limits vectors might contain garbage.
+     */
+    bool getJointLimits(yarp::sig::Vector& lowerLimits,
+                        yarp::sig::Vector& upperLimits);
+
     bool setPositionMode();
 
     bool isInPositionMode();
 
     bool setPositionDirectMode();
 
-    bool  isInPositionDirectMode();
+    bool isInPositionDirectMode();
 
     bool setTorqueMode();
 
