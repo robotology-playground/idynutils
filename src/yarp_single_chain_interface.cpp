@@ -502,10 +502,10 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
         return false;
     }
 
-    if(!ctrlModeIsConsistent) {
-        std::cout << "ERROR: joint" << i << " is in different control mode than joint 0 for this chain.";
-        return false;
-    }
+//     if(!ctrlModeIsConsistent) {
+//         std::cout << "ERROR: joint" << i << " is in different control mode than joint 0 for this chain.";
+//         return false;
+//     }
 
 
     yarp::dev::InteractionModeEnum intMode0, intMode;
@@ -524,10 +524,10 @@ bool walkman::yarp_single_chain_interface::getControlType(ControlType &controlTy
         return false;
     }
 
-    if(!intModeIsConsistent) {
-        std::cout << "ERROR: joint" << i << " is in different interaction mode than joint 0 for this chain.";
-        return false;
-    }
+//     if(!intModeIsConsistent) {
+//         std::cout << "ERROR: joint" << i << " is in different interaction mode than joint 0 for this chain.";
+//         return false;
+//     }
 
     controlType = ControlType::fromYarp(ctrlMode0, intMode0);
     return true;
