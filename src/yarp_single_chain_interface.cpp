@@ -469,7 +469,8 @@ bool walkman::yarp_single_chain_interface::setControlType(const ControlType &con
         }
 
         if(!check)  return false;
-
+        
+        yarp::os::Time::delay(0.01); // set and get too fast
         ControlType currentControlType;
         if(!this->getControlType(currentControlType)) {
             std::cout << "  ERROR asking the current control Type for verification. Something went wrong" << std::endl;
