@@ -390,6 +390,8 @@ yarp::sig::Vector iDynUtils::fromJointStateMsgToiDyn(const sensor_msgs::JointSta
     for(unsigned int i = 0; i < msg->position.size(); ++i) {
         q[iDyn3_model.getDOFIndex(msg->name[i])]=msg->position[i];
     }
+
+    return q;
 }
 
 void iDynUtils::initWorldPose()

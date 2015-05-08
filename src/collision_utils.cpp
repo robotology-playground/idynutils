@@ -194,7 +194,9 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
     std::vector<std::string> collisionEntries;
     allowed_collision_matrix->getAllEntryNames(collisionEntries);
     typedef std::vector<std::string>::iterator iter_link;
+    typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
 
+    std::list<std::pair<std::string,std::string> > pairsToCheck;
     for(iter_link it_A = collisionEntries.begin();
         it_A != collisionEntries.end();
         ++it_A)
@@ -203,59 +205,64 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
             it_B != collisionEntries.end();
             ++it_B)
         {
-            if(it_A == it_B)
+            if(it_B <= it_A)
                 continue;
             else
-            {
-                collision_detection::AllowedCollision::Type collisionType;
-                if(allowed_collision_matrix->getAllowedCollision(*it_A,*it_B,collisionType) &&
-                   collisionType == collision_detection::AllowedCollision::NEVER)
-                {
-                    std::string linkA = *it_A;
-                    std::string linkB = *it_B;
+                pairsToCheck.push_back(std::pair<std::string,std::string>(*it_A,*it_B));
+        }
+    }
 
-                    fcl::CollisionObject* collObj_shapeA = collision_objects_[linkA].get();
-                    fcl::CollisionObject* collObj_shapeB = collision_objects_[linkB].get();
+    for(iter_pair it = pairsToCheck.begin();
+        it != pairsToCheck.end();
+        ++it)
+    {
+        collision_detection::AllowedCollision::Type collisionType;
+        if(allowed_collision_matrix->getAllowedCollision(it->first,it->second,collisionType) &&
+           collisionType == collision_detection::AllowedCollision::NEVER)
+        {
+            std::string linkA = it->first;
+            std::string linkB = it->second;
 
-                    fcl::DistanceRequest request;
-                    request.gjk_solver_type = fcl::GST_INDEP;
-                    request.enable_nearest_points = true;
+            fcl::CollisionObject* collObj_shapeA = collision_objects_[linkA].get();
+            fcl::CollisionObject* collObj_shapeB = collision_objects_[linkB].get();
 
-                    // result will be returned via the collision result structure
-                    fcl::DistanceResult result;
+            fcl::DistanceRequest request;
+            request.gjk_solver_type = fcl::GST_INDEP;
+            request.enable_nearest_points = true;
 
-                    // perform distance test
-                    fcl::distance(collObj_shapeA, collObj_shapeB, request, result);
+            // result will be returned via the collision result structure
+            fcl::DistanceResult result;
 
-                    // p1Homo, p2Homo newly computed points by FCL
-                    // absolutely computed w.r.t. base-frame
-                    fcl::Transform3f w_pAHomo(result.nearest_points[0]);
-                    fcl::Transform3f w_pBHomo(result.nearest_points[1]);
-                    fcl::Transform3f fcl_w_T_shapeA, fcl_w_T_shapeB;
+            // perform distance test
+            fcl::distance(collObj_shapeA, collObj_shapeB, request, result);
 
-                    fcl_w_T_shapeA = collObj_shapeA->getTransform();
-                    fcl_w_T_shapeB = collObj_shapeB->getTransform();
+            // p1Homo, p2Homo newly computed points by FCL
+            // absolutely computed w.r.t. base-frame
+            fcl::Transform3f w_pAHomo(result.nearest_points[0]);
+            fcl::Transform3f w_pBHomo(result.nearest_points[1]);
+            fcl::Transform3f fcl_w_T_shapeA, fcl_w_T_shapeB;
 
-                    fcl::Transform3f fcl_shapeA_pA, fcl_shapeB_pB;
+            fcl_w_T_shapeA = collObj_shapeA->getTransform();
+            fcl_w_T_shapeB = collObj_shapeB->getTransform();
 
-                    fcl_shapeA_pA = fcl_w_T_shapeA.inverseTimes(w_pAHomo);
-                    fcl_shapeB_pB = fcl_w_T_shapeB.inverseTimes(w_pBHomo);
+            fcl::Transform3f fcl_shapeA_pA, fcl_shapeB_pB;
 
-                    KDL::Frame shapeA_pA, shapeB_pB;
+            fcl_shapeA_pA = fcl_w_T_shapeA.inverseTimes(w_pAHomo);
+            fcl_shapeB_pB = fcl_w_T_shapeB.inverseTimes(w_pBHomo);
 
-                    shapeA_pA = fcl2KDL(fcl_shapeA_pA);
-                    shapeB_pB = fcl2KDL(fcl_shapeB_pB);
+            KDL::Frame shapeA_pA, shapeB_pB;
 
-                    KDL::Frame linkA_pA, linkB_pB;
-                    linkA_pA = link_T_shape[linkA] * shapeA_pA;
-                    linkB_pB = link_T_shape[linkB] * shapeB_pB;
+            shapeA_pA = fcl2KDL(fcl_shapeA_pA);
+            shapeB_pB = fcl2KDL(fcl_shapeB_pB);
 
-                    if(result.min_distance < detectionThreshold)
-                        results.push_back(LinkPairDistance(linkA, linkB,
-                                                           linkA_pA, linkB_pB,
-                                                           result.min_distance));
-                }
-            }
+            KDL::Frame linkA_pA, linkB_pB;
+            linkA_pA = link_T_shape[linkA] * shapeA_pA;
+            linkB_pB = link_T_shape[linkB] * shapeB_pB;
+
+            if(result.min_distance < detectionThreshold)
+                results.push_back(LinkPairDistance(linkA, linkB,
+                                                   linkA_pA, linkB_pB,
+                                                   result.min_distance));
         }
     }
 

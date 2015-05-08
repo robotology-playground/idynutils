@@ -48,6 +48,7 @@ bool draw_point(const double x, const double y, const double z,
 void createMarkerArray(std::list<LinkPairDistance>& results,
                        const boost::shared_ptr<visualization_msgs::MarkerArray>& markers) {
     typedef std::list<LinkPairDistance>::iterator iter_pairs;
+    unsigned int indicator = 0;
     for(iter_pairs it = results.begin(); it != results.end(); ++it)
     {
         visualization_msgs::Marker m1;
@@ -56,13 +57,13 @@ void createMarkerArray(std::list<LinkPairDistance>& results,
         draw_point( transforms.first.p.x(),
                     transforms.first.p.y(),
                     transforms.first.p.z(),
-                    linkNames.first, m1, 0);
+                    linkNames.first, m1, indicator++);
 
         visualization_msgs::Marker m2;
         draw_point( transforms.second.p.x(),
                     transforms.second.p.y(),
                     transforms.second.p.z(),
-                    linkNames.second, m2, 1);
+                    linkNames.second, m2, indicator++);
 
         markers->markers.push_back(m1);
         markers->markers.push_back(m2);
@@ -71,8 +72,8 @@ void createMarkerArray(std::list<LinkPairDistance>& results,
 
 int main(int argc, char** argv) {
     iDynUtils bigman("bigman",
-                     std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman.urdf",
-                     std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman.srdf");
+                     std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf",
+                     std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.srdf");
 
     ros::init(argc, argv, "distance_computation");
     ros::NodeHandle nh;
@@ -89,6 +90,10 @@ int main(int argc, char** argv) {
     boost::shared_ptr<ComputeLinksDistance> distance_comp(
             new ComputeLinksDistance(bigman));
 
+    std::list<std::pair<std::string,std::string>> whiteList;
+    whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
+    distance_comp->setCollisionWhiteList(whiteList);
+
     ros::Subscriber joint_states_subscriber = nh.subscribe<
             sensor_msgs::JointState>(JOINT_STATE_TOPIC, 1, // Buffer size
             &iDynUtils::updateiDyn3ModelFromJoinStateMsg, &bigman);
@@ -100,9 +105,22 @@ int main(int argc, char** argv) {
 
     while (ros::ok()) {
         ROS_INFO("looping");
+        ros::Time tic = ros::Time::now();
         std::list<LinkPairDistance> results = distance_comp->getLinkDistances();
-        while(results.size() > 5) results.pop_back();
-        ROS_INFO("minimum_distance computed");
+        ros::Time toc = ros::Time::now();
+
+        ROS_INFO("minimum_distance computed, results found %d distances in %fs", results.size(), toc.toSec()-tic.toSec());
+
+        while(results.size() > 50) results.pop_back();
+
+        std::list<LinkPairDistance>::iterator it = results.begin();
+        ROS_INFO("first 5 distance results: %f, %f, %f, %f, %f",
+                 (it++)->getDistance(),
+                 (it++)->getDistance(),
+                 (it++)->getDistance(),
+                 (it++)->getDistance(),
+                 (it++)->getDistance());
+
         if (results.size() > 0) {
 
             markers->markers.clear();
