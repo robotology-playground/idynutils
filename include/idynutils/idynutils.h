@@ -135,6 +135,19 @@ public:
                          kinematic_chain& chain);
 
     /**
+     * @brief fromJointStateMsgToiDyn returns a vector of joint angles from a joint state msg
+     * @param msg the joint state msg
+     * @return a vector of joint positions
+     */
+    yarp::sig::Vector fromJointStateMsgToiDyn(const sensor_msgs::JointStateConstPtr& msg);
+
+    /**
+     * @brief updateiDyn3ModelFromJoinStateMsg updates the internal joint state using a ROS joint state msg
+     * @param msg the joint state msg
+     */
+    void updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateConstPtr& msg);
+
+    /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
      * @param set_world_pose do we update the base link pose wrt the world frame?

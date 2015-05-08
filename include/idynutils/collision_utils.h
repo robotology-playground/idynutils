@@ -74,7 +74,7 @@ public:
      * @brief getDistance returns the minimum distance between the two link shapes
      * @return a double representing the minimum distance
      */
-    inline const double& getDistance() const;
+    const double& getDistance() const;
 
     /**
      * @brief getTransforms returns a pair of homogeneous transformation from a
@@ -82,13 +82,13 @@ public:
      *        link_T_closestPoint
      * @return a pair of homogeneous transformations
      */
-    inline const std::pair<KDL::Frame, KDL::Frame>& getTransforms() const;
+    const std::pair<KDL::Frame, KDL::Frame>& getTransforms() const;
 
     /**
      * @brief getLinkNames returns the pair of links between which we want express the distance information
      * @return a pair of strings
      */
-    inline const std::pair<std::string, std::string>& getLinkNames() const;
+    const std::pair<std::string, std::string>& getLinkNames() const;
 
     /**
      * @brief operator < is the comparison operator between two LinkDIstancePairs.

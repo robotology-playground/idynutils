@@ -383,6 +383,15 @@ void iDynUtils::fromIDynToRobot(const yarp::sig::Vector& q,
     }
 }
 
+yarp::sig::Vector iDynUtils::fromJointStateMsgToiDyn(const sensor_msgs::JointStateConstPtr &msg)
+{
+    yarp::sig::Vector q(iDyn3_model.getNrOfDOFs());
+
+    for(unsigned int i = 0; i < msg->position.size(); ++i) {
+        q[iDyn3_model.getDOFIndex(msg->name[i])]=msg->position[i];
+    }
+}
+
 void iDynUtils::initWorldPose()
 {
     // saving old values of Ang,DAng,D2Ang
@@ -755,4 +764,12 @@ bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
             points.push_back(referenceFrame_T_point.p);
     }
     return true;
+}
+
+
+void iDynUtils::updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateConstPtr &msg)
+{
+    yarp::sig::Vector q = this->fromJointStateMsgToiDyn(msg);
+
+    this->updateiDyn3Model(q, true);
 }

@@ -174,7 +174,7 @@ KDL::Frame ComputeLinksDistance::fcl2KDL(const fcl::Transform3f &in)
 ComputeLinksDistance::ComputeLinksDistance(iDynUtils &model) : model(model)
 {
     boost::filesystem::path original_model(model.getRobotURDFPath());
-    std::string capsule_model_urdf_filename = std::string(original_model.stem().c_str()) + std::string("_capsule.urdf");
+    std::string capsule_model_urdf_filename = std::string(original_model.stem().c_str()) + std::string("_capsules.urdf");
     boost::filesystem::path capsule_model(original_model.parent_path() /
                                           capsule_model_urdf_filename);
     if(boost::filesystem::exists(capsule_model))
