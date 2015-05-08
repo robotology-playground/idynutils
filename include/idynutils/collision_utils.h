@@ -36,11 +36,13 @@
  *        in each shape.
  */
 class LinkPairDistance {
+public:
+    typedef std::pair<std::string, std::string> LinksPair;
 private:
     /**
      * @brief linkPair the pair of link names in alphabetic order
      */
-    std::pair<std::string, std::string> linkPair;
+    LinksPair linksPair;
     /**
      * @brief link_T_closestPoint is a pair of homogeneous transformations.
      *        The first transformation will express the pose of the closes point on the first link shape
@@ -100,7 +102,66 @@ public:
 };
 
 class ComputeLinksDistance {
+private:
+    collision_detection::AllowedCollisionMatrixPtr allowed_collision_matrix;
+
+    /**
+     * @brief model a reference to the robot model. We expect it to be updated
+     *        before calling getLinkDistances
+     */
+    iDynUtils& model;
+
+    /**
+     * @brief shapes_ is a map of collision geometries
+     */
+    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_;
+
+    /**
+     * @brief collision_objects_ a map of collision objects
+     */
+    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_;
+
+    /**
+     * @brief link_T_shape a map of transforms from link frame to shape frame
+     */
+    std::map<std::string,KDL::Frame> link_T_shape;
+
+    /* FOLLOWING FUNCTIONS WILL LOAD AND UPDATE GEOMETRIES. NOTICE THAT A VALID ALTERNATIVE TO THIS
+       IS TO USE MOVEIT. Since Moveit does not support capsules ATM, one idea could be to update the interal
+       geometries moveit uses, and substitute the cylinder geometries with the capsule geometries.
+       Even then, stock moveit just returns the distance between objects, and not the points.
+       Still, just the getLinkDistances needs to be used, and moveit will take care of calling the
+       moveit equivalents to parseCollisionObjects and updateCollisionObjects*/
+    /**
+     * @brief parseCollisionObjects
+     * @param robot_urdf_path a string representing the robot urdf with collision information
+     * @return true on success
+     */
+    bool parseCollisionObjects(const std::string& robot_urdf_path);
+
+    /**
+     * @brief updateCollisionObjects updates all collision objects with correct transforms (link_T_shape)
+     * @return true on success
+     */
+    bool updateCollisionObjects();
+
+    /**
+     * @brief KDL2fcl ceonverts a kdl transform into a fcl transform
+     * @param in a KDL::Frame
+     * @return  fcl::Transform3f
+     */
+    fcl::Transform3f KDL2fcl(const KDL::Frame &in);
+
+    /**
+     * @brief fcl2KDL converts a fcl transform into a kdl transform
+     * @param in a fcl::Transform3f
+     * @return a KDL::Frame
+     */
+    KDL::Frame fcl2KDL(const fcl::Transform3f &in);
+
 public:
+    /* NOTICE THAT BY USING MOVEIT WE CAN PASS JUST THE MOVEIT_COLLISION_ROBOT TO THE CONSTRUCTOR. At that point
+       we must make sure that the collision robot has an updated state before calling getLinkDistances */
     ComputeLinksDistance(iDynUtils& model);
 
     /**
@@ -111,6 +172,25 @@ public:
      * @return a sorted list of linkPairDistances
      */
     std::list<LinkPairDistance> getLinkDistances(double detectionThreshold = std::numeric_limits<double>::infinity());
+
+    /**
+     * @brief setCollisionWhiteListresets the allowed collision matrix by setting all collision pairs as disabled.
+     *        It then disables all collision pairs specified in the blackList. Lastly it will disable all collision pairs
+     *        which are disabled in the SRDF
+     * @param whiteList a list of links pairs for which to not check collision detection
+     * @return
+     */
+    bool setCollisionWhiteList(std::list< LinkPairDistance::LinksPair > whiteList);
+
+    /**
+     * @brief setCollisionBlackList resets the allowed collision matrix by setting all collision pairs
+     *        (for which collision geometries are avaiable) as enabled.
+     *        It then disables all collision pairs specified in the blackList. Lastly it will disable all collision pairs
+     *        which are disabled in the SRDF
+     * @param blackList a list of links pairs for which to not check collision detection
+     * @return
+     */
+    bool setCollisionBlackList(std::list< LinkPairDistance::LinksPair > blackList);
 };
 
 #endif

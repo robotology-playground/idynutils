@@ -322,6 +322,14 @@ public:
     */
    bool checkSelfCollisionAt(const yarp::sig::Vector &q);
 
+   /**
+    * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
+    *        Notice this function will not reset the acm, rather just disable collisions that are flagged as
+    *        "disabled" in the robot srdf
+    * @param acm the allowed collision matrix to modify according to the srdf info
+    */
+   void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
+
 protected:
     /**
      * @brief joint_names this vector contains ALL the active joint names
@@ -426,8 +434,6 @@ protected:
      *               This should be, in general, the support foot.
      */
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
-
-    void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
 
     /**
      * @brief worldT Transformation between world and base_link
