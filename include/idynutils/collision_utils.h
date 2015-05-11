@@ -159,6 +159,26 @@ private:
      */
     KDL::Frame fcl2KDL(const fcl::Transform3f &in);
 
+    /**
+     * @brief generateLinksToUpdate generates a list of links for which we query w_T_link
+     */
+    void generateLinksToUpdate();
+
+    /**
+     * @brief linksToUpdate a list of links to update
+     */
+    std::set<std::string> linksToUpdate;
+
+    /**
+     * @brief generatePairsToCheck generates a list of pairs to check for distance
+     */
+    void generatePairsToCheck();
+
+    /**
+     * @brief pairsToCheck a list of pairs to check for collision detection
+     */
+    std::list<std::pair<std::string,std::string> > pairsToCheck;
+
 public:
     /* NOTICE THAT BY USING MOVEIT WE CAN PASS JUST THE MOVEIT_COLLISION_ROBOT TO THE CONSTRUCTOR. At that point
        we must make sure that the collision robot has an updated state before calling getLinkDistances */

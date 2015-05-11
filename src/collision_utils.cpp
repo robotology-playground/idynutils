@@ -7,6 +7,7 @@
 #include <fcl/shape/geometric_shapes.h>
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/shape_operations.h>
+#include <yarp/os/all.h>
 
 
 // construct vector
@@ -131,11 +132,16 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
 
 bool ComputeLinksDistance::updateCollisionObjects()
 {
-    typedef std::map<std::string,boost::shared_ptr<fcl::CollisionObject> >::iterator it_type;
-    for(it_type it = collision_objects_.begin();
-        it != collision_objects_.end(); ++it)
+    typedef std::set<std::string>::iterator it_links;
+    typedef std::map<std::string,boost::shared_ptr<fcl::CollisionObject> >::iterator it_co;
+
+//    for(it_type it = collision_objects_.begin();
+//        it != collision_objects_.end(); ++it)
+    for(it_links it = linksToUpdate.begin();
+        it != linksToUpdate.end(); ++it)
     {
-        std::string link_name = it->first;
+//        std::string link_name = it->first;
+        std::string link_name = *it;
         KDL::Frame w_T_link, w_T_shape;
         w_T_link = model.iDyn3_model.getPositionKDL(model.iDyn3_model.getLinkIndex(link_name));
         w_T_shape = w_T_link * link_T_shape[link_name];
@@ -171,6 +177,68 @@ KDL::Frame ComputeLinksDistance::fcl2KDL(const fcl::Transform3f &in)
     return f;
 }
 
+void ComputeLinksDistance::generateLinksToUpdate()
+{
+    linksToUpdate.clear();
+    std::vector<std::string> collisionEntries;
+    allowed_collision_matrix->getAllEntryNames(collisionEntries);
+    typedef std::vector<std::string>::iterator iter_link;
+    typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
+
+    for(iter_link it_A = collisionEntries.begin();
+        it_A != collisionEntries.end();
+        ++it_A)
+    {
+        for(iter_link it_B = collisionEntries.begin();
+            it_B != collisionEntries.end();
+            ++it_B)
+        {
+            if(it_B <= it_A)
+                continue;
+            else
+            {
+                collision_detection::AllowedCollision::Type collisionType;
+                if(allowed_collision_matrix->getAllowedCollision(*it_A,*it_B,collisionType) &&
+                   collisionType == collision_detection::AllowedCollision::NEVER)
+                {
+                    linksToUpdate.insert(*it_A);
+                    linksToUpdate.insert(*it_B);
+                }
+            }
+        }
+    }
+}
+
+void ComputeLinksDistance::generatePairsToCheck()
+{
+    pairsToCheck.clear();
+    std::vector<std::string> collisionEntries;
+    allowed_collision_matrix->getAllEntryNames(collisionEntries);
+    typedef std::vector<std::string>::iterator iter_link;
+    typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
+
+    for(iter_link it_A = collisionEntries.begin();
+        it_A != collisionEntries.end();
+        ++it_A)
+    {
+        for(iter_link it_B = collisionEntries.begin();
+            it_B != collisionEntries.end();
+            ++it_B)
+        {
+            if(it_B <= it_A)
+                continue;
+            else
+            {
+                collision_detection::AllowedCollision::Type collisionType;
+                if(allowed_collision_matrix->getAllowedCollision(*it_A,*it_B,collisionType) &&
+                   collisionType == collision_detection::AllowedCollision::NEVER)
+                pairsToCheck.push_back(std::pair<std::string,std::string>(*it_A,*it_B));
+            }
+        }
+    }
+    std::cout << "Checking " << pairsToCheck.size() << " pairs for collision" << std::endl;
+}
+
 ComputeLinksDistance::ComputeLinksDistance(iDynUtils &model) : model(model)
 {
     boost::filesystem::path original_model(model.getRobotURDFPath());
@@ -189,84 +257,105 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
 {
     std::list<LinkPairDistance> results;
 
+    double tic = yarp::os::SystemClock::nowSystem();
     updateCollisionObjects();
+    std::cout << "updateCollisionObjects: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
-    std::vector<std::string> collisionEntries;
-    allowed_collision_matrix->getAllEntryNames(collisionEntries);
-    typedef std::vector<std::string>::iterator iter_link;
     typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
 
-    std::list<std::pair<std::string,std::string> > pairsToCheck;
-    for(iter_link it_A = collisionEntries.begin();
-        it_A != collisionEntries.end();
-        ++it_A)
-    {
-        for(iter_link it_B = collisionEntries.begin();
-            it_B != collisionEntries.end();
-            ++it_B)
-        {
-            if(it_B <= it_A)
-                continue;
-            else
-                pairsToCheck.push_back(std::pair<std::string,std::string>(*it_A,*it_B));
-        }
-    }
-
+    tic = yarp::os::SystemClock::nowSystem();
+    double max_distance_toc = 0;
+    double max_toc_other = 0;
+    double max_toc_aabb = 0;
     for(iter_pair it = pairsToCheck.begin();
         it != pairsToCheck.end();
         ++it)
     {
-        collision_detection::AllowedCollision::Type collisionType;
-        if(allowed_collision_matrix->getAllowedCollision(it->first,it->second,collisionType) &&
-           collisionType == collision_detection::AllowedCollision::NEVER)
+        std::string linkA = it->first;
+        std::string linkB = it->second;
+
+        fcl::CollisionObject* collObj_shapeA = collision_objects_[linkA].get();
+        fcl::CollisionObject* collObj_shapeB = collision_objects_[linkB].get();
+
+        fcl::DistanceRequest request;
+        request.gjk_solver_type = fcl::GST_INDEP;
+        request.enable_nearest_points = true;
+
+        // result will be returned via the collision result structure
+        fcl::DistanceResult result;
+
+        // perform distance test
+        double tic_distance = yarp::os::SystemClock::nowSystem();
+        fcl::distance(collObj_shapeA, collObj_shapeB, request, result);
+        double toc_distance = yarp::os::SystemClock::nowSystem() - tic_distance;
+        if(toc_distance > max_distance_toc)
+            max_distance_toc = toc_distance;
+
+        double tic_other = yarp::os::SystemClock::nowSystem();
+        // p1Homo, p2Homo newly computed points by FCL
+        // absolutely computed w.r.t. base-frame
+        fcl::Transform3f w_pAHomo(result.nearest_points[0]);
+        fcl::Transform3f w_pBHomo(result.nearest_points[1]);
+        fcl::Transform3f fcl_w_T_shapeA, fcl_w_T_shapeB;
+
+        fcl_w_T_shapeA = collObj_shapeA->getTransform();
+        fcl_w_T_shapeB = collObj_shapeB->getTransform();
+
+        fcl::AABB aabb_A;
+        fcl::AABB aabb_B;
+
+        if(boost::dynamic_pointer_cast<fcl::Capsule>(shapes_[linkA]) &&
+           boost::dynamic_pointer_cast<fcl::Capsule>(shapes_[linkB]))
         {
-            std::string linkA = it->first;
-            std::string linkB = it->second;
+            double tic_aabb = yarp::os::SystemClock::nowSystem();
 
-            fcl::CollisionObject* collObj_shapeA = collision_objects_[linkA].get();
-            fcl::CollisionObject* collObj_shapeB = collision_objects_[linkB].get();
+            boost::shared_ptr<fcl::CollisionGeometry> objA = shapes_[linkA];
+            boost::shared_ptr<fcl::CollisionGeometry> objB = shapes_[linkB];
 
-            fcl::DistanceRequest request;
-            request.gjk_solver_type = fcl::GST_INDEP;
-            request.enable_nearest_points = true;
+            boost::shared_ptr<fcl::Capsule> capsuleA = boost::dynamic_pointer_cast<fcl::Capsule>(objA);
+            boost::shared_ptr<fcl::Capsule> capsuleB = boost::dynamic_pointer_cast<fcl::Capsule>(objB);
 
-            // result will be returned via the collision result structure
-            fcl::DistanceResult result;
 
-            // perform distance test
-            fcl::distance(collObj_shapeA, collObj_shapeB, request, result);
 
-            // p1Homo, p2Homo newly computed points by FCL
-            // absolutely computed w.r.t. base-frame
-            fcl::Transform3f w_pAHomo(result.nearest_points[0]);
-            fcl::Transform3f w_pBHomo(result.nearest_points[1]);
-            fcl::Transform3f fcl_w_T_shapeA, fcl_w_T_shapeB;
+            aabb_A = fcl::translate(capsuleA->aabb_local,fcl_w_T_shapeA.getTranslation());
+            aabb_B = fcl::translate(capsuleB->aabb_local,fcl_w_T_shapeB.getTranslation());
+            aabb_A.distance(aabb_B);
 
-            fcl_w_T_shapeA = collObj_shapeA->getTransform();
-            fcl_w_T_shapeB = collObj_shapeB->getTransform();
-
-            fcl::Transform3f fcl_shapeA_pA, fcl_shapeB_pB;
-
-            fcl_shapeA_pA = fcl_w_T_shapeA.inverseTimes(w_pAHomo);
-            fcl_shapeB_pB = fcl_w_T_shapeB.inverseTimes(w_pBHomo);
-
-            KDL::Frame shapeA_pA, shapeB_pB;
-
-            shapeA_pA = fcl2KDL(fcl_shapeA_pA);
-            shapeB_pB = fcl2KDL(fcl_shapeB_pB);
-
-            KDL::Frame linkA_pA, linkB_pB;
-            linkA_pA = link_T_shape[linkA] * shapeA_pA;
-            linkB_pB = link_T_shape[linkB] * shapeB_pB;
-
-            if(result.min_distance < detectionThreshold)
-                results.push_back(LinkPairDistance(linkA, linkB,
-                                                   linkA_pA, linkB_pB,
-                                                   result.min_distance));
+            double toc_aabb = yarp::os::SystemClock::nowSystem() - tic_aabb;
+            if(toc_aabb > max_toc_aabb)
+                max_toc_aabb = toc_aabb;
         }
-    }
 
+        fcl::Transform3f fcl_shapeA_pA, fcl_shapeB_pB;
+
+        fcl_shapeA_pA = fcl_w_T_shapeA.inverseTimes(w_pAHomo);
+        fcl_shapeB_pB = fcl_w_T_shapeB.inverseTimes(w_pBHomo);
+
+        KDL::Frame shapeA_pA, shapeB_pB;
+
+        shapeA_pA = fcl2KDL(fcl_shapeA_pA);
+        shapeB_pB = fcl2KDL(fcl_shapeB_pB);
+
+        KDL::Frame linkA_pA, linkB_pB;
+        linkA_pA = link_T_shape[linkA] * shapeA_pA;
+        linkB_pB = link_T_shape[linkB] * shapeB_pB;
+
+        if(result.min_distance < detectionThreshold)
+            results.push_back(LinkPairDistance(linkA, linkB,
+                                               linkA_pA, linkB_pB,
+                                               result.min_distance));
+        double toc_other = yarp::os::SystemClock::nowSystem() - tic_other;
+        if(toc_other > max_toc_other)
+            max_toc_other = toc_other;
+    }
+    std::cout << "request: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+    std::cout << "max toc distance: " << max_distance_toc << std::endl;
+    std::cout << "max toc other: " << max_toc_other << std::endl;
+    std::cout << "max toc AABB: " << max_toc_aabb << std::endl;
+
+    tic = yarp::os::SystemClock::nowSystem();
     results.sort();
+    std::cout << "sort: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
     return results;
 }
@@ -286,6 +375,9 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
     }
 
     model.loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
+
+    this->generateLinksToUpdate();
+    this->generatePairsToCheck();
 }
 
 bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::LinksPair> blackList)
@@ -307,6 +399,9 @@ bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::Lin
         allowed_collision_matrix->setEntry(it->first, it->second, true);
 
     model.loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
+
+    this->generateLinksToUpdate();
+    this->generatePairsToCheck();
 }
 
 

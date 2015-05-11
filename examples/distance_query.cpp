@@ -114,15 +114,16 @@ int main(int argc, char** argv) {
         while(results.size() > 50) results.pop_back();
 
         std::list<LinkPairDistance>::iterator it = results.begin();
-        ROS_INFO("first 5 distance results: %f, %f, %f, %f, %f",
-                 (it++)->getDistance(),
-                 (it++)->getDistance(),
-                 (it++)->getDistance(),
-                 (it++)->getDistance(),
-                 (it++)->getDistance());
+        ROS_INFO("first distance result: %f, p0={%f, %f, %f} p1={%f, %f, %f}",
+                 it->getDistance(),
+                 it->getTransforms().first.p.x(),
+                 it->getTransforms().first.p.y(),
+                 it->getTransforms().first.p.z(),
+                 it->getTransforms().second.p.x(),
+                 it->getTransforms().second.p.y(),
+                 it->getTransforms().second.p.z());
 
         if (results.size() > 0) {
-
             markers->markers.clear();
             id_counter = 0;
 
