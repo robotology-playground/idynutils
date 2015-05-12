@@ -250,7 +250,7 @@ TEST_F(testCollisionUtils, testDistanceChecksAreInvariant) {
       LinkPairDistance result2 = results.front();
       ASSERT_EQ(result1.getDistance(), result2.getDistance());
       ASSERT_EQ(result1.getLinkNames(), result2.getLinkNames());
-      ASSERT_EQ(result1.getTransforms(), result2.getTransforms());
+      ASSERT_EQ(result1.getLink_T_closestPoint(), result2.getLink_T_closestPoint());
 
 }
 
@@ -285,9 +285,6 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     boost::shared_ptr<fcl::CollisionObject> collision_geometry_l = collision_objects_test[linkA];
     boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test[linkB];
 
-    KDL::Frame link_left_hand_T_shape_left_hand = link_T_shape_test[linkA];
-    KDL::Frame link_right_hand_T_shape_right_hand = link_T_shape_test[linkB];
-
     int left_hand_index = robot.iDyn3_model.getLinkIndex(linkA);
     if(left_hand_index == -1)
         std::cout << "Failed to get lefthand_index" << std::endl;
@@ -297,15 +294,13 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
         std::cout << "Failed to get righthand_index" << std::endl;
 
     KDL::Frame w_T_link_left_hand = robot.iDyn3_model.getPositionKDL(left_hand_index);
-    KDL::Frame W_T_link_right_hand = robot.iDyn3_model.getPositionKDL(right_hand_index);
+    KDL::Frame w_T_link_right_hand = robot.iDyn3_model.getPositionKDL(right_hand_index);
 
     double actual_distance_check =
         (   ( w_T_link_left_hand *
-              link_left_hand_T_shape_left_hand *
-              result.getTransforms().first ).p -
-            ( W_T_link_right_hand *
-              link_right_hand_T_shape_right_hand *
-              result.getTransforms().second ).p
+              result.getLink_T_closestPoint().first ).p -
+            ( w_T_link_right_hand *
+              result.getLink_T_closestPoint().second ).p
         ).Norm();
 
     fcl::DistanceRequest distance_request;
@@ -335,8 +330,8 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     capsuleB->getEndPoints(righthand_capsule_ep1, righthand_capsule_ep2);
     lefthand_capsule_ep1 = w_T_link_left_hand * lefthand_capsule_ep1;
     lefthand_capsule_ep2 = w_T_link_left_hand * lefthand_capsule_ep2;
-    righthand_capsule_ep1 = w_T_link_left_hand * righthand_capsule_ep1;
-    righthand_capsule_ep2 = w_T_link_left_hand * righthand_capsule_ep2;
+    righthand_capsule_ep1 = w_T_link_right_hand * righthand_capsule_ep1;
+    righthand_capsule_ep2 = w_T_link_right_hand * righthand_capsule_ep2;
 
     Eigen::Vector3d lefthand_capsule_ep1_eigen, lefthand_capsule_ep2_eigen,
                     righthand_capsule_ep1_eigen, righthand_capsule_ep2_eigen;
@@ -365,7 +360,7 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
 
 
     // we compute the distance by knowing the two hands are parallel (but not the capsules!) and the capsules have the same radii
-    double hand_computed_distance_estimate = (w_T_link_left_hand.p - W_T_link_right_hand.p).Norm()
+    double hand_computed_distance_estimate = (w_T_link_left_hand.p - w_T_link_right_hand.p).Norm()
         - capsuleA->getRadius()
         - capsuleB->getRadius();
 
@@ -417,22 +412,43 @@ TEST_F(testCollisionUtils, checkTimings)
     compute_distance.getLinkDistances(0.05);
     std::cout << "getLinkDistances(0.05) t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
-    tic = yarp::os::SystemClock::nowSystem();
-    fcl::DistanceRequest distance_request;
-    distance_request.gjk_solver_type = fcl::GST_INDEP;
-    distance_request.enable_nearest_points = true;
+    {
+        tic = yarp::os::SystemClock::nowSystem();
+        fcl::DistanceRequest distance_request;
+        distance_request.gjk_solver_type = fcl::GST_INDEP;
+        distance_request.enable_nearest_points = true;
 
-    fcl::DistanceResult distance_result;
+        fcl::DistanceResult distance_result;
 
-    fcl::CollisionObject* left_hand_collision_object =
-        collision_geometry_l.get();
-    fcl::CollisionObject* right_hand_collision_object =
-        collision_geometry_r.get();
+        fcl::CollisionObject* left_hand_collision_object =
+            collision_geometry_l.get();
+        fcl::CollisionObject* right_hand_collision_object =
+            collision_geometry_r.get();
 
-    fcl::distance(left_hand_collision_object, right_hand_collision_object,
-                  distance_request,
-                  distance_result);
-    std::cout << "fcl capsule-capsule t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+        fcl::distance(left_hand_collision_object, right_hand_collision_object,
+                      distance_request,
+                      distance_result);
+        std::cout << "fcl capsule-capsule t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+    }
+
+    {
+        tic = yarp::os::SystemClock::nowSystem();
+        fcl::DistanceRequest distance_request;
+        distance_request.gjk_solver_type = fcl::GST_INDEP;
+        distance_request.enable_nearest_points = false;
+
+        fcl::DistanceResult distance_result;
+
+        fcl::CollisionObject* left_hand_collision_object =
+            collision_geometry_l.get();
+        fcl::CollisionObject* right_hand_collision_object =
+            collision_geometry_r.get();
+
+        fcl::distance(left_hand_collision_object, right_hand_collision_object,
+                      distance_request,
+                      distance_result);
+        std::cout << "fcl capsule-capsule without closest-point query t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+    }
 
     tic = yarp::os::SystemClock::nowSystem();
     KDL::Vector lefthand_capsule_ep1, lefthand_capsule_ep2,

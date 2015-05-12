@@ -73,13 +73,14 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     shape.reset(new fcl::Capsule(collisionGeometry->radius,
                                                  collisionGeometry->length));
 
-                    custom_capsules_[link->name] =
-                        boost::shared_ptr<ComputeLinksDistance::Capsule>(
-                            new ComputeLinksDistance::Capsule(link_T_shape[link->name],
-                                                              collisionGeometry->radius,
-                                                              collisionGeometry->length));
                     shape_origin = toKdl(link->collision->origin);
                     shape_origin.p -= collisionGeometry->length/2.0 * shape_origin.M.UnitZ();
+
+                    custom_capsules_[link->name] =
+                        boost::shared_ptr<ComputeLinksDistance::Capsule>(
+                            new ComputeLinksDistance::Capsule(shape_origin,
+                                                              collisionGeometry->radius,
+                                                              collisionGeometry->length));
                 } else if (link->collision->geometry->type == urdf::Geometry::SPHERE) {
                     std::cout << "adding sphere for " << link->name;
 
@@ -387,7 +388,7 @@ const double &LinkPairDistance::getDistance() const
     return distance;
 }
 
-const std::pair<KDL::Frame, KDL::Frame> &LinkPairDistance::getTransforms() const
+const std::pair<KDL::Frame, KDL::Frame> &LinkPairDistance::getLink_T_closestPoint() const
 {
     return link_T_closestPoint;
 }

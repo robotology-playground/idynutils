@@ -77,12 +77,12 @@ public:
     const double& getDistance() const;
 
     /**
-     * @brief getTransforms returns a pair of homogeneous transformation from a
+     * @brief getLink_T_closestPoint returns a pair of homogeneous transformation from a
      *        link reference frame to the closest point on the respective link shape
      *        link_T_closestPoint
      * @return a pair of homogeneous transformations
      */
-    const std::pair<KDL::Frame, KDL::Frame>& getTransforms() const;
+    const std::pair<KDL::Frame, KDL::Frame>& getLink_T_closestPoint() const;
 
     /**
      * @brief getLinkNames returns the pair of links between which we want express the distance information
@@ -123,8 +123,8 @@ public:
         Capsule(const KDL::Frame& origin, const double radius, const double length) :
             radius(radius), length(length)
         {
-            ep1 = origin.p + length * origin.M.UnitZ();
-            ep2 = origin.p;
+            ep1 = origin.p;
+            ep2 = origin.p + length * origin.M.UnitZ();
         }
 
         double getLength() { return this->length; }

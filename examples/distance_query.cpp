@@ -53,7 +53,7 @@ void createMarkerArray(std::list<LinkPairDistance>& results,
     {
         visualization_msgs::Marker m1;
         std::pair<std::string, std::string> linkNames = it->getLinkNames();
-        std::pair<KDL::Frame, KDL::Frame> transforms = it->getTransforms();
+        std::pair<KDL::Frame, KDL::Frame> transforms = it->getLink_T_closestPoint();
         draw_point( transforms.first.p.x(),
                     transforms.first.p.y(),
                     transforms.first.p.z(),
@@ -116,12 +116,12 @@ int main(int argc, char** argv) {
         std::list<LinkPairDistance>::iterator it = results.begin();
         ROS_INFO("first distance result: %f, p0={%f, %f, %f} p1={%f, %f, %f}",
                  it->getDistance(),
-                 it->getTransforms().first.p.x(),
-                 it->getTransforms().first.p.y(),
-                 it->getTransforms().first.p.z(),
-                 it->getTransforms().second.p.x(),
-                 it->getTransforms().second.p.y(),
-                 it->getTransforms().second.p.z());
+                 it->getLink_T_closestPoint().first.p.x(),
+                 it->getLink_T_closestPoint().first.p.y(),
+                 it->getLink_T_closestPoint().first.p.z(),
+                 it->getLink_T_closestPoint().second.p.x(),
+                 it->getLink_T_closestPoint().second.p.y(),
+                 it->getLink_T_closestPoint().second.p.z());
 
         if (results.size() > 0) {
             markers->markers.clear();
