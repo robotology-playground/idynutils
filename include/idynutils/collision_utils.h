@@ -199,6 +199,18 @@ private:
                                  const fcl::Transform3f& w_T_f,
                                  KDL::Frame& link_T_f);
 
+    /**
+     * @brief shapeToLinkCoordinates transforms a fcl::Transform3f frame to a KDL::Frame in the link reference frame
+     * @param linkName the link name representing a link reference frame
+     * @param w_T_f fcl::Transform3f representing a frame in the shape reference frame
+     * @param link_T_f a KDL::Frame representing a frame in link reference frame
+     * @return true on success
+     */
+    bool shapeToLinkCoordinates(const std::string &linkName,
+                                const fcl::Transform3f &fcl_shape_T_f,
+                                KDL::Frame &link_T_f);
+
+
     /* FOLLOWING FUNCTIONS WILL LOAD AND UPDATE GEOMETRIES. NOTICE THAT A VALID ALTERNATIVE TO THIS
        IS TO USE MOVEIT. Since Moveit does not support capsules ATM, one idea could be to update the interal
        geometries moveit uses, and substitute the cylinder geometries with the capsule geometries.

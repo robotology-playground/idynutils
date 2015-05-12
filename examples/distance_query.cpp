@@ -90,9 +90,13 @@ int main(int argc, char** argv) {
     boost::shared_ptr<ComputeLinksDistance> distance_comp(
             new ComputeLinksDistance(bigman));
 
+    /*
     std::list<std::pair<std::string,std::string>> whiteList;
     whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
-    distance_comp->setCollisionWhiteList(whiteList);
+    whiteList.push_back(std::pair<std::string,std::string>("backpack","LSoftHandLink"));
+    whiteList.push_back(std::pair<std::string,std::string>("RSoftHandLink","backpack"));
+    distance_comp->setCollisionWhiteList(whiteList);*/
+
 
     ros::Subscriber joint_states_subscriber = nh.subscribe<
             sensor_msgs::JointState>(JOINT_STATE_TOPIC, 1, // Buffer size
@@ -111,7 +115,7 @@ int main(int argc, char** argv) {
 
         ROS_INFO("minimum_distance computed, results found %d distances in %fs", results.size(), toc.toSec()-tic.toSec());
 
-        while(results.size() > 50) results.pop_back();
+        while(results.size() > 15) results.pop_back();
 
         std::list<LinkPairDistance>::iterator it = results.begin();
         ROS_INFO("first distance result: %f, p0={%f, %f, %f} p1={%f, %f, %f}",

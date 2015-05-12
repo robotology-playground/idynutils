@@ -40,6 +40,16 @@ bool ComputeLinksDistance::globalToLinkCoordinates(const std::string& linkName,
     return true;
 }
 
+bool ComputeLinksDistance::shapeToLinkCoordinates(const std::string& linkName,
+                                                  const fcl::Transform3f &fcl_shape_T_f,
+                                                  KDL::Frame &link_T_f)
+{
+
+    link_T_f = link_T_shape[linkName] * fcl2KDL(fcl_shape_T_f);
+
+    return true;
+}
+
 bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_path)
 {
     urdf::Model robot_model;
@@ -64,7 +74,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                 KDL::Frame shape_origin;
 
                 if (link->collision->geometry->type == urdf::Geometry::CYLINDER) {
-                    std::cout << "adding capsule for " << link->name;
+                    std::cout << "adding capsule for " << link->name << std::endl;
 
                     boost::shared_ptr<urdf::Cylinder> collisionGeometry =
                             boost::dynamic_pointer_cast<urdf::Cylinder>(
@@ -82,7 +92,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                                                               collisionGeometry->radius,
                                                               collisionGeometry->length));
                 } else if (link->collision->geometry->type == urdf::Geometry::SPHERE) {
-                    std::cout << "adding sphere for " << link->name;
+                    std::cout << "adding sphere for " << link->name << std::endl;
 
                     boost::shared_ptr<urdf::Sphere> collisionGeometry =
                             boost::dynamic_pointer_cast<urdf::Sphere>(
@@ -91,7 +101,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     shape.reset(new fcl::Sphere(collisionGeometry->radius));
                     shape_origin = toKdl(link->collision->origin);
                 } else if (link->collision->geometry->type == urdf::Geometry::BOX) {
-                    std::cout << "adding box for " << link->name;
+                    std::cout << "adding box for " << link->name << std::endl;
 
                     boost::shared_ptr<urdf::Box> collisionGeometry =
                             boost::dynamic_pointer_cast<urdf::Box>(
@@ -101,9 +111,12 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                                              collisionGeometry->dim.y,
                                              collisionGeometry->dim.z));
                     shape_origin = toKdl(link->collision->origin);
+                    std::cout << "Box has size " << collisionGeometry->dim.x <<
+                                 ", " << collisionGeometry->dim.y <<
+                                 ", " << collisionGeometry->dim.z << std::endl;
                 }
                 else if(link->collision->geometry->type == urdf::Geometry::MESH){
-                    std::cout << "adding mesh for " << link->name;
+                    std::cout << "adding mesh for " << link->name << std::endl;
 
                     boost::shared_ptr< ::urdf::Mesh> collisionGeometry = boost::dynamic_pointer_cast< ::urdf::Mesh> (link->collision->geometry);
 
@@ -147,10 +160,10 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                  * that is, we store link_T_shape for the actual link */
                 link_T_shape[link->name] = shape_origin;
             } else {
-                std::cout << "Collision type unknown for link " << link->name;
+                std::cout << "Collision type unknown for link " << link->name << std::endl;
             }
         } else {
-            std::cout << "Collision not defined for link " << link->name;
+            std::cout << "Collision not defined for link " << link->name << std::endl;
         }
     }
     return true;
@@ -311,8 +324,15 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
         // absolutely computed w.r.t. base-frame
         KDL::Frame linkA_pA, linkB_pB;
 
-        globalToLinkCoordinates(linkA, result.nearest_points[0], linkA_pA);
-        globalToLinkCoordinates(linkB, result.nearest_points[1], linkB_pB);
+        if(collObj_shapeA->getNodeType() == fcl::GEOM_CAPSULE &&
+           collObj_shapeB->getNodeType() == fcl::GEOM_CAPSULE)
+        {
+            globalToLinkCoordinates(linkA, result.nearest_points[0], linkA_pA);
+            globalToLinkCoordinates(linkB, result.nearest_points[1], linkB_pB);
+        } else {
+            shapeToLinkCoordinates(linkA, result.nearest_points[0], linkA_pA);
+            shapeToLinkCoordinates(linkB, result.nearest_points[1], linkB_pB);
+        }
 
         if(result.min_distance < detectionThreshold)
             results.push_back(LinkPairDistance(linkA, linkB,
