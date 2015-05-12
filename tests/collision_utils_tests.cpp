@@ -3,9 +3,10 @@
 #include <idynutils/idynutils.h>
 #include <idynutils/tests_utils.h>
 #include <iCub/iDynTree/yarp_kdl.h>
-#include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
 #include <cmath>
 #include <fcl/distance.h>
 #include <fcl/shape/geometric_shapes.h>
@@ -18,65 +19,17 @@
 #define toRad(X) (X * M_PI/180.0)
 #define SMALL_NUM 1e-5
 
-class TestCapsuleLinksDistance
+KDL::Frame fcl2KDL(const fcl::Transform3f &in)
 {
+    fcl::Quaternion3f q = in.getQuatRotation();
+    fcl::Vec3f t = in.getTranslation();
 
-private:
-    ComputeLinksDistance& _computeDistance;
+    KDL::Frame f;
+    f.p = KDL::Vector(t[0],t[1],t[2]);
+    f.M = KDL::Rotation::Quaternion(q.getX(), q.getY(), q.getZ(), q.getW());
 
-public:
-
-    TestCapsuleLinksDistance(ComputeLinksDistance& computeDistance)
-        :_computeDistance(computeDistance)
-    {
-
-    }
-
-    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > getShapes()
-    {
-        return _computeDistance.shapes_;
-    }
-
-    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > getcollision_objects()
-    {
-        return _computeDistance.collision_objects_;
-    }
-
-    std::map<std::string,KDL::Frame> getlink_T_shape()
-    {
-        return _computeDistance.link_T_shape;
-    }
-
-};
-
-namespace {
-
-
-class testCollisionUtils : public ::testing::Test{
- protected:
-
-  testCollisionUtils():
-      robot("bigman",
-            std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf",
-            std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.srdf"),
-      q(robot.iDyn3_model.getNrOfDOFs(), 0.0),
-      compute_distance(robot)
-  {}
-
-  virtual ~testCollisionUtils() {
-  }
-
-  virtual void SetUp() {
-  }
-
-  virtual void TearDown() {
-  }
-
-  iDynUtils robot;
-  yarp::sig::Vector q;
-  ComputeLinksDistance compute_distance;
-
-};
+    return f;
+}
 
 yarp::sig::Vector getGoodInitialPosition(iDynUtils& idynutils) {
     yarp::sig::Vector q(idynutils.iDyn3_model.getNrOfDOFs(), 0.0);
@@ -96,14 +49,19 @@ yarp::sig::Vector getGoodInitialPosition(iDynUtils& idynutils) {
     return q;
 }
 
-double dist3D_Segment_to_Segment (const Eigen::Vector3d & S1P0, const Eigen::Vector3d & S1P1, const Eigen::Vector3d & S2P0, const Eigen::Vector3d & S2P1, Eigen::Vector3d & CP1, Eigen::Vector3d & CP2)
+double dist3D_Segment_to_Segment (const Eigen::Vector3d & segment_A_endpoint_1,
+                                  const Eigen::Vector3d & segment_A_endpoint_2,
+                                  const Eigen::Vector3d & segment_B_endpoint_1,
+                                  const Eigen::Vector3d & segment_B_endpoint_2,
+                                  Eigen::Vector3d & closest_point_on_segment_A,
+                                  Eigen::Vector3d & closest_point_on_segment_B)
 {
 
     using namespace Eigen;
 
-    Vector3d   u = S1P1 - S1P0;
-    Vector3d   v = S2P1 - S2P0;
-    Vector3d   w = S1P0 - S2P0;
+    Vector3d   u = segment_A_endpoint_2 - segment_A_endpoint_1;
+    Vector3d   v = segment_B_endpoint_2 - segment_B_endpoint_1;
+    Vector3d   w = segment_A_endpoint_1 - segment_B_endpoint_1;
     double    a = u.dot(u);         // always >= 0
     double    b = u.dot(v);
     double    c = v.dot(v);         // always >= 0
@@ -163,14 +121,14 @@ double dist3D_Segment_to_Segment (const Eigen::Vector3d & S1P0, const Eigen::Vec
     sc = (std::fabs(sN) < SMALL_NUM ? 0.0 : sN / sD);
     tc = (std::fabs(tN) < SMALL_NUM ? 0.0 : tN / tD);
 
-    CP1 = S1P0 + sc * u;
-    CP2 = S2P0 + tc * v;
+    closest_point_on_segment_A = segment_A_endpoint_1 + sc * u;
+    closest_point_on_segment_B = segment_B_endpoint_1 + tc * v;
 
 //    std::cout << "CP1: " << std::endl << CP1 << std::endl;
 //    std::cout << "CP2: " << std::endl << CP2 << std::endl;
 
     // get the difference of the two closest points
-    Vector3d   dP = CP1 - CP2;  // =  S1(sc) - S2(tc)
+    Vector3d   dP = closest_point_on_segment_A - closest_point_on_segment_B;  // =  S1(sc) - S2(tc)
 
     double Dm = dP.norm();   // return the closest distance
 
@@ -180,94 +138,367 @@ double dist3D_Segment_to_Segment (const Eigen::Vector3d & S1P0, const Eigen::Vec
     return Dm;
 }
 
+class TestCapsuleLinksDistance
+{
 
-  TEST_F(testCollisionUtils, testCapsuleDistance) {
+private:
+    ComputeLinksDistance& _computeDistance;
 
-        q = getGoodInitialPosition(robot);
-        robot.updateiDyn3Model(q, false);
+public:
 
-        std::list<std::pair<std::string,std::string>> whiteList;
-        whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
-        compute_distance.setCollisionWhiteList(whiteList);
+    TestCapsuleLinksDistance(ComputeLinksDistance& computeDistance)
+        :_computeDistance(computeDistance)
+    {
 
-        std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
-        std::list<LinkPairDistance>::iterator it = results.begin();
-        double actual_distance;
-        actual_distance = it->getDistance();
+    }
 
+    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > getShapes()
+    {
+        return _computeDistance.shapes_;
+    }
 
-        TestCapsuleLinksDistance testCapsuleLinksDistance(compute_distance);
-        std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_test;
-        std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_test;
-        std::map<std::string,KDL::Frame> link_T_shape_test;
+    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > getcollision_objects()
+    {
+        return _computeDistance.collision_objects_;
+    }
 
-        shapes_test = testCapsuleLinksDistance.getShapes();
-        collision_objects_test = testCapsuleLinksDistance.getcollision_objects();
-        link_T_shape_test = testCapsuleLinksDistance.getlink_T_shape();
+    std::map<std::string,KDL::Frame> getlink_T_shape()
+    {
+        return _computeDistance.link_T_shape;
+    }
 
-        boost::shared_ptr<fcl::CollisionObject> collision_geometry_l = collision_objects_test["LSoftHandLink"];
-        boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test["RSoftHandLink"];
+    std::map<std::string,boost::shared_ptr<ComputeLinksDistance::Capsule> > getcustom_capsules()
+    {
+        return _computeDistance.custom_capsules_;
+    }
 
-        KDL::Frame link_T_shape_l = link_T_shape_test["LSoftHandLink"];
-        KDL::Frame link_T_shape_r = link_T_shape_test["RSoftHandLink"];
+    bool updateCollisionObjects()
+    {
+        return _computeDistance.updateCollisionObjects();
+    }
 
-        std::string lefthand_name = "LSoftHandLink";
-        int lefthand_index = robot.iDyn3_model.getLinkIndex(lefthand_name);
-        if(lefthand_index == -1)
-            std::cout << "Failed to get lefthand_index" << std::endl;
+    bool globalToLinkCoordinates(const std::string& linkName,
+                                 const fcl::Transform3f &fcl_w_T_f,
+                                 KDL::Frame &link_T_f)
+    {
 
-        std::string righthand_name = "RSoftHandLink";
-        int righthand_index = robot.iDyn3_model.getLinkIndex(righthand_name);
-        if(righthand_index == -1)
-            std::cout << "Failed to get righthand_index" << std::endl;
+        return _computeDistance.globalToLinkCoordinates(linkName, fcl_w_T_f, link_T_f);
+    }
 
-        KDL::Frame lefthand_position = robot.iDyn3_model.getPositionKDL(lefthand_index);
-        KDL::Frame righthand_position = robot.iDyn3_model.getPositionKDL(righthand_index);
+    bool globalToLinkCoordinatesKDL(const std::string& linkName,
+                                    const fcl::Transform3f &fcl_w_T_f,
+                                    KDL::Frame &link_T_f)
+    {
 
-        KDL::Frame lefthand_shape_transform = lefthand_position * link_T_shape_l;
-        KDL::Frame righthand_shape_transform = righthand_position * link_T_shape_r;
+        KDL::Frame w_T_f = fcl2KDL(fcl_w_T_f);
 
-        KDL::Vector lefthand_shape_origin = lefthand_shape_transform.p;
-        KDL::Vector righthand_shape_origin = righthand_shape_transform.p;
+        fcl::Transform3f fcl_w_T_shape = _computeDistance.collision_objects_[linkName]->getTransform();
+        KDL::Frame w_T_shape = fcl2KDL(fcl_w_T_shape);
 
-        KDL::Vector lefthand_shape_Z = lefthand_shape_transform.M.UnitZ();
-        KDL::Vector righthand_shape_Z = righthand_shape_transform.M.UnitZ();
+        KDL::Frame shape_T_f = w_T_shape.Inverse()*w_T_f;
 
+        link_T_f = _computeDistance.link_T_shape[linkName] * shape_T_f;
 
-        boost::shared_ptr<fcl::CollisionGeometry> leftH = shapes_test["LSoftHandLink"];
-        boost::shared_ptr<fcl::CollisionGeometry> rightH = shapes_test["RSoftHandLink"];
+        return true;
+    }
 
-        boost::shared_ptr<fcl::Capsule> leftH_capsule = boost::dynamic_pointer_cast<fcl::Capsule>(leftH);
-        boost::shared_ptr<fcl::Capsule> rightH_capsule = boost::dynamic_pointer_cast<fcl::Capsule>(rightH);
+};
 
-        double origin_translation_lefthand = 0.5*leftH_capsule->lz;
-        double origin_translation_righthand = 0.5*rightH_capsule->lz;
+namespace {
 
-        KDL::Vector lefthand_capsule_A, lefthand_capsule_B, righthand_capsule_A, righthand_capsule_B;
-        lefthand_capsule_A = lefthand_shape_origin + origin_translation_lefthand * lefthand_shape_Z;
-        lefthand_capsule_B = lefthand_shape_origin - origin_translation_lefthand * lefthand_shape_Z;
-        righthand_capsule_A = righthand_shape_origin + origin_translation_righthand * righthand_shape_Z;
-        righthand_capsule_B = righthand_shape_origin - origin_translation_righthand * righthand_shape_Z;
+class testCollisionUtils : public ::testing::Test{
+ protected:
 
-        Eigen::Matrix<double, 3, 1> lefthand_capsule_A_eigen, lefthand_capsule_B_eigen, righthand_capsule_A_eigen, righthand_capsule_B_eigen;
-        Eigen::Vector3d lefthand_CP, righthand_CP;
-        double reference_distance;
+  testCollisionUtils():
+      robot("bigman",
+            std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf",
+            std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.srdf"),
+      q(robot.iDyn3_model.getNrOfDOFs(), 0.0),
+      compute_distance(robot)
+  {}
 
-        tf::vectorKDLToEigen(lefthand_capsule_A, lefthand_capsule_A_eigen);
-        tf::vectorKDLToEigen(lefthand_capsule_B, lefthand_capsule_B_eigen);
-        tf::vectorKDLToEigen(righthand_capsule_A, righthand_capsule_A_eigen);
-        tf::vectorKDLToEigen(righthand_capsule_B, righthand_capsule_B_eigen);
-
-        reference_distance = dist3D_Segment_to_Segment (lefthand_capsule_A_eigen, lefthand_capsule_B_eigen, righthand_capsule_A_eigen, righthand_capsule_B_eigen, lefthand_CP, righthand_CP);
-
-        reference_distance = reference_distance - leftH_capsule->radius - rightH_capsule->radius;
-
-        EXPECT_NEAR(actual_distance, reference_distance, 1E-4);
-
-
+  virtual ~testCollisionUtils() {
   }
 
+  virtual void SetUp() {
+  }
 
+  virtual void TearDown() {
+  }
+
+  iDynUtils robot;
+  yarp::sig::Vector q;
+  ComputeLinksDistance compute_distance;
+
+};
+
+TEST_F(testCollisionUtils, testDistanceChecksAreInvariant) {
+
+      std::list<std::pair<std::string,std::string>> whiteList;
+      whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
+      compute_distance.setCollisionWhiteList(whiteList);
+
+      q = getGoodInitialPosition(robot);
+      robot.updateiDyn3Model(q, false);
+
+      std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+      LinkPairDistance result1 = results.front();
+
+      robot.updateiDyn3Model(q, false);
+      results.clear();
+      results = compute_distance.getLinkDistances();
+      LinkPairDistance result2 = results.front();
+      ASSERT_EQ(result1.getDistance(), result2.getDistance());
+      ASSERT_EQ(result1.getLinkNames(), result2.getLinkNames());
+      ASSERT_EQ(result1.getTransforms(), result2.getTransforms());
+
+}
+
+TEST_F(testCollisionUtils, testCapsuleDistance) {
+
+    q = getGoodInitialPosition(robot);
+    robot.updateiDyn3Model(q, false);
+
+    std::string linkA = "LSoftHandLink";
+    std::string linkB = "RSoftHandLink";
+
+    std::list<std::pair<std::string,std::string>> whiteList;
+    whiteList.push_back(std::pair<std::string,std::string>(linkA,linkB));
+    compute_distance.setCollisionWhiteList(whiteList);
+
+    std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+    LinkPairDistance result = results.front();
+    double actual_distance;
+    actual_distance = result.getDistance();
+    ASSERT_EQ(result.getLinkNames().first, linkA);
+    ASSERT_EQ(result.getLinkNames().second, linkB);
+
+    TestCapsuleLinksDistance compute_distance_observer(compute_distance);
+    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_test;
+    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_test;
+    std::map<std::string,KDL::Frame> link_T_shape_test;
+
+    shapes_test = compute_distance_observer.getShapes();
+    collision_objects_test = compute_distance_observer.getcollision_objects();
+    link_T_shape_test = compute_distance_observer.getlink_T_shape();
+
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_l = collision_objects_test[linkA];
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test[linkB];
+
+    KDL::Frame link_left_hand_T_shape_left_hand = link_T_shape_test[linkA];
+    KDL::Frame link_right_hand_T_shape_right_hand = link_T_shape_test[linkB];
+
+    int left_hand_index = robot.iDyn3_model.getLinkIndex(linkA);
+    if(left_hand_index == -1)
+        std::cout << "Failed to get lefthand_index" << std::endl;
+
+    int right_hand_index = robot.iDyn3_model.getLinkIndex(linkB);
+    if(right_hand_index == -1)
+        std::cout << "Failed to get righthand_index" << std::endl;
+
+    KDL::Frame w_T_link_left_hand = robot.iDyn3_model.getPositionKDL(left_hand_index);
+    KDL::Frame W_T_link_right_hand = robot.iDyn3_model.getPositionKDL(right_hand_index);
+
+    double actual_distance_check =
+        (   ( w_T_link_left_hand *
+              link_left_hand_T_shape_left_hand *
+              result.getTransforms().first ).p -
+            ( W_T_link_right_hand *
+              link_right_hand_T_shape_right_hand *
+              result.getTransforms().second ).p
+        ).Norm();
+
+    fcl::DistanceRequest distance_request;
+    distance_request.gjk_solver_type = fcl::GST_INDEP;
+    distance_request.enable_nearest_points = true;
+
+    fcl::DistanceResult distance_result;
+
+    fcl::CollisionObject* left_hand_collision_object =
+        collision_geometry_l.get();
+    fcl::CollisionObject* right_hand_collision_object =
+        collision_geometry_r.get();
+
+    fcl::distance(left_hand_collision_object, right_hand_collision_object,
+                  distance_request,
+                  distance_result);
+
+    double actual_distance_check_original =
+        (distance_result.nearest_points[0] - distance_result.nearest_points[1]).norm();
+
+    KDL::Vector lefthand_capsule_ep1, lefthand_capsule_ep2,
+                righthand_capsule_ep1, righthand_capsule_ep2;
+
+    boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleA = compute_distance_observer.getcustom_capsules()[linkA];
+    boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleB = compute_distance_observer.getcustom_capsules()[linkB];
+    capsuleA->getEndPoints(lefthand_capsule_ep1, lefthand_capsule_ep2);
+    capsuleB->getEndPoints(righthand_capsule_ep1, righthand_capsule_ep2);
+    lefthand_capsule_ep1 = w_T_link_left_hand * lefthand_capsule_ep1;
+    lefthand_capsule_ep2 = w_T_link_left_hand * lefthand_capsule_ep2;
+    righthand_capsule_ep1 = w_T_link_left_hand * righthand_capsule_ep1;
+    righthand_capsule_ep2 = w_T_link_left_hand * righthand_capsule_ep2;
+
+    Eigen::Vector3d lefthand_capsule_ep1_eigen, lefthand_capsule_ep2_eigen,
+                    righthand_capsule_ep1_eigen, righthand_capsule_ep2_eigen;
+
+    Eigen::Vector3d lefthand_CP, righthand_CP;
+    double reference_distance;
+
+    tf::vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
+    tf::vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
+    tf::vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
+    tf::vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
+
+    reference_distance = dist3D_Segment_to_Segment (lefthand_capsule_ep1_eigen,
+                                                    lefthand_capsule_ep2_eigen,
+                                                    righthand_capsule_ep1_eigen,
+                                                    righthand_capsule_ep2_eigen,
+                                                    lefthand_CP,
+                                                    righthand_CP);
+
+    reference_distance = reference_distance
+        - capsuleA->getRadius()
+        - capsuleB->getRadius();
+    double reference_distance_check = (lefthand_CP - righthand_CP).norm()
+        - capsuleA->getRadius()
+        - capsuleB->getRadius();
+
+
+    // we compute the distance by knowing the two hands are parallel (but not the capsules!) and the capsules have the same radii
+    double hand_computed_distance_estimate = (w_T_link_left_hand.p - W_T_link_right_hand.p).Norm()
+        - capsuleA->getRadius()
+        - capsuleB->getRadius();
+
+    EXPECT_NEAR(actual_distance, actual_distance_check, 1E-8);
+    EXPECT_NEAR(actual_distance_check, actual_distance_check_original, 1E-8);
+    EXPECT_NEAR(reference_distance, reference_distance_check, 1E-8);
+    EXPECT_NEAR(actual_distance, reference_distance, 1E-4) << "estimate was " << hand_computed_distance_estimate;
+
+}
+
+TEST_F(testCollisionUtils, checkTimings)
+{
+    q = getGoodInitialPosition(robot);
+    robot.updateiDyn3Model(q, false);
+
+    std::string linkA = "LSoftHandLink";
+    std::string linkB = "RSoftHandLink";
+
+    TestCapsuleLinksDistance compute_distance_observer(compute_distance);
+
+    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_test;
+    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_test;
+    std::map<std::string,KDL::Frame> link_T_shape_test;
+
+    shapes_test = compute_distance_observer.getShapes();
+    collision_objects_test = compute_distance_observer.getcollision_objects();
+    link_T_shape_test = compute_distance_observer.getlink_T_shape();
+
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_l = collision_objects_test[linkA];
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test[linkB];
+
+    int left_hand_index = robot.iDyn3_model.getLinkIndex(linkA);
+    if(left_hand_index == -1)
+        std::cout << "Failed to get lefthand_index" << std::endl;
+
+    int right_hand_index = robot.iDyn3_model.getLinkIndex(linkB);
+    if(right_hand_index == -1)
+        std::cout << "Failed to get righthand_index" << std::endl;
+
+    double tic = yarp::os::SystemClock::nowSystem();
+    compute_distance_observer.updateCollisionObjects();
+    std::cout << "updateCollisionObjects t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
+    tic = yarp::os::SystemClock::nowSystem();
+    compute_distance.getLinkDistances();
+    std::cout << "getLinkDistances() t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
+    tic = yarp::os::SystemClock::nowSystem();
+    compute_distance.getLinkDistances(0.05);
+    std::cout << "getLinkDistances(0.05) t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
+    tic = yarp::os::SystemClock::nowSystem();
+    fcl::DistanceRequest distance_request;
+    distance_request.gjk_solver_type = fcl::GST_INDEP;
+    distance_request.enable_nearest_points = true;
+
+    fcl::DistanceResult distance_result;
+
+    fcl::CollisionObject* left_hand_collision_object =
+        collision_geometry_l.get();
+    fcl::CollisionObject* right_hand_collision_object =
+        collision_geometry_r.get();
+
+    fcl::distance(left_hand_collision_object, right_hand_collision_object,
+                  distance_request,
+                  distance_result);
+    std::cout << "fcl capsule-capsule t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
+    tic = yarp::os::SystemClock::nowSystem();
+    KDL::Vector lefthand_capsule_ep1, lefthand_capsule_ep2,
+                righthand_capsule_ep1, righthand_capsule_ep2;
+
+    boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleA = compute_distance_observer.getcustom_capsules()[linkA];
+    boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleB = compute_distance_observer.getcustom_capsules()[linkB];
+
+    capsuleA->getEndPoints(lefthand_capsule_ep1, lefthand_capsule_ep2);
+    capsuleB->getEndPoints(righthand_capsule_ep1, righthand_capsule_ep2);
+
+    Eigen::Vector3d lefthand_capsule_ep1_eigen, lefthand_capsule_ep2_eigen,
+                    righthand_capsule_ep1_eigen, righthand_capsule_ep2_eigen;
+
+    Eigen::Vector3d lefthand_CP, righthand_CP;
+    double reference_distance;
+
+    tf::vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
+    tf::vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
+    tf::vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
+    tf::vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
+
+    reference_distance = dist3D_Segment_to_Segment (lefthand_capsule_ep1_eigen,
+                                                    lefthand_capsule_ep2_eigen,
+                                                    righthand_capsule_ep1_eigen,
+                                                    righthand_capsule_ep2_eigen,
+                                                    lefthand_CP,
+                                                    righthand_CP);
+    std::cout << "inline capsule-capsule t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+}
+
+TEST_F(testCollisionUtils, testGlobalToLinkCoordinates)
+{
+    q = getGoodInitialPosition(robot);
+    robot.updateiDyn3Model(q, false);
+    std::string linkA = "LSoftHandLink";
+    std::string linkB = "RSoftHandLink";
+
+    TestCapsuleLinksDistance compute_distance_observer(compute_distance);
+    std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_test =
+        compute_distance_observer.getcollision_objects();
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_l = collision_objects_test[linkA];
+    boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test[linkB];
+
+    fcl::DistanceRequest distance_request;
+    distance_request.gjk_solver_type = fcl::GST_INDEP;
+    distance_request.enable_nearest_points = true;
+
+    fcl::DistanceResult distance_result;
+
+    fcl::CollisionObject* left_hand_collision_object =
+        collision_geometry_l.get();
+    fcl::CollisionObject* right_hand_collision_object =
+        collision_geometry_r.get();
+
+    fcl::distance(left_hand_collision_object, right_hand_collision_object,
+                  distance_request,
+                  distance_result);
+
+    KDL::Frame lA_T_pA_KDL;
+    KDL::Frame lA_T_pA;
+    compute_distance_observer.globalToLinkCoordinatesKDL(linkA,distance_result.nearest_points[0],lA_T_pA_KDL);
+    compute_distance_observer.globalToLinkCoordinates(linkA,distance_result.nearest_points[0],lA_T_pA);
+
+    EXPECT_EQ(lA_T_pA_KDL, lA_T_pA);
+}
 
 }
 

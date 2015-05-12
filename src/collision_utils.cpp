@@ -7,8 +7,6 @@
 #include <fcl/shape/geometric_shapes.h>
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/shape_operations.h>
-#include <yarp/os/all.h>
-
 
 // construct vector
 KDL::Vector toKdl(urdf::Vector3 v)
@@ -26,6 +24,20 @@ KDL::Rotation toKdl(urdf::Rotation r)
 KDL::Frame toKdl(urdf::Pose p)
 {
   return KDL::Frame(toKdl(p.rotation), toKdl(p.position));
+}
+
+bool ComputeLinksDistance::globalToLinkCoordinates(const std::string& linkName,
+                                                   const fcl::Transform3f &fcl_w_T_f,
+                                                   KDL::Frame &link_T_f)
+{
+
+    fcl::Transform3f fcl_w_T_shape = collision_objects_[linkName]->getTransform();
+
+    fcl::Transform3f fcl_shape_T_f = fcl_w_T_shape.inverseTimes(fcl_w_T_f);
+
+    link_T_f = link_T_shape[linkName] * fcl2KDL(fcl_shape_T_f);
+
+    return true;
 }
 
 bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_path)
@@ -49,6 +61,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                 link->collision->geometry->type == urdf::Geometry::MESH) {
 
                 boost::shared_ptr<fcl::CollisionGeometry> shape;
+                KDL::Frame shape_origin;
 
                 if (link->collision->geometry->type == urdf::Geometry::CYLINDER) {
                     std::cout << "adding capsule for " << link->name;
@@ -59,6 +72,14 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
 
                     shape.reset(new fcl::Capsule(collisionGeometry->radius,
                                                  collisionGeometry->length));
+
+                    custom_capsules_[link->name] =
+                        boost::shared_ptr<ComputeLinksDistance::Capsule>(
+                            new ComputeLinksDistance::Capsule(link_T_shape[link->name],
+                                                              collisionGeometry->radius,
+                                                              collisionGeometry->length));
+                    shape_origin = toKdl(link->collision->origin);
+                    shape_origin.p -= collisionGeometry->length/2.0 * shape_origin.M.UnitZ();
                 } else if (link->collision->geometry->type == urdf::Geometry::SPHERE) {
                     std::cout << "adding sphere for " << link->name;
 
@@ -67,6 +88,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                                     link->collision->geometry);
 
                     shape.reset(new fcl::Sphere(collisionGeometry->radius));
+                    shape_origin = toKdl(link->collision->origin);
                 } else if (link->collision->geometry->type == urdf::Geometry::BOX) {
                     std::cout << "adding box for " << link->name;
 
@@ -77,6 +99,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     shape.reset(new fcl::Box(collisionGeometry->dim.x,
                                              collisionGeometry->dim.y,
                                              collisionGeometry->dim.z));
+                    shape_origin = toKdl(link->collision->origin);
                 }
                 else if(link->collision->geometry->type == urdf::Geometry::MESH){
                     std::cout << "adding mesh for " << link->name;
@@ -109,6 +132,8 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     bvhModel->beginModel();
                     bvhModel->addSubModel(vertices, triangles);
                     bvhModel->endModel();
+
+                    shape_origin = toKdl(link->collision->origin);
                 }
 
                 boost::shared_ptr<fcl::CollisionObject> collision_object(
@@ -119,7 +144,7 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
 
                 /* Store the transformation of the CollisionShape from URDF
                  * that is, we store link_T_shape for the actual link */
-                link_T_shape[link->name] = toKdl(link->collision->origin);
+                link_T_shape[link->name] = shape_origin;
             } else {
                 std::cout << "Collision type unknown for link " << link->name;
             }
@@ -232,7 +257,7 @@ void ComputeLinksDistance::generatePairsToCheck()
                 collision_detection::AllowedCollision::Type collisionType;
                 if(allowed_collision_matrix->getAllowedCollision(*it_A,*it_B,collisionType) &&
                    collisionType == collision_detection::AllowedCollision::NEVER)
-                pairsToCheck.push_back(std::pair<std::string,std::string>(*it_A,*it_B));
+                pairsToCheck.push_back(ComputeLinksDistance::LinksPair(this,*it_A,*it_B));
             }
         }
     }
@@ -257,25 +282,19 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
 {
     std::list<LinkPairDistance> results;
 
-    double tic = yarp::os::SystemClock::nowSystem();
     updateCollisionObjects();
-    std::cout << "updateCollisionObjects: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
-    typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
+    typedef std::list< ComputeLinksDistance::LinksPair >::iterator iter_pair;
 
-    tic = yarp::os::SystemClock::nowSystem();
-    double max_distance_toc = 0;
-    double max_toc_other = 0;
-    double max_toc_aabb = 0;
     for(iter_pair it = pairsToCheck.begin();
         it != pairsToCheck.end();
         ++it)
     {
-        std::string linkA = it->first;
-        std::string linkB = it->second;
+        std::string linkA = it->linkA;
+        std::string linkB = it->linkB;
 
-        fcl::CollisionObject* collObj_shapeA = collision_objects_[linkA].get();
-        fcl::CollisionObject* collObj_shapeB = collision_objects_[linkB].get();
+        fcl::CollisionObject* collObj_shapeA = it->collisionObjectA.get();
+        fcl::CollisionObject* collObj_shapeB = it->collisionObjectB.get();
 
         fcl::DistanceRequest request;
         request.gjk_solver_type = fcl::GST_INDEP;
@@ -285,77 +304,22 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
         fcl::DistanceResult result;
 
         // perform distance test
-        double tic_distance = yarp::os::SystemClock::nowSystem();
         fcl::distance(collObj_shapeA, collObj_shapeB, request, result);
-        double toc_distance = yarp::os::SystemClock::nowSystem() - tic_distance;
-        if(toc_distance > max_distance_toc)
-            max_distance_toc = toc_distance;
 
-        double tic_other = yarp::os::SystemClock::nowSystem();
         // p1Homo, p2Homo newly computed points by FCL
         // absolutely computed w.r.t. base-frame
-        fcl::Transform3f w_pAHomo(result.nearest_points[0]);
-        fcl::Transform3f w_pBHomo(result.nearest_points[1]);
-        fcl::Transform3f fcl_w_T_shapeA, fcl_w_T_shapeB;
-
-        fcl_w_T_shapeA = collObj_shapeA->getTransform();
-        fcl_w_T_shapeB = collObj_shapeB->getTransform();
-
-        fcl::AABB aabb_A;
-        fcl::AABB aabb_B;
-
-        if(boost::dynamic_pointer_cast<fcl::Capsule>(shapes_[linkA]) &&
-           boost::dynamic_pointer_cast<fcl::Capsule>(shapes_[linkB]))
-        {
-            double tic_aabb = yarp::os::SystemClock::nowSystem();
-
-            boost::shared_ptr<fcl::CollisionGeometry> objA = shapes_[linkA];
-            boost::shared_ptr<fcl::CollisionGeometry> objB = shapes_[linkB];
-
-            boost::shared_ptr<fcl::Capsule> capsuleA = boost::dynamic_pointer_cast<fcl::Capsule>(objA);
-            boost::shared_ptr<fcl::Capsule> capsuleB = boost::dynamic_pointer_cast<fcl::Capsule>(objB);
-
-
-
-            aabb_A = fcl::translate(capsuleA->aabb_local,fcl_w_T_shapeA.getTranslation());
-            aabb_B = fcl::translate(capsuleB->aabb_local,fcl_w_T_shapeB.getTranslation());
-            aabb_A.distance(aabb_B);
-
-            double toc_aabb = yarp::os::SystemClock::nowSystem() - tic_aabb;
-            if(toc_aabb > max_toc_aabb)
-                max_toc_aabb = toc_aabb;
-        }
-
-        fcl::Transform3f fcl_shapeA_pA, fcl_shapeB_pB;
-
-        fcl_shapeA_pA = fcl_w_T_shapeA.inverseTimes(w_pAHomo);
-        fcl_shapeB_pB = fcl_w_T_shapeB.inverseTimes(w_pBHomo);
-
-        KDL::Frame shapeA_pA, shapeB_pB;
-
-        shapeA_pA = fcl2KDL(fcl_shapeA_pA);
-        shapeB_pB = fcl2KDL(fcl_shapeB_pB);
-
         KDL::Frame linkA_pA, linkB_pB;
-        linkA_pA = link_T_shape[linkA] * shapeA_pA;
-        linkB_pB = link_T_shape[linkB] * shapeB_pB;
+
+        globalToLinkCoordinates(linkA, result.nearest_points[0], linkA_pA);
+        globalToLinkCoordinates(linkB, result.nearest_points[1], linkB_pB);
 
         if(result.min_distance < detectionThreshold)
             results.push_back(LinkPairDistance(linkA, linkB,
                                                linkA_pA, linkB_pB,
                                                result.min_distance));
-        double toc_other = yarp::os::SystemClock::nowSystem() - tic_other;
-        if(toc_other > max_toc_other)
-            max_toc_other = toc_other;
     }
-    std::cout << "request: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
-    std::cout << "max toc distance: " << max_distance_toc << std::endl;
-    std::cout << "max toc other: " << max_toc_other << std::endl;
-    std::cout << "max toc AABB: " << max_toc_aabb << std::endl;
 
-    tic = yarp::os::SystemClock::nowSystem();
     results.sort();
-    std::cout << "sort: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
     return results;
 }

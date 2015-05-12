@@ -102,8 +102,60 @@ public:
 };
 
 class ComputeLinksDistance {
-
+public:
     friend class TestCapsuleLinksDistance;
+
+    /**
+     * @brief The Capsule class represents a capsule shape expressed in an arbitrary frame
+     */
+    class Capsule {
+        KDL::Vector ep1;
+        KDL::Vector ep2;
+        double radius;
+        double length;
+    public:
+        /**
+         * @brief Capsule constructs a capsule object
+         * @param origin the frame located in the end-point number 1, with z-axis aligned with the capsule axis
+         * @param radius the capsule radius
+         * @param length the capsule length
+         */
+        Capsule(const KDL::Frame& origin, const double radius, const double length) :
+            radius(radius), length(length)
+        {
+            ep1 = origin.p + length * origin.M.UnitZ();
+            ep2 = origin.p;
+        }
+
+        double getLength() { return this->length; }
+        double getRadius() { return this->radius; }
+        void getEndPoints(KDL::Vector& ep1, KDL::Vector& ep2) { ep1 = this->ep1; ep2 = this->ep2; }
+    };
+
+    class LinksPair {
+    public:
+        std::string linkA;
+        std::string linkB;
+        boost::shared_ptr<fcl::CollisionObject> collisionObjectA;
+        boost::shared_ptr<fcl::CollisionObject> collisionObjectB;
+        boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleA;
+        boost::shared_ptr<ComputeLinksDistance::Capsule> capsuleB;
+
+        LinksPair(ComputeLinksDistance* const father, std::string linkA, std::string linkB) :
+            linkA(linkA), linkB(linkB)
+        {
+            collisionObjectA = father->collision_objects_[linkA];
+            collisionObjectB = father->collision_objects_[linkB];
+            if(father->custom_capsules_.count(linkA) > 0)
+                capsuleA = father->custom_capsules_[linkA];
+
+            if(father->custom_capsules_.count(linkB) > 0)
+                capsuleB = father->custom_capsules_[linkB];
+        }
+
+    };
+
+    friend class ComputeLinksDistance::LinksPair;
 
 private:
     collision_detection::AllowedCollisionMatrixPtr allowed_collision_matrix;
@@ -120,14 +172,32 @@ private:
     std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_;
 
     /**
+     * @brief custom_capsules_ is a map of custom capsules specified as endpoints + radius
+     */
+    std::map<std::string,boost::shared_ptr<ComputeLinksDistance::Capsule> > custom_capsules_;
+
+    /**
      * @brief collision_objects_ a map of collision objects
      */
     std::map<std::string,boost::shared_ptr<fcl::CollisionObject> > collision_objects_;
 
     /**
-     * @brief link_T_shape a map of transforms from link frame to shape frame
+     * @brief link_T_shape a map of transforms from link frame to shape frame.
+     *        Notice how the shape frame is always the center of the shape,
+     *        except for the capsule, where it lies on one endpoint
      */
     std::map<std::string,KDL::Frame> link_T_shape;
+
+    /**
+     * @brief globalToLinkCoordinates transforms a fcl::Transform3f frame to a KDL::Frame in the link reference frame
+     * @param linkName the link name representing a link reference frame
+     * @param w_T_f fcl::Transform3f representing a frame in a global reference frame
+     * @param link_T_f a KDL::Frame representing a frame in link reference frame
+     * @return true on success
+     */
+    bool globalToLinkCoordinates(const std::string& linkName,
+                                 const fcl::Transform3f& w_T_f,
+                                 KDL::Frame& link_T_f);
 
     /* FOLLOWING FUNCTIONS WILL LOAD AND UPDATE GEOMETRIES. NOTICE THAT A VALID ALTERNATIVE TO THIS
        IS TO USE MOVEIT. Since Moveit does not support capsules ATM, one idea could be to update the interal
@@ -180,7 +250,7 @@ private:
     /**
      * @brief pairsToCheck a list of pairs to check for collision detection
      */
-    std::list<std::pair<std::string,std::string> > pairsToCheck;
+    std::list< ComputeLinksDistance::LinksPair > pairsToCheck;
 
 public:
     /* NOTICE THAT BY USING MOVEIT WE CAN PASS JUST THE MOVEIT_COLLISION_ROBOT TO THE CONSTRUCTOR. At that point
