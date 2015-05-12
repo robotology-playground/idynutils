@@ -102,6 +102,9 @@ public:
 };
 
 class ComputeLinksDistance {
+
+    friend class TestCapsuleLinksDistance;
+
 private:
     collision_detection::AllowedCollisionMatrixPtr allowed_collision_matrix;
 
