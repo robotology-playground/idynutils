@@ -92,6 +92,22 @@ public:
      * \f$[deg]\f$ is useSI is false
      */
     virtual void sense(yarp::sig::Vector& q_sensed);
+
+    /**
+     * @brief sense returns joint motor positions
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual yarp::sig::Vector senseMotor();
+
+    /**
+     * @brief sense returns joint motor positions
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual void senseMotor(yarp::sig::Vector& q_motor_sensed);
     
    /**
      * @brief sensePositionRefFeedback returns joint position ref feedback    
@@ -125,6 +141,22 @@ public:
      * \f$[deg]\f$ is useSI is false
      */
     void sensePosition(yarp::sig::Vector &q_sensed);
+
+    /**
+     * @brief sensePositionRefFeedback returns motor position
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual yarp::sig::Vector senseMotorPosition();
+
+    /**
+     * @brief sensePositionRefFeedback returns joint position ref feedback
+     * @param q_position_ref_feedback \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    virtual void senseMotorPosition(yarp::sig::Vector& q_motor_sensed);
 
     /**
      * @brief senseVelocity returns joint velocities
@@ -343,6 +375,7 @@ private:
     yarp::sig::Vector q_buffer;
     yarp::sig::Vector qdot_buffer;
     yarp::sig::Vector tau_buffer;
+    yarp::sig::Vector q_motor_buffer;
     yarp::sig::Vector q_ref_feedback_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
@@ -357,7 +390,8 @@ private:
     yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
     double convertMotorCommandFromSI(const double& in) const;
 
-    yarp::dev::IEncodersTimed *encodersMotor;
+    yarp::dev::IEncodersTimed *encodersMotor; //TBD we should change this variable name
+    yarp::dev::IMotorEncoders *motorEncoders;
     yarp::dev::IControlLimits2 *controlLimits;
     yarp::dev::IControlMode2 *controlMode;
     yarp::dev::IInteractionMode *interactionMode;

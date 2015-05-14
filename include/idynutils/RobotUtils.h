@@ -110,11 +110,30 @@ public:
                yarp::sig::Vector& qdot,
                yarp::sig::Vector& tau);
 
+//     NOTE NOT ALREADY IMPLEMENT BECAUSE OF COMPATIBILITY WITH COMAN
+//     /**
+//      * @brief sense returns link position, motor position, velocities, torques sensed by the robot
+//      * @param q
+//      * @param qmot
+//      * @param qdot
+//      * @param tau
+//      */
+//     void sense(yarp::sig::Vector& q,
+//                yarp::sig::Vector& qmot,
+//                yarp::sig::Vector& qdot,
+//                yarp::sig::Vector& tau);
+
     /**
      * @brief sensePosition returns the position of the robot's joints
      * @return
      */
     yarp::sig::Vector& sensePosition();
+
+    /**
+     * @brief sensePosition returns the position of the robot's joints
+     * @return
+     */
+    yarp::sig::Vector& senseMotorPosition();
 
     /**
      * @brief senseVelocity returns the velocities of the robot's joints
@@ -438,6 +457,17 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
     yarp::sig::Vector tau_sensed_head;
+
+    yarp::sig::Vector q_motor_sensed;
+
+    yarp::sig::Vector q_motor_sensed_left_hand;
+    yarp::sig::Vector q_motor_sensed_right_hand;
+    yarp::sig::Vector q_motor_sensed_left_arm;
+    yarp::sig::Vector q_motor_sensed_right_arm;
+    yarp::sig::Vector q_motor_sensed_left_leg;
+    yarp::sig::Vector q_motor_sensed_right_leg;
+    yarp::sig::Vector q_motor_sensed_torso;
+    yarp::sig::Vector q_motor_sensed_head;
     
     yarp::sig::Vector q_ref_feedback_sensed;
 
