@@ -262,7 +262,7 @@ bool iDynUtils::iDyn3Model()
             moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
             allowed_collision_matrix.reset(
                 new collision_detection::AllowedCollisionMatrix(
-                    moveit_robot_model->getLinkModelNames(), false));
+                    moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), false));
 
             //this->disableConsecutiveLinksInACM(allowed_collision_matrix);
             loadDisabledCollisionsFromSRDF(allowed_collision_matrix);

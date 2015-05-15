@@ -224,7 +224,9 @@ void ComputeLinksDistance::generateLinksToUpdate()
 {
     linksToUpdate.clear();
     std::vector<std::string> collisionEntries;
-    // TODO isn't this exactly what we are looking for?
+    // TODO isn't the result of
+    // model.moveit_robot_model->getLinkModelNamesWithCollisionGeometry()
+    // exactly what we are looking for?
     allowed_collision_matrix->getAllEntryNames(collisionEntries);
     typedef std::vector<std::string>::iterator iter_link;
     typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
@@ -369,27 +371,46 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
 {
     allowed_collision_matrix.reset(
         new collision_detection::AllowedCollisionMatrix(
-            model.moveit_robot_model->getLinkModelNames(), true));
+            model.moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), true));
 
     typedef std::list<LinkPairDistance::LinksPair>::iterator iter_pairs;
     for(iter_pairs it = whiteList.begin(); it != whiteList.end(); ++it)
     {
         if( collision_objects_.count(it->first) > 0 &&
             collision_objects_.count(it->second) > 0)
-        allowed_collision_matrix->setEntry(it->first, it->second, false);
+            allowed_collision_matrix->setEntry(it->first, it->second, false);
+        else {
+            std::string link_not_found;
+            if(collision_objects_.count(it->first) == 0)
+                link_not_found = it->first;
+                std::cout << "Error: could not find link " << it->first << " specified in whitelist, "
+                          << "or link does not have collision geometry information" << std::endl;
+            if(collision_objects_.count(it->second) == 0)
+            {
+                if(link_not_found == "")
+                    link_not_found = it->second;
+                else
+                    link_not_found += " , " + it->second;
+            }
+
+            std::cout << "Error: could not find link " << link_not_found << " specified in whitelist, "
+                      << "or link does not have collision geometry information" << std::endl;
+        }
     }
 
     model.loadDisabledCollisionsFromSRDF(this->robot_srdf, allowed_collision_matrix);
 
     this->generateLinksToUpdate();
     this->generatePairsToCheck();
+
+    //allowed_collision_matrix->print(std::cout);
 }
 
 bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::LinksPair> blackList)
 {
     allowed_collision_matrix.reset(
         new collision_detection::AllowedCollisionMatrix(
-            model.moveit_robot_model->getLinkModelNames(), true));
+            model.moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), true));
 
     std::vector<std::string> linksWithCollisionObjects;
 
@@ -407,6 +428,8 @@ bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::Lin
 
     this->generateLinksToUpdate();
     this->generatePairsToCheck();
+
+    //allowed_collision_matrix->print(std::cout);
 }
 
 
