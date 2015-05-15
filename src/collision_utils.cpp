@@ -50,13 +50,17 @@ bool ComputeLinksDistance::shapeToLinkCoordinates(const std::string& linkName,
     return true;
 }
 
-bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_path)
+bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_path,
+                                                 const std::string &robot_srdf_path)
 {
-    urdf::Model robot_model;
-    robot_model.initFile(robot_urdf_path);
+    urdf::Model robot_urdf;
+
+    robot_urdf.initFile(robot_urdf_path);
+    robot_srdf.initFile(robot_urdf, robot_srdf_path);
+
 
     std::vector<boost::shared_ptr<urdf::Link> > links;
-    robot_model.getLinks(links);
+    robot_urdf.getLinks(links);
     typedef std::vector<boost::shared_ptr<urdf::Link> >::iterator it_type;
 
     for (it_type iterator = links.begin();
@@ -220,6 +224,7 @@ void ComputeLinksDistance::generateLinksToUpdate()
 {
     linksToUpdate.clear();
     std::vector<std::string> collisionEntries;
+    // TODO isn't this exactly what we are looking for?
     allowed_collision_matrix->getAllEntryNames(collisionEntries);
     typedef std::vector<std::string>::iterator iter_link;
     typedef std::list<std::pair<std::string,std::string> >::iterator iter_pair;
@@ -280,14 +285,29 @@ void ComputeLinksDistance::generatePairsToCheck()
 
 ComputeLinksDistance::ComputeLinksDistance(iDynUtils &model) : model(model)
 {
-    boost::filesystem::path original_model(model.getRobotURDFPath());
-    std::string capsule_model_urdf_filename = std::string(original_model.stem().c_str()) + std::string("_capsules.urdf");
-    boost::filesystem::path capsule_model(original_model.parent_path() /
+    boost::filesystem::path original_urdf(model.getRobotURDFPath());
+    std::string capsule_model_urdf_filename = std::string(original_urdf.stem().c_str()) + std::string("_capsules.urdf");
+    boost::filesystem::path capsule_urdf(original_urdf.parent_path() /
                                           capsule_model_urdf_filename);
-    if(boost::filesystem::exists(capsule_model))
-        this->parseCollisionObjects(capsule_model.c_str());
+
+    boost::filesystem::path original_srdf(model.getRobotSRDFPath());
+    std::string capsule_model_srdf_filename = std::string(original_srdf.stem().c_str()) + std::string("_capsules.srdf");
+    boost::filesystem::path capsule_srdf(original_srdf.parent_path() /
+                                          capsule_model_srdf_filename);
+
+    std::string urdf_to_load, srdf_to_load;
+
+    if(boost::filesystem::exists(capsule_urdf))
+        urdf_to_load = capsule_urdf.c_str();
     else
-        this->parseCollisionObjects(original_model.c_str());
+        urdf_to_load = original_urdf.c_str();
+
+    if(boost::filesystem::exists(capsule_srdf))
+        srdf_to_load = capsule_srdf.c_str();
+    else
+        srdf_to_load = original_srdf.c_str();
+
+    this->parseCollisionObjects(urdf_to_load, srdf_to_load);
 
     this->setCollisionBlackList(std::list<LinkPairDistance::LinksPair>());
 }
@@ -359,7 +379,7 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
         allowed_collision_matrix->setEntry(it->first, it->second, false);
     }
 
-    model.loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
+    model.loadDisabledCollisionsFromSRDF(this->robot_srdf, allowed_collision_matrix);
 
     this->generateLinksToUpdate();
     this->generatePairsToCheck();

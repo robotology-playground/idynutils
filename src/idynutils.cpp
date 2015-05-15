@@ -714,11 +714,19 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
 
 void iDynUtils::loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm)
 {
-    for( std::vector<srdf::Model::DisabledCollision>::const_iterator dc = robot_srdf->getDisabledCollisionPairs().begin();
-         dc != robot_srdf->getDisabledCollisionPairs().end();
+    loadDisabledCollisionsFromSRDF(*this->robot_srdf, acm);
+}
+
+void iDynUtils::loadDisabledCollisionsFromSRDF(srdf::Model& srdf,
+                                               collision_detection::AllowedCollisionMatrixPtr acm)
+{
+    for( std::vector<srdf::Model::DisabledCollision>::const_iterator dc = srdf.getDisabledCollisionPairs().begin();
+         dc != srdf.getDisabledCollisionPairs().end();
          ++dc)
         acm->setEntry(dc->link1_, dc->link2_, true);
 }
+
+
 
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
                                         const std::string referenceFrame)

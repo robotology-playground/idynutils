@@ -167,6 +167,11 @@ private:
     iDynUtils& model;
 
     /**
+     * @brief robot_srdf is used to load the ACM every time a whiteList or blackList is generated
+     */
+    srdf::Model robot_srdf;
+
+    /**
      * @brief shapes_ is a map of collision geometries
      */
     std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_;
@@ -220,9 +225,11 @@ private:
     /**
      * @brief parseCollisionObjects
      * @param robot_urdf_path a string representing the robot urdf with collision information
+     * @param robot_srdf_path a string representing the robot srdf with collision information (i.e. ACM)
      * @return true on success
      */
-    bool parseCollisionObjects(const std::string& robot_urdf_path);
+    bool parseCollisionObjects(const std::string& robot_urdf_path,
+                               const std::string &robot_srdf_path);
 
     /**
      * @brief updateCollisionObjects updates all collision objects with correct transforms (link_T_shape)

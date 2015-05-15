@@ -323,25 +323,40 @@ public:
    void setLinksInContact(const std::list<std::string>& list_links_in_contact);
 
    /**
-    * @brief checkSelfCollision checks whether the robot is in self collision
+    * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)
     * @return true if the robot is in self collision
+    * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollisionAt
     */
    bool checkSelfCollision();
 
    /**
-    * @brief checkSelfCollisionAt checks whether the robot is in self collision at q
+    * @brief checkSelfCollisionAt checks whether the robot is in self collision at q - uses most accurate collision detection info (i.e., no capsules)
     * @param q the robot joint configuration vector
     * @return  true if the robot is in self collision
+    * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollision
     */
    bool checkSelfCollisionAt(const yarp::sig::Vector &q);
 
    /**
     * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
     *        Notice this function will not reset the acm, rather just disable collisions that are flagged as
-    *        "disabled" in the robot srdf
+    *        "disabled" in the robot srdf. The default robot srdf will be used - i.e. the one associate with
+    *        the most accurate collision detection info (i.e., no capsules)
     * @param acm the allowed collision matrix to modify according to the srdf info
+    * @TODO we should move this in collision_utils together with checkSelfCollision and checkSelfCollisionAt
     */
    void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
+
+   /**
+    * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
+    *        Notice this function will not reset the acm, rather just disable collisions that are flagged as
+    *        "disabled" in the robot srdf
+    * @param srdf the srdf file to use to load the ACM
+    * @param acm the allowed collision matrix to modify according to the srdf info
+    * @TODO we should move this in collision_utils together with checkSelfCollision and checkSelfCollisionAt
+    */
+   void loadDisabledCollisionsFromSRDF(srdf::Model& srdf,
+                                       collision_detection::AllowedCollisionMatrixPtr acm);
 
 protected:
     /**
