@@ -42,8 +42,8 @@ public:
      */
     yarp_ft_interface(std::string deviceId,
                       std::string module_prefix_with_no_slash,
-                      std::string robot_name,
-                      std::string reference_frame = "");
+                      std::string robot_name/*,
+                      std::string reference_frame = ""*/);
 
     /**
      * @brief sense reads the sensed 6d wrench from the ft yarp port
@@ -62,14 +62,14 @@ public:
      * @brief getReferenceFrame where the forces/torques are measured
      * @return a string with the reference frame where the ft are measured
      */
-    std::string getReferenceFrame(){return _reference_frame;}
+//     std::string getReferenceFrame(){return _reference_frame;}
     
     
 private:
     int ft_channels;
     yarp::sig::Vector input;
-    std::string _reference_frame;
-    
+//     std::string _reference_frame;
+
     yarp::dev::IAnalogSensor *FT_sensor=0;
     yarp::dev::PolyDriver polyDriver_FT;
     

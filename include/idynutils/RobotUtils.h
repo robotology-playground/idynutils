@@ -38,7 +38,7 @@ public:
 //     typedef std::map<std::string,  yarp::sig::Vector> VelocityMap;
     typedef std::shared_ptr<yarp_IMU_interface> IMUPtr;
     typedef std::shared_ptr<yarp_ft_interface> ftPtr;
-    typedef std::map<std::string, ftPtr> ftPtrMap;
+    typedef std::map<std::string, int> ftPtrMap;
     typedef std::map<std::string, yarp::sig::Vector> ftReadings;
 //     typedef kinematic_chain* KinematicChainPtr;
 //     typedef std::list<KinematicChainPtr> KinematicChains;
@@ -64,7 +64,7 @@ public:
     walkman::yarp_single_chain_interface whole_robot;
     iDynUtils idynutils;
 
-    std::vector<std::string> ft_reference_frames;
+//     std::vector<std::string> ft_reference_frames;
 
     /**
      * @brief hasHands check whether both hands are available
@@ -250,6 +250,8 @@ private:
     std::string _moduleName;
 
     IMUPtr IMU;
+
+    ftPtr ft;
 
     ftPtrMap ftSensors;
 

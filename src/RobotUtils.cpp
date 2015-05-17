@@ -19,6 +19,8 @@
 
 #include <idynutils/RobotUtils.h>
 
+#define FT_SIZE 6
+
 using namespace iCub::iDynTree;
 using namespace yarp::math;
 
@@ -48,11 +50,6 @@ bool RobotUtils::hasHands()
 bool RobotUtils::hasftSensors()
 {
     return this->ftSensors.size() > 0;
-}
-
-RobotUtils::ftPtrMap RobotUtils::getftSensors()
-{
-    return this->ftSensors;
 }
 
 const unsigned int& RobotUtils::getNumberOfJoints() const
@@ -121,7 +118,7 @@ RobotUtils::ftReadings& RobotUtils::senseftSensors()
     ft_readings.clear();
     for( ftPtrMap::iterator i = ftSensors.begin(); i != ftSensors.end(); ++i)
     {
-        ft_readings[i->first] = i->second->sense();
+        senseftSensor(i->first, ft_readings[i->first]);
     }
     return ft_readings;
 }
@@ -129,9 +126,11 @@ RobotUtils::ftReadings& RobotUtils::senseftSensors()
 bool RobotUtils::senseftSensor(const std::string &ft_frame,
                                yarp::sig::Vector &ftReading)
 {
-    if(ftSensors[ft_frame]) {
-        ftPtr ft(ftSensors[ft_frame]);
-        return ft->sense(ftReading);
+    if(ftSensors.count(ft_frame)) {
+        yarp::sig::Vector ft_global;
+        bool ret = ft->sense(ft_global);
+        ftReading = ft_global.subVector(ftSensors[ft_frame], ftSensors[ft_frame] + (FT_SIZE - 1));
+        return ret;
     }
     return false;
 }
@@ -247,7 +246,12 @@ RobotUtils::IMUPtr RobotUtils::getIMU()
 
 bool RobotUtils::loadForceTorqueSensors()
 {
+    // create
+    ft = std::shared_ptr<yarp_ft_interface>( new yarp_ft_interface("whole_robot_ft",
+                                _moduleName,
+                                idynutils.getRobotName()));
     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+    int offset = 0;
     for(auto group: robot_groups)
     {
         if (group.name_ == walkman::robot::force_torque_sensors)
@@ -263,14 +267,10 @@ bool RobotUtils::loadForceTorqueSensors()
                     std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
 
                     try {
-                        std::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
-                                                        _moduleName,
-                                                        idynutils.getRobotName(), reference_frame) );
 
-                        ftSensors[reference_frame] = ft;
-                        ft_reference_frames.push_back(reference_frame);
-
-                        std::cout << "ft on " << reference_frame << " loaded" << std::endl;
+                        ftSensors[reference_frame] = FT_SIZE * offset;
+//                         ft_reference_frames.push_back(reference_frame);
+//                         std::cout << "ft on " << reference_frame << " loaded" << std::endl;
                     } catch(...) {
                         std::cerr << "Error loading " << reference_frame << " ft " << std::endl;
                         return false;}
@@ -278,6 +278,7 @@ bool RobotUtils::loadForceTorqueSensors()
                 return true;
             }
         }
+        offset++;
     }
     std::cout << "Robot does not have any ft sensor" << std::endl;
     return false;
