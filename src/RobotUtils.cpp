@@ -30,14 +30,15 @@ RobotUtils::RobotUtils(const std::string moduleName,
 		       const std::string srdf_path) :
     whole_robot(walkman::robot::whole_robot, moduleName, robotName, true, walkman::controlTypes::none),
     idynutils( robotName, urdf_path, srdf_path ),
-    _moduleName(moduleName)
+    _moduleName(moduleName),left_hand_index(left_hand_i),right_hand_index(right_hand_i)
 {
-    this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
+    this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs()+2;
     q_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
     q_motor_sensed.resize(this->number_of_joints,0.0);
     q_ref_feedback_sensed.resize(this->number_of_joints,0.0);
-
+    left_hand_i = whole_robot.getNumberOfJoints() - 1;
+    right_hand_i = whole_robot.getNumberOfJoints() - 2;
     loadIMUSensors();
     loadForceTorqueSensors();
 }

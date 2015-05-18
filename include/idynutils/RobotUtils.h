@@ -237,10 +237,13 @@ public:
      */
     bool setIdleMode();
 
+    const int& left_hand_index; const int & right_hand_index;
+
     const std::vector<std::string>& getJointNames() const;
 
 private:
     unsigned int number_of_joints;
+    int left_hand_i,right_hand_i;
 
     yarp::sig::Vector q_sensed;
     yarp::sig::Vector tau_sensed;
