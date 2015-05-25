@@ -23,6 +23,8 @@
 #include <yarp/math/SVD.h>
 #include <idynutils/cartesian_utils.h>
 #include <moveit/robot_model/joint_model.h>
+#include <moveit/robot_state/conversions.h>
+#include <moveit/robot_state/robot_state.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -698,11 +700,7 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
 {
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
-    for(unsigned int i = 0; i < joint_names.size(); ++i) {
-        // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
-        moveit_robot_state->setJointPositions(joint_names[i],
-                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
-    }
+    this->updateRobotState(q);
     moveit_robot_state->updateCollisionBodyTransforms();
     moveit_collision_robot->checkSelfCollision(req, res,
                                                *moveit_robot_state,
@@ -782,4 +780,34 @@ void iDynUtils::updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateCo
     yarp::sig::Vector q = this->fromJointStateMsgToiDyn(msg);
 
     this->updateiDyn3Model(q, true);
+}
+
+moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
+{
+    this->updateRobotState();
+    moveit_msgs::DisplayRobotState msg;
+    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    return msg;
+}
+
+moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::sig::Vector &q)
+{
+    this->updateRobotState(q);
+    moveit_msgs::DisplayRobotState msg;
+    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    return msg;
+}
+
+void iDynUtils::updateRobotState()
+{
+    this->updateRobotState(iDyn3_model.getAng());
+}
+
+void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
+{
+    for(unsigned int i = 0; i < joint_names.size(); ++i) {
+        // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
+        moveit_robot_state->setJointPositions(joint_names[i],
+                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
+    }
 }

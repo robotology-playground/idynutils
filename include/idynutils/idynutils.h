@@ -26,6 +26,7 @@
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit_msgs/DisplayRobotState.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
@@ -334,6 +335,7 @@ public:
     * @param q the robot joint configuration vector
     * @return  true if the robot is in self collision
     * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollision
+    * @TODO maybe the At version could be static
     */
    bool checkSelfCollisionAt(const yarp::sig::Vector &q);
 
@@ -357,6 +359,20 @@ public:
     */
    void loadDisabledCollisionsFromSRDF(srdf::Model& srdf,
                                        collision_detection::AllowedCollisionMatrixPtr acm);
+
+   /**
+    * @brief getDisplayRobotStateMsgAt
+    * @param q the joint positions to transform into a DisplayRobotState msg
+    * @return a DisplayRobotState msg
+    * @TODO should be static - or moved some place else
+    */
+   moveit_msgs::DisplayRobotState getDisplayRobotStateMsgAt(const yarp::sig::Vector &q);
+
+   /**
+    * @brief getDisplayRobotStateMsg gets the robot state msg relative to the internal model state
+    * @return a DisplayRobotState msg
+    */
+   moveit_msgs::DisplayRobotState getDisplayRobotStateMsg();
 
 protected:
     /**
@@ -462,6 +478,11 @@ protected:
      *               This should be, in general, the support foot.
      */
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
+
+
+    void updateRobotState(const yarp::sig::Vector &q);
+
+    void updateRobotState();
 
     /**
      * @brief worldT Transformation between world and base_link
