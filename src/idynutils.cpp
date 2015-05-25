@@ -21,6 +21,7 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 #include <idynutils/yarp_single_chain_interface.h>
 #include <yarp/math/SVD.h>
+#include <urdf_model/joint.h>
 #include <idynutils/cartesian_utils.h>
 #include <moveit/robot_model/joint_model.h>
 
@@ -83,6 +84,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
 
     setControlledKinematicChainsJointNumbers();
 
+    
     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
 
     links_in_contact.push_back("l_foot_lower_left_link");
@@ -305,7 +307,9 @@ bool iDynUtils::iDyn3Model()
     
     std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator i;
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
-        int jIndex = iDyn3_model.getDOFIndex(i->first);
+	if (i->second->type != urdf::Joint::REVOLUTE && i->second->type != urdf::Joint::CONTINUOUS)
+	   continue; 
+	int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
             if (i->second->type != urdf::Joint::CONTINUOUS)
             {
@@ -329,6 +333,8 @@ bool iDynUtils::iDyn3Model()
     
     yarp::sig::Vector tauMax; tauMax.resize(nJ,1.0);
     for(i = urdf_model->joints_.begin(); i != urdf_model->joints_.end(); ++i) {
+      if (i->second->type != urdf::Joint::REVOLUTE && i->second->type != urdf::Joint::CONTINUOUS)
+	   continue; 
         int jIndex = iDyn3_model.getDOFIndex(i->first);
         if(jIndex != -1) {
             if (i->second->type != urdf::Joint::CONTINUOUS)
