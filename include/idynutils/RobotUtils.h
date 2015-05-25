@@ -169,27 +169,36 @@ public:
     bool senseHandsPosition(yarp::sig::Vector &q_left_hand,
                             yarp::sig::Vector &q_right_hand);
 
-
     /**
      * @brief move send potision commands to all the robot joints (except the hands). Works only when the robot is in joint poisition control mode.
      * @param q the desired joint position vector
      */
-    void move(const yarp::sig::Vector &q);
+    void move29(const yarp::sig::Vector &_q);
+
+    void moveHands(const yarp::sig::Vector &_q);
+
+    void moveNeck(const yarp::sig::Vector &_q);
 
     /**
-     * @brief getNumberOfJoints gets the robot number of joints
+     * @brief getNumberOfActuatedJoints gets the hardware robot number of joints
      * @return the number of joints
      */
-    const unsigned int& getNumberOfJoints() const;
+    const unsigned int getNumberOfActuatedJoints() const;
 
-    void fromIdynToRobot(const yarp::sig::Vector& _q,
+        /**
+     * @brief getNumberOfKinematicJoints gets the idyntree number of joints
+     * @return the number of joints
+     */
+    const unsigned int getNumberOfKinematicJoints() const;
+    
+    void fromIdynToRobot29(const yarp::sig::Vector& _q,
                            yarp::sig::Vector& _right_arm,
                            yarp::sig::Vector& _left_arm,
                            yarp::sig::Vector& _torso,
                            yarp::sig::Vector& _right_leg,
                            yarp::sig::Vector& _left_leg);
 
-    void fromIdynToRobot(const yarp::sig::Vector& _q,
+    void fromIdynToRobot31(const yarp::sig::Vector& _q,
                            yarp::sig::Vector& _right_arm,
                            yarp::sig::Vector& _left_arm,
                            yarp::sig::Vector& _torso,
@@ -197,14 +206,14 @@ public:
                            yarp::sig::Vector& _left_leg,
                            yarp::sig::Vector& _head);
 
-    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+    void fromRobotToIdyn29(const yarp::sig::Vector &_right_arm,
                          const yarp::sig::Vector &_left_arm,
                          const yarp::sig::Vector &_torso,
                          const yarp::sig::Vector &_right_leg,
                          const yarp::sig::Vector &_left_leg,
                          yarp::sig::Vector& _q);
 
-    void fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+    void fromRobotToIdyn31(const yarp::sig::Vector &_right_arm,
                          const yarp::sig::Vector &_left_arm,
                          const yarp::sig::Vector &_torso,
                          const yarp::sig::Vector &_right_leg,
@@ -244,7 +253,8 @@ public:
 private:
     unsigned int number_of_joints;
     int left_hand_i,right_hand_i;
-
+    int neck_y_index, neck_p_index;
+    int j_29[29];
     yarp::sig::Vector q_sensed;
     yarp::sig::Vector tau_sensed;
     yarp::sig::Vector q_motor_sensed;

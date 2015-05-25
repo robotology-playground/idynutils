@@ -32,7 +32,7 @@ RobotUtils::RobotUtils(const std::string moduleName,
     idynutils( robotName, urdf_path, srdf_path ),
     _moduleName(moduleName),left_hand_index(left_hand_i),right_hand_index(right_hand_i)
 {
-    this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs()+2;
+    this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
     q_motor_sensed.resize(this->number_of_joints,0.0);
@@ -40,7 +40,19 @@ RobotUtils::RobotUtils(const std::string moduleName,
     left_hand_i = whole_robot.getNumberOfJoints() - 1;
     right_hand_i = whole_robot.getNumberOfJoints() - 2;
     loadIMUSensors();
-    loadForceTorqueSensors();
+    neck_p_index = idynutils.head.joint_numbers[1];
+    neck_y_index = idynutils.head.joint_numbers[0];
+    //get neck index, initialize neck_y_index neck_p_index and j_29
+    int j=0;
+    for (int i=0;i<31;i++)
+    {
+      if (i!=neck_p_index && i!=neck_y_index)
+      {
+	j_29[j]=i;
+	j++;
+      }
+    }
+//TODO     loadForceTorqueSensors();
 }
 
 bool RobotUtils::hasHands()
@@ -53,9 +65,14 @@ bool RobotUtils::hasftSensors()
     return this->ftSensors.size() > 0;
 }
 
-const unsigned int& RobotUtils::getNumberOfJoints() const
+const unsigned int RobotUtils::getNumberOfKinematicJoints() const
 {
     return this->number_of_joints;
+}
+
+const unsigned int RobotUtils::getNumberOfActuatedJoints() const
+{
+    return this->whole_robot.getNumberOfJoints();
 }
 
 const std::vector<std::string> &RobotUtils::getJointNames() const
@@ -63,9 +80,25 @@ const std::vector<std::string> &RobotUtils::getJointNames() const
     return idynutils.getJointNames();
 }
 
-void RobotUtils::move(const yarp::sig::Vector &_q)
+void RobotUtils::move29(const yarp::sig::Vector &_q)
 {
-    whole_robot.move(_q);
+    whole_robot.move(_q,j_29,29);
+}
+
+void RobotUtils::moveHands(const yarp::sig::Vector &_q)
+{
+    int temp[2];
+    temp[0]=left_hand_index;
+    temp[1]=right_hand_index;
+    whole_robot.move(_q,temp,2);
+}
+
+void RobotUtils::moveNeck(const yarp::sig::Vector &_q)
+{
+    int temp[2];
+    temp[0]=neck_y_index;
+    temp[1]=neck_p_index;
+    whole_robot.move(_q,temp,2);
 }
 
 yarp::sig::Vector &RobotUtils::sensePosition()
@@ -145,7 +178,7 @@ bool RobotUtils::senseHandsPosition(yarp::sig::Vector &q_left_hand,
     return true;
 }
 
-void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
+void RobotUtils::fromIdynToRobot29(const yarp::sig::Vector &_q,
                                  yarp::sig::Vector &_right_arm,
                                  yarp::sig::Vector &_left_arm,
                                  yarp::sig::Vector &_torso,
@@ -159,7 +192,7 @@ void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
     idynutils.fromIDynToRobot(_q, _left_leg, idynutils.left_leg);
 }
 
-void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
+void RobotUtils::fromIdynToRobot31(const yarp::sig::Vector &_q,
                                  yarp::sig::Vector &_right_arm,
                                  yarp::sig::Vector &_left_arm,
                                  yarp::sig::Vector &_torso,
@@ -176,7 +209,7 @@ void RobotUtils::fromIdynToRobot(const yarp::sig::Vector &_q,
         idynutils.fromIDynToRobot(_q, _head, idynutils.head);
 }
 
-void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+void RobotUtils::fromRobotToIdyn29(const yarp::sig::Vector &_right_arm,
                                  const yarp::sig::Vector &_left_arm,
                                  const yarp::sig::Vector &_torso,
                                  const yarp::sig::Vector &_right_leg,
@@ -190,7 +223,7 @@ void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
     idynutils.fromRobotToIDyn(_left_leg, _q, idynutils.left_leg);
 }
 
-void RobotUtils::fromRobotToIdyn(const yarp::sig::Vector &_right_arm,
+void RobotUtils::fromRobotToIdyn31(const yarp::sig::Vector &_right_arm,
                                  const yarp::sig::Vector &_left_arm,
                                  const yarp::sig::Vector &_torso,
                                  const yarp::sig::Vector &_right_leg,

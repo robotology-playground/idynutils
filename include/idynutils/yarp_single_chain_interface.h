@@ -197,8 +197,9 @@ public:
      * \f$[deg]\f$ is useSI is false and control mode is position or position direct
      * \f$[N]\f$ is control mode is torque
      */
-    virtual void move(const yarp::sig::Vector& u_d);
+    void move(const yarp::sig::Vector& u_d);
 
+    void move(const yarp::sig::Vector& u_d, const int* j_sent, int j_sent_size);
     /**
      * @brief setReferenceSpeed set a desired reference speed vector for all joints in the chain
      * when moving using position mode

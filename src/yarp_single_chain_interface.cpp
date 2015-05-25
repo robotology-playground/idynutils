@@ -431,6 +431,23 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     }
 }
 
+void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d, const int* j_sent, int j_sent_size)
+{
+    yarp::sig::Vector u_sent(u_d);
+
+    switch (_controlType.toYarp().first)
+    {
+        case VOCAB_CM_POSITION_DIRECT:
+            if(_useSI) convertMotorCommandFromSI(u_sent);
+            if(!positionDirect->setPositions(j_sent_size,j_sent,u_sent.data()))
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
+            break;
+        default:
+                std::cout<<"Cannot move a part of "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
+        break;
+    }
+}
+
 const std::string& yarp_single_chain_interface::getChainName() const
 {
     return kinematic_chain;
