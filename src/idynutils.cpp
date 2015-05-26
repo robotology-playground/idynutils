@@ -161,13 +161,13 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
                     k_chain.joint_names.push_back(explicit_joints[i]);
             }
         }
-
+/*
         std::cout<<GREEN<<" "<<group.name_<<DEFAULT<<std::endl;
         for(unsigned int i = 0; i < k_chain.joint_names.size(); ++i)
             std::cout<<"    "<<k_chain.joint_names[i]<<"  Active"<<std::endl;
         for(unsigned int i = 0; i < k_chain.fixed_joint_names.size(); ++i)
             std::cout<<"    "<<k_chain.fixed_joint_names[i]<<"  Fixed"<<std::endl;
-
+*/
         return true;
     }
     return false;
@@ -191,7 +191,7 @@ bool iDynUtils::setJointNames()
     bool expected_torso = false;
     bool expected_head = false;
 
-    std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
+//     std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
     for(auto group: robot_groups)
     {
@@ -241,7 +241,7 @@ bool iDynUtils::iDyn3Model()
 
     urdf_model.reset(new urdf::Model());
     std::string model_folder, srdf_folder;
-    std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
+//     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
 
     if (!urdf_model->initFile(robot_urdf_folder))
     {
@@ -299,7 +299,7 @@ bool iDynUtils::iDyn3Model()
     
     // Here the iDyn3 model of the robot is generated
     iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
-    std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
+//     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
     int nJ = iDyn3_model.getNrOfDOFs();
     yarp::sig::Vector qMax; qMax.resize(nJ,0.0);
@@ -532,7 +532,10 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
     for(auto joint_name: chain.joint_names)
+    {
         chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(joint_name));
+// 	std::cout<<joint_name<<" -> " <<iDyn3_model.getDOFIndex(joint_name)<<std::endl;
+    }
 }
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
