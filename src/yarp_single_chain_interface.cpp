@@ -69,6 +69,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
             std::cout << "Loaded PID control interface for "
                       << _robot_name << "/"
                       << kinematic_chain << std::endl;
+		      else pidControl=0;
         if(polyDriver.view(controlLimits))
             std::cout << "Loaded control limits interface for "
                       << _robot_name << "/"
@@ -81,6 +82,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     }
     
     encodersMotor->getAxes(&(this->joints_number));
+    std::cout<<"GETAXES "<<this->joints_number<<std::endl;
     q_buffer.resize(joints_number);
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
@@ -393,12 +395,18 @@ void walkman::yarp_single_chain_interface::senseMotorPosition(yarp::sig::Vector&
 void yarp_single_chain_interface::sensePositionRefFeedback(yarp::sig::Vector& q_position_ref_feedback) {
     if(q_position_ref_feedback.size() != this->joints_number)
         q_position_ref_feedback.resize(this->joints_number);
-    pidControl->getReferences(q_position_ref_feedback.data());
+    if (pidControl)
+      pidControl->getReferences(q_position_ref_feedback.data());
+    else
+      encodersMotor->getEncoders(q_position_ref_feedback.data());
     if(_useSI) convertEncoderToSI(q_position_ref_feedback);
 }
 
 yarp::sig::Vector yarp_single_chain_interface::sensePositionRefFeedback() {
-    pidControl->getReferences(q_ref_feedback_buffer.data());
+    if (pidControl)
+      pidControl->getReferences(q_ref_feedback_buffer.data());
+    else
+      encodersMotor->getEncoders(q_ref_feedback_buffer.data());    
     if(_useSI) convertEncoderToSI(q_ref_feedback_buffer);
     return q_ref_feedback_buffer;
 }
