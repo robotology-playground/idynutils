@@ -199,7 +199,7 @@ public:
      */
     void move(const yarp::sig::Vector& u_d);
 
-    void move(const yarp::sig::Vector& u_d, const int* j_sent, int j_sent_size);
+    void move(double* u_d, const int* j_sent, int j_sent_size);
     /**
      * @brief setReferenceSpeed set a desired reference speed vector for all joints in the chain
      * when moving using position mode
@@ -391,6 +391,7 @@ private:
     void convertImpedanceFromSI(yarp::sig::Vector &vector);
     double convertImpedanceFromSI(const double& in) const;
     void convertMotorCommandFromSI(yarp::sig::Vector& vector);
+    void convertMotorCommandFromSI(double *vector,int size);
     yarp::sig::Vector convertMotorCommandFromSI(const yarp::sig::Vector& vector);
     double convertMotorCommandFromSI(const double& in) const;
 

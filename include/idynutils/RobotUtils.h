@@ -82,7 +82,7 @@ public:
      * @brief getftSensors returns a map of available force torque sensors
      * @return a map <std::string kinematic chain name, ftPtr ft>
      */
-    ftPtrMap getftSensors();
+   // ftPtrMap getftSensors();
 
     /**
      * @brief hasIMU checks whether the robot provides and exposes an IMU

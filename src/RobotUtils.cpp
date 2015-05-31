@@ -82,7 +82,11 @@ const std::vector<std::string> &RobotUtils::getJointNames() const
 
 void RobotUtils::move29(const yarp::sig::Vector &_q)
 {
-    whole_robot.move(_q,j_29,29);
+    //q is 31
+    double _qtemp[29];
+    for (int i=0;i<29;i++)
+        _qtemp[i]=_q[j_29[i]];
+    whole_robot.move(_qtemp,j_29,29);
 }
 
 void RobotUtils::moveHands(const yarp::sig::Vector &_q)
@@ -90,7 +94,10 @@ void RobotUtils::moveHands(const yarp::sig::Vector &_q)
     int temp[2];
     temp[0]=left_hand_index;
     temp[1]=right_hand_index;
-    whole_robot.move(_q,temp,2);
+    double _qtemp[2];
+    _qtemp[0]=_q[left_hand_index];
+    _qtemp[1]=_q[right_hand_index];
+    whole_robot.move(_qtemp,temp,2);
 }
 
 void RobotUtils::moveNeck(const yarp::sig::Vector &_q)
@@ -98,7 +105,10 @@ void RobotUtils::moveNeck(const yarp::sig::Vector &_q)
     int temp[2];
     temp[0]=neck_y_index;
     temp[1]=neck_p_index;
-    whole_robot.move(_q,temp,2);
+    double _qtemp[2];
+    _qtemp[0]=_q[neck_y_index];
+    _qtemp[1]=_q[neck_p_index];
+    whole_robot.move(_qtemp,temp,2);
 }
 
 yarp::sig::Vector &RobotUtils::sensePosition()
@@ -109,7 +119,7 @@ yarp::sig::Vector &RobotUtils::sensePosition()
 
 void RobotUtils::sensePosition(yarp::sig::Vector& q_sensed)
 {
-    whole_robot.senseTorque(q_sensed);
+    whole_robot.sensePosition(q_sensed);
 }
 
 

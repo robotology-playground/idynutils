@@ -439,15 +439,13 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
     }
 }
 
-void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d, const int* j_sent, int j_sent_size)
+void yarp_single_chain_interface::move(double*  u_d, const int* j_sent, int j_sent_size)
 {
-    yarp::sig::Vector u_sent(u_d);
-
     switch (_controlType.toYarp().first)
     {
         case VOCAB_CM_POSITION_DIRECT:
-            if(_useSI) convertMotorCommandFromSI(u_sent);
-            if(!positionDirect->setPositions(j_sent_size,j_sent,u_sent.data()))
+            if(_useSI) convertMotorCommandFromSI(u_d,j_sent_size);
+            if(!positionDirect->setPositions(j_sent_size,j_sent,u_d))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Direct Position Ctrl"<<std::endl;
             break;
         default:
@@ -657,6 +655,13 @@ inline double yarp_single_chain_interface::convertImpedanceFromSI(const double& 
 inline void yarp_single_chain_interface::convertMotorCommandFromSI(yarp::sig::Vector &vector)
 {
     for(unsigned int i = 0; i < vector.size(); ++i) {
+        vector[i] *= 180.0 / M_PI;
+    }
+}
+
+inline void yarp_single_chain_interface::convertMotorCommandFromSI(double *vector,int size)
+{
+    for(unsigned int i = 0; i < size; ++i) {
         vector[i] *= 180.0 / M_PI;
     }
 }
