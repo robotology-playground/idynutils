@@ -30,8 +30,17 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
-FIND_PACKAGE(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
+FIND_PACKAGE(catkin REQUIRED)
+FIND_PACKAGE(Eigen3 REQUIRED)
+FIND_PACKAGE(fcl REQUIRED)
+FIND_PACKAGE(geometric_shapes REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
+FIND_PACKAGE(kdl_parser REQUIRED)
+FIND_PACKAGE(orocos_kdl REQUIRED)
+FIND_PACKAGE(rosconsole REQUIRED)
+FIND_PACKAGE(tf REQUIRED)
+FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(YARP REQUIRED)
 
 # add include directories
@@ -40,5 +49,14 @@ INCLUDE_DIRECTORIES(include ${iDynTree_INCLUDE_DIRS}
                             ${YARP_INCLUDE_DIRS} )
 
 ADD_DEFINITIONS(${PCL_DEFINITIONS})
+add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/../tests/robots/")
+
+add_executable(distance_query distance_query.cpp)
+target_link_libraries(distance_query ${Boost_LIBRARIES} ${fcl_LIBRARIES}
+                                     ${iDynTree_LIBRARIES} idynutils
+                                     ${geometric_shapes_LIBRARIES} ${kdl_parser_LIBRARIES}
+                                     ${orocos_kdl_LIBRARIES} ${ros_console_LIBRARIES}
+                                     ${tf_LIBRARIES} ${urdf_LIBRARIES})
+add_dependencies(distance_query idynutils)
 
 # add required linker flags

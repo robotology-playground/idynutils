@@ -310,6 +310,8 @@ TEST_F(testFoo, testInitialization)
         fixed_joints.push_back("torso_joint");
         fixed_joints.push_back("gaze_joint");
         fixed_joints.push_back("imu_joint");
+        fixed_joints.push_back("backpack_joint");
+        fixed_joints.push_back("torso_protection_joint");
 
         for(unsigned int i = 0; i < idynutils.getFixedJointNames().size(); ++i){
             std::vector<std::string>::iterator it = find(fixed_joints.begin(), fixed_joints.end(),

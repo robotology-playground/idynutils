@@ -23,6 +23,8 @@
 #include <yarp/math/SVD.h>
 #include <idynutils/cartesian_utils.h>
 #include <moveit/robot_model/joint_model.h>
+#include <moveit/robot_state/conversions.h>
+#include <moveit/robot_state/robot_state.h>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -262,8 +264,8 @@ bool iDynUtils::iDyn3Model()
             moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
             allowed_collision_matrix.reset(
                 new collision_detection::AllowedCollisionMatrix(
-                    moveit_robot_model->getLinkModelNames(), false));
-            /** TODO load disabled pairs from srdf */
+                    moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), false));
+
             //this->disableConsecutiveLinksInACM(allowed_collision_matrix);
             loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
 
@@ -381,6 +383,17 @@ void iDynUtils::fromIDynToRobot(const yarp::sig::Vector& q,
     {
         q_chain_out[i] = q[chain.joint_numbers[i]];
     }
+}
+
+yarp::sig::Vector iDynUtils::fromJointStateMsgToiDyn(const sensor_msgs::JointStateConstPtr &msg)
+{
+    yarp::sig::Vector q(iDyn3_model.getNrOfDOFs());
+
+    for(unsigned int i = 0; i < msg->position.size(); ++i) {
+        q[iDyn3_model.getDOFIndex(msg->name[i])]=msg->position[i];
+    }
+
+    return q;
 }
 
 void iDynUtils::initWorldPose()
@@ -687,11 +700,7 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
 {
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
-    for(unsigned int i = 0; i < joint_names.size(); ++i) {
-        // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
-        moveit_robot_state->setJointPositions(joint_names[i],
-                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
-    }
+    this->updateRobotState(q);
     moveit_robot_state->updateCollisionBodyTransforms();
     moveit_collision_robot->checkSelfCollision(req, res,
                                                *moveit_robot_state,
@@ -703,11 +712,19 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
 
 void iDynUtils::loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm)
 {
-    for( std::vector<srdf::Model::DisabledCollision>::const_iterator dc = robot_srdf->getDisabledCollisionPairs().begin();
-         dc != robot_srdf->getDisabledCollisionPairs().end();
+    loadDisabledCollisionsFromSRDF(*this->robot_srdf, acm);
+}
+
+void iDynUtils::loadDisabledCollisionsFromSRDF(srdf::Model& srdf,
+                                               collision_detection::AllowedCollisionMatrixPtr acm)
+{
+    for( std::vector<srdf::Model::DisabledCollision>::const_iterator dc = srdf.getDisabledCollisionPairs().begin();
+         dc != srdf.getDisabledCollisionPairs().end();
          ++dc)
         acm->setEntry(dc->link1_, dc->link2_, true);
 }
+
+
 
 bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
                                         const std::string referenceFrame)
@@ -755,4 +772,42 @@ bool iDynUtils::getSupportPolygonPoints(std::list<KDL::Vector>& points,
             points.push_back(referenceFrame_T_point.p);
     }
     return true;
+}
+
+
+void iDynUtils::updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateConstPtr &msg)
+{
+    yarp::sig::Vector q = this->fromJointStateMsgToiDyn(msg);
+
+    this->updateiDyn3Model(q, true);
+}
+
+moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
+{
+    this->updateRobotState();
+    moveit_msgs::DisplayRobotState msg;
+    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    return msg;
+}
+
+moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::sig::Vector &q)
+{
+    this->updateRobotState(q);
+    moveit_msgs::DisplayRobotState msg;
+    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    return msg;
+}
+
+void iDynUtils::updateRobotState()
+{
+    this->updateRobotState(iDyn3_model.getAng());
+}
+
+void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
+{
+    for(unsigned int i = 0; i < joint_names.size(); ++i) {
+        // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
+        moveit_robot_state->setJointPositions(joint_names[i],
+                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
+    }
 }
