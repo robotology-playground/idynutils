@@ -26,6 +26,7 @@
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit_msgs/DisplayRobotState.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
 
@@ -133,6 +134,19 @@ public:
     void fromIDynToRobot(const yarp::sig::Vector& q,
                          yarp::sig::Vector& q_chain_out,
                          kinematic_chain& chain);
+
+    /**
+     * @brief fromJointStateMsgToiDyn returns a vector of joint angles from a joint state msg
+     * @param msg the joint state msg
+     * @return a vector of joint positions
+     */
+    yarp::sig::Vector fromJointStateMsgToiDyn(const sensor_msgs::JointStateConstPtr& msg);
+
+    /**
+     * @brief updateiDyn3ModelFromJoinStateMsg updates the internal joint state using a ROS joint state msg
+     * @param msg the joint state msg
+     */
+    void updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateConstPtr& msg);
 
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
@@ -310,17 +324,55 @@ public:
    void setLinksInContact(const std::list<std::string>& list_links_in_contact);
 
    /**
-    * @brief checkSelfCollision checks whether the robot is in self collision
+    * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)
     * @return true if the robot is in self collision
+    * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollisionAt
     */
    bool checkSelfCollision();
 
    /**
-    * @brief checkSelfCollisionAt checks whether the robot is in self collision at q
+    * @brief checkSelfCollisionAt checks whether the robot is in self collision at q - uses most accurate collision detection info (i.e., no capsules)
     * @param q the robot joint configuration vector
     * @return  true if the robot is in self collision
+    * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollision
+    * @TODO maybe the At version could be static
     */
    bool checkSelfCollisionAt(const yarp::sig::Vector &q);
+
+   /**
+    * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
+    *        Notice this function will not reset the acm, rather just disable collisions that are flagged as
+    *        "disabled" in the robot srdf. The default robot srdf will be used - i.e. the one associate with
+    *        the most accurate collision detection info (i.e., no capsules)
+    * @param acm the allowed collision matrix to modify according to the srdf info
+    * @TODO we should move this in collision_utils together with checkSelfCollision and checkSelfCollisionAt
+    */
+   void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
+
+   /**
+    * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
+    *        Notice this function will not reset the acm, rather just disable collisions that are flagged as
+    *        "disabled" in the robot srdf
+    * @param srdf the srdf file to use to load the ACM
+    * @param acm the allowed collision matrix to modify according to the srdf info
+    * @TODO we should move this in collision_utils together with checkSelfCollision and checkSelfCollisionAt
+    */
+   void loadDisabledCollisionsFromSRDF(srdf::Model& srdf,
+                                       collision_detection::AllowedCollisionMatrixPtr acm);
+
+   /**
+    * @brief getDisplayRobotStateMsgAt
+    * @param q the joint positions to transform into a DisplayRobotState msg
+    * @return a DisplayRobotState msg
+    * @TODO should be static - or moved some place else
+    */
+   moveit_msgs::DisplayRobotState getDisplayRobotStateMsgAt(const yarp::sig::Vector &q);
+
+   /**
+    * @brief getDisplayRobotStateMsg gets the robot state msg relative to the internal model state
+    * @return a DisplayRobotState msg
+    */
+   moveit_msgs::DisplayRobotState getDisplayRobotStateMsg();
 
 protected:
     /**
@@ -427,7 +479,10 @@ protected:
      */
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
 
-    void loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm);
+
+    void updateRobotState(const yarp::sig::Vector &q);
+
+    void updateRobotState();
 
     /**
      * @brief worldT Transformation between world and base_link

@@ -16,6 +16,96 @@
   Velocity and effort limits are fake!
 -->
   <!-- ************ MODEL CONFIGURATION ************ -->
+  <!--
+####################################################
+##
+##  BIGMAN_UPPER_BODY
+##  if "true" the kinematic chains of the arms and torso 
+##  will be used to generate the model
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_LEGS
+##  if "true" the kinematic chains of the legs
+##  will be used to generate the model
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_OLD_CHEST
+##  if "true" the old version of the chest will be
+##  used.
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_FIXED_HANDS
+##  if "true" a fixed joint between wrist and hand 
+##  will be used otherwise a rotative joints will
+##  be used.
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_FIXED_MULTISENSE
+##  if "true" a fixed joint between "head" and 
+##  "hokuyo_link" will be used otherwise a continuous 
+##  joints will be used.
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_HEAD
+##  if "true" a fixed joint between "NeckPitch" and
+##  "head" will be used to connect the head to the rest
+##  of the body. If "false" the head will not be added 
+##  to the model (this is the case when the multisense
+##  from the launch file is used). 
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_ADD_PROTECTIONS
+##  if "true" the protections are added to the model.
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_ADD_BACKPACK
+##  if "true" the backpack is added to the model.
+##  
+##
+####################################################
+-->
+  <!--
+####################################################
+##
+##  BIGMAN_ADD_RAISING_SUPPORT
+##  if "true" the raising support are added to the model.
+##  
+##
+####################################################
+-->
   <!-- ***********  MODEL COLORS *********** -->
   <material name="grey">
     <color rgba="0.5 0.5 0.5 1"/>
@@ -27,12 +117,25 @@
     <color rgba="0.0 0.2 0.3 1"/>
   </material>
   <!-- ************ BIGMAN BASE ************** -->
+  <!-- 
+  ROS urdf definition of the BIGMAN humanoid robot by Istituto Italiano di Tecnologia
+  
+  DO NOT INCLUDE THIS FILE DIRECTLY! USE bigman_robot.urdf.xacro INSTEAD!
+
+  Author: Enrico Mingo & Alessio Rocchi
+
+  Inertial matrix has to be in CoM frame (URDF specs)
+
+  Velocity and effort limits are fake!
+-->
+  <!--
+The coordinate frame called base_link is rigidly attached to the robot root body. It is recommended to choose the robot waist as its root body. The base_link can be attached to the root in any arbitrary position or orientation; for every hardware platform there will be a different place on the base that provides an obvious point of reference. Note that REP 103 [1] specifies a preferred orientation for frames. -->
   <link name="base_link"/>
   <link name="Waist">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="-0.032862932 -0.00050930727 -0.0012899617"/>
-      <mass value="6.4080904"/>
-      <inertia ixx="0.038826078" ixy="0.00029047605" ixz="0.00068975598" iyy="0.025050374" iyz="-1.3370623e-05" izz="0.048055286"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-0.022813402 -0.00073935443 0.030422909"/>
+      <mass value="1.1046081e+01"/>
+      <inertia ixx="0.096207978" ixy="0.00014081043" ixz="0.0031258127" iyy="0.098511158" iyz="0.00013938149" izz="0.086541531"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -53,6 +156,13 @@
     <child link="Waist"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
+  <!-- ********************TORSO******************** -->
+  <!-- first real link of the robot, inertial reference frame -->
+  <!-- Scale factor for meshes -->
+  <!-- LINKS -->
+  <!-- This links are defined in order to be compliant with http://www.ros.org/reps/rep-0120.html#coordinate-frames
+and to define the end effectors of the robot-->
+  <!-- The coordinate frame called torso is attached to the lowest body of the model which is a parent of l_gripper, r_gripper and gaze. -->
   <link name="torso"/>
   <link name="DWL">
     <inertial>
@@ -96,9 +206,9 @@
   </link>
   <link name="DWYTorso">
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.10981228 -0.00551229 -0.06272896"/>
-      <mass value="22.38913469"/>
-      <inertia ixx="0.15989993" ixy="0.00087514" ixz="0.01598045" iyy="0.11274359" iyz="0.00019540" izz="0.21318148"/>
+      <origin rpy="0 0 0" xyz="0.02049278 -0.00000767 -0.03249378"/>
+      <mass value="7.31313212"/>
+      <inertia ixx="0.18629757" ixy="0.00008160" ixz="0.00030250" iyy="0.02013829" iyz="-0.00001790" izz="0.18850541"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
@@ -114,6 +224,59 @@
       </geometry>
     </collision>
   </link>
+  <!-- UPDATE DATA FOR TORSO PROTECTION! -->
+  <link name="TorsoProtections">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.082963193 7.0747291e-07 0.075409106"/>
+      <mass value="4.7"/>
+      <inertia ixx="0.14773769" ixy="0.0" ixz="-0.029780072" iyy="0.16085511" iyz="0.0" izz="0.15409381"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry name="TorsoProtections_visual">
+        <mesh filename="package://bigman_urdf/meshes/ProtectionSystem.STL" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry name="TorsoProtections_collision">
+        <mesh filename="package://bigman_urdf/meshes/simple/ProtectionSystem.STL" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- UPDATE DATA FOR TORSO PROTECTION! -->
+  <link name="backpack">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 -0.065"/>
+      <mass value="10.0"/>
+      <inertia ixx="0.0890833333333" ixy="0.0" ixz="0.0" iyy="0.0354166666667" iyz="0.0" izz="0.0963333333333"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry name="backpack_visual">
+        <box size="0.16 0.3 0.22"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry name="backpack_collision">
+        <box size="0.16 0.3 0.22"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- JOINTS -->
+  <joint name="backpack_joint" type="fixed">
+    <parent link="DWYTorso"/>
+    <child link="backpack"/>
+    <origin rpy="0 0 0" xyz="-0.185 0 -0.025"/>
+  </joint>
+  <joint name="torso_protection_joint" type="fixed">
+    <parent link="DWYTorso"/>
+    <child link="TorsoProtections"/>
+    <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
+  </joint>
   <joint name="torso_joint" type="fixed">
     <parent link="DWYTorso"/>
     <child link="torso"/>
@@ -122,9 +285,9 @@
   <joint name="WaistLat" type="revolute">
     <parent link="Waist"/>
     <child link="DWL"/>
-    <origin rpy="0 0 0" xyz="0.0715192 0 0.195982"/>
+    <origin rpy="0 0 0" xyz="0.1115 0 0.195982"/>
     <axis xyz="0.89879991307 0 0.43835911792"/>
-    <limit effort="120" lower="-0.610865238196" upper="0.610865238196" velocity="6.283"/>
+    <limit effort="120" lower="-0.261799387798" upper="0.261799387798" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="WaistSag" type="revolute">
@@ -132,7 +295,7 @@
     <child link="DWS"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit effort="220" lower="-0.349065850398" upper="1.39626340159" velocity="6.283"/>
+    <limit effort="220" lower="-0.174532925199" upper="1.39626340159" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="WaistYaw" type="revolute">
@@ -140,14 +303,16 @@
     <child link="DWYTorso"/>
     <origin rpy="0 0 0" xyz="0 0 0.22275"/>
     <axis xyz="0 0 1"/>
-    <limit effort="120" lower="-2.09439510239" upper="2.09439510239" velocity="6.283"/>
+    <limit effort="120" lower="-1.74532925199" upper="1.74532925199" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
+  <!-- ********************NECK********************* -->
+  <!-- LINKS -->
   <link name="NeckYaw">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-      <mass value="1.0"/>
-      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.1155"/>
+      <mass value="0.35"/>
+      <inertia ixx="0.00032840119" ixy="0.0" ixz="0.0" iyy="7.0371675e-05" iyz="0.0" izz="0.00032840111"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
@@ -165,9 +330,9 @@
   </link>
   <link name="NeckPitch">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-      <mass value="1.0"/>
-      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.102 0.0 0.26575"/>
+      <mass value="0.623"/>
+      <inertia ixx="0.0010388333" ixy="0.0" ixz="0.0" iyy="0.00054689381" iyz="0.0" izz="0.00054689381"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
@@ -183,12 +348,14 @@
       </geometry>
     </collision>
   </link>
+  <!-- JOINTS -->
   <joint name="NeckYawj" type="revolute">
     <parent link="DWYTorso"/>
     <child link="NeckYaw"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="120" lower="-3.05432619098" upper="3.05432619098" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${(-35.0)*toRad}" upper="${(35.0)*toRad}" /-->
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="NeckPitchj" type="revolute">
@@ -196,15 +363,24 @@
     <child link="NeckPitch"/>
     <origin rpy="0 0 0" xyz="0 0 0.1155"/>
     <axis xyz="0 1 0"/>
-    <limit effort="120" lower="-0.523598775597" upper="1.22173047639" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${(-30.0)*toRad}" upper="${(70.0)*toRad}" /-->
+    <limit effort="120" lower="-0.436332312998" upper="1.04719755119" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
+  <!-- ********************LEGS******************** -->
+  <!-- This links are defined in order to be compliant with http://www.ros.org/reps/rep-0120.html#coordinate-frames
+	and to define the end effectors of the robot -->
+  <!--  position and orientation of the leg regardless of the support body geometry -->
   <link name="l_ankle"/>
   <link name="r_ankle"/>
+  <!-- position and orientation of the left leg support body. The (X,Y) plane of this frame must be coplanar with the support body contact surface. It is recommended to choose the origin as the projection of the support body origin on the contact surface. The Z coordinate of this frame should be on the ground level when standing. -->
   <link name="l_sole"/>
   <link name="r_sole"/>
+  <!--  position and orientation of the leg toe body. The (X,Y) plan of this frame must be coplanar with the toe body contact surface. It is recommended to choose the origin as the projection of the body center on the contact surface. -->
   <link name="l_toe"/>
   <link name="r_toe"/>
+  <!-- LINKS -->
+  <!-- ********************RIGHT LEG******************** -->
   <link name="RHipMot">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.10348188 -0.10919813 -0.064924056"/>
@@ -329,6 +505,7 @@
       </geometry>
     </collision>
   </link>
+  <!-- ********************LEFT LEG******************** -->
   <link name="LHipMot">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.10348188 0.10919813 -0.064924056"/>
@@ -455,6 +632,8 @@
       </geometry>
     </collision>
   </link>
+  <!-- JOINTS -->
+  <!-- ********************RIGHT LEG******************** -->
   <joint name="RHipLat" type="revolute">
     <parent link="Waist"/>
     <child link="RHipMot"/>
@@ -503,6 +682,7 @@
     <limit effort="120" lower="-0.785" upper="0.785" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
+  <!-- ********************LEFT LEG******************** -->
   <joint name="LHipLat" type="revolute">
     <parent link="Waist"/>
     <child link="LHipMot"/>
@@ -581,54 +761,68 @@
     <child link="r_toe"/>
     <origin rpy="0 0 0" xyz="0.195 0 0"/>
   </joint>
+  <!-- Reference frames in feet -->
+  <!-- macro for reference frames in foot -->
+  <!-- macro for one reference frame in foot -->
   <link name="l_foot_upper_right_link"/>
   <joint name="l_foot_upper_right_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.195 -0.07 0"/>
     <parent link="l_sole"/>
     <child link="l_foot_upper_right_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="l_foot_upper_left_link"/>
   <joint name="l_foot_upper_left_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.195 0.09 0"/>
     <parent link="l_sole"/>
     <child link="l_foot_upper_left_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="l_foot_lower_right_link"/>
   <joint name="l_foot_lower_right_joint" type="fixed">
     <origin rpy="0 0 0" xyz="-0.111 -0.07 0"/>
     <parent link="l_sole"/>
     <child link="l_foot_lower_right_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="l_foot_lower_left_link"/>
   <joint name="l_foot_lower_left_joint" type="fixed">
     <origin rpy="0 0 0" xyz="-0.111 0.09 0"/>
     <parent link="l_sole"/>
     <child link="l_foot_lower_left_link"/>
   </joint>
+  <!-- macro for reference frames in foot -->
+  <!-- macro for one reference frame in foot -->
   <link name="r_foot_upper_right_link"/>
   <joint name="r_foot_upper_right_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.195 0.07 0"/>
     <parent link="r_sole"/>
     <child link="r_foot_upper_right_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="r_foot_upper_left_link"/>
   <joint name="r_foot_upper_left_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.195 -0.09 0"/>
     <parent link="r_sole"/>
     <child link="r_foot_upper_left_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="r_foot_lower_right_link"/>
   <joint name="r_foot_lower_right_joint" type="fixed">
     <origin rpy="0 0 0" xyz="-0.111 0.07 0"/>
     <parent link="r_sole"/>
     <child link="r_foot_lower_right_link"/>
   </joint>
+  <!-- macro for one reference frame in foot -->
   <link name="r_foot_lower_left_link"/>
   <joint name="r_foot_lower_left_joint" type="fixed">
     <origin rpy="0 0 0" xyz="-0.111 -0.09 0"/>
     <parent link="r_sole"/>
     <child link="r_foot_lower_left_link"/>
   </joint>
+  <!-- ********************ARMS******************** -->
+  <!-- LINKS -->
+  <!-- RIGHT ARM -->
   <link name="RShp">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00543349 -0.04480023 0.01581062"/>
@@ -709,6 +903,7 @@
       </geometry>
     </collision>
   </link>
+  <!-- LEFT ARM -->
   <link name="LShp">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00543349 0.04480023 0.01581062"/>
@@ -789,12 +984,15 @@
       </geometry>
     </collision>
   </link>
+  <!-- JOINTS -->
+  <!-- RIGHT ARM -->
   <joint name="RShSag" type="revolute">
     <parent link="DWYTorso"/>
     <child link="RShp"/>
     <origin rpy="0 0 0.3491" xyz="0.045646 -0.219164 0.001531"/>
     <axis xyz="0 0.743144825 -0.669130606"/>
-    <limit effort="120" lower="-2.84488668074" upper="2.8099800957" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${-163*toRad}" upper="${161.0*toRad}" /-->
+    <limit effort="120" lower="-0.994837673634" upper="1.55334303427" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="RShLat" type="revolute">
@@ -802,7 +1000,8 @@
     <child link="RShr"/>
     <origin rpy="0 0 0" xyz="0.0 -0.116568264 0.03364"/>
     <axis xyz="1 0 0"/>
-    <limit effort="120" lower="-3.8571776469" upper="-0.122173047639" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${-221.0*toRad}" upper="${-7.0*toRad}" /-->
+    <limit effort="120" lower="-2.96705972838" upper="-0.122173047639" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="RShYaw" type="revolute">
@@ -821,12 +1020,14 @@
     <limit effort="60" lower="-2.96705972838" upper="0.593411945677" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
+  <!-- LEFT ARM -->
   <joint name="LShSag" type="revolute">
     <parent link="DWYTorso"/>
     <child link="LShp"/>
     <origin rpy="0 0 -0.3491" xyz="0.045646 0.219164 0.001531"/>
     <axis xyz="0.0 0.743144825 0.669130606"/>
-    <limit effort="120" lower="-2.87979326578" upper="2.79252680318" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${-165.0*toRad}" upper="${160.0*toRad}" /-->
+    <limit effort="120" lower="-0.994837673634" upper="1.55334303427" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="LShLat" type="revolute">
@@ -834,7 +1035,8 @@
     <child link="LShr"/>
     <origin rpy="0 0 0" xyz="0.0 0.116568264 0.03364"/>
     <axis xyz="1 0 0"/>
-    <limit effort="120" lower="0.0872664625995" upper="3.8571776469" velocity="6.283"/>
+    <!--limit velocity="6.283" effort="120" lower="${5.0*toRad}" upper="${221.0*toRad}" /-->
+    <limit effort="120" lower="0.0872664625995" upper="2.96705972838" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
   <joint name="LShYaw" type="revolute">
@@ -853,6 +1055,7 @@
     <limit effort="60" lower="-2.96705972838" upper="0.593411945677" velocity="6.283"/>
     <dynamics damping="3.0" friction="0"/>
   </joint>
+  <!-- ***** LEGS F/T SENSOR REF FRAMES *******-->
   <link name="l_leg_ft"/>
   <link name="r_leg_ft"/>
   <joint name="l_leg_ft_joint" type="fixed">
@@ -877,8 +1080,14 @@
     <child link="r_arm_ft"/>
     <origin rpy="0 0 0" xyz="0 0 -0.0565"/>
   </joint>
+  <!-- ************ FOREARMS ************ -->
+  <!-- This links are defined in order to be compliant with http://www.ros.org/reps/rep-0120.html#coordinate-frames
+	and to define the end effectors of the robot -->
+  <!-- position and orientation of the arm regardless of the tool (grasping device for instance) attached to it -->
   <link name="l_wrist"/>
   <link name="r_wrist"/>
+  <!-- ****************LINKS**************** -->
+  <!-- ****************LEFT FOREARM**************** -->
   <link name="LForearm">
     <inertial>
       <origin rpy="0 0 0" xyz="1.2625599e-05 0.0042975381 0.044717986"/>
@@ -919,28 +1128,6 @@
       </geometry>
     </collision>
   </link>
-  <link name="LRaisingSupport">
-    <inertial>
-      <origin rpy="0 0 0" xyz="0.0072667838 0.0012370624 -0.069076044"/>
-      <mass value="1.3789343"/>
-      <inertia ixx="0.0059368721" ixy="1.6171173e-05" ixz="4.7369581e-05" iyy="0.013268985" iyz="-0.00013188343" izz="0.0095878298"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry name="LRaisingSupport_visual">
-        <mesh filename="package://bigman_urdf/meshes/RaisingSupport.STL" scale="0.001 -0.001 0.001"/>
-      </geometry>
-      <material name="dark_grey"/>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.008 0 -0.076"/>
-      <!--origin xyz="0 0 0" rpy="0 0 0"/-->
-      <geometry name="LRaisingSupport_collision">
-        <box size="0.218 0.04 0.152"/>
-        <!--mesh filename="package://bigman_urdf/meshes/simple/RaisingSupport.STL" scale="0.001 -0.001 0.001" /-->
-      </geometry>
-    </collision>
-  </link>
   <link name="LWrMot3">
     <inertial>
       <origin rpy="0 0 0" xyz="0.0070380706 -1.0811188e-05 -0.039669274"/>
@@ -961,6 +1148,7 @@
       </geometry>
     </collision>
   </link>
+  <!-- ****************RIGHT FOREARM**************** -->
   <link name="RForearm">
     <inertial>
       <origin rpy="0 0 0" xyz="1.2625599e-05 -0.0042975381 0.044717986"/>
@@ -1001,28 +1189,6 @@
       </geometry>
     </collision>
   </link>
-  <link name="RRaisingSupport">
-    <inertial>
-      <origin rpy="0 0 0" xyz="0.0072667838 -0.0012370624 -0.069076044"/>
-      <mass value="1.3789343"/>
-      <inertia ixx="0.0059368721" ixy="-1.6171173e-05" ixz="4.7369581e-05" iyy="0.013268985" iyz="0.00013188343" izz="0.0095878298"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry name="RRaisingSupport_visual">
-        <mesh filename="package://bigman_urdf/meshes/RaisingSupport.STL" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="dark_grey"/>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.008 0 -0.076"/>
-      <!--origin xyz="0 0 0" rpy="0 0 0"/-->
-      <geometry name="RRaisingSupport_collision">
-        <box size="0.218 0.04 0.152"/>
-        <!--mesh filename="package://bigman_urdf/meshes/simple/RaisingSupport.STL" scale="0.001 0.001 0.001" /-->
-      </geometry>
-    </collision>
-  </link>
   <link name="RWrMot3">
     <inertial>
       <origin rpy="0 0 0" xyz="0.0070380706 1.0811188e-05 -0.039669274"/>
@@ -1043,6 +1209,8 @@
       </geometry>
     </collision>
   </link>
+  <!-- ****************JOINTS**************** -->
+  <!-- ****************LEFT FOREARM**************** -->
   <joint name="LForearmPlate" type="revolute">
     <parent link="LElb"/>
     <child link="LForearm"/>
@@ -1059,11 +1227,6 @@
     <limit effort="60" lower="-1.48" upper="1.48" velocity="6.283"/>
     <dynamics damping="0.03" friction="0"/>
   </joint>
-  <joint name="LRaisingSupport_joint" type="fixed">
-    <parent link="LWrMot2"/>
-    <child link="LRaisingSupport"/>
-    <origin rpy="0 0 0" xyz="0.0 0.0 -0.0505"/>
-  </joint>
   <joint name="LWrj2" type="revolute">
     <parent link="LWrMot2"/>
     <child link="LWrMot3"/>
@@ -1077,6 +1240,7 @@
     <child link="l_wrist"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
+  <!-- ****************RIGHT FOREARM**************** -->
   <joint name="RForearmPlate" type="revolute">
     <parent link="RElb"/>
     <child link="RForearm"/>
@@ -1093,11 +1257,6 @@
     <limit effort="60" lower="-1.48" upper="1.48" velocity="6.283"/>
     <dynamics damping="0.03" friction="0"/>
   </joint>
-  <joint name="RRaisingSupport_joint" type="fixed">
-    <parent link="RWrMot2"/>
-    <child link="RRaisingSupport"/>
-    <origin rpy="0 0 0" xyz="0.0 0.0 -0.0505"/>
-  </joint>
   <joint name="RWrj2" type="revolute">
     <parent link="RWrMot2"/>
     <child link="RWrMot3"/>
@@ -1111,56 +1270,22 @@
     <child link="r_wrist"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
-  <link name="l_forearm_forward_contact_link"/>
-  <joint name="l_forearm_forward_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.097 0 -0.132"/>
-    <parent link="LRaisingSupport"/>
-    <child link="l_forearm_forward_contact_link"/>
-  </joint>
-  <link name="l_forearm_backward_contact_link"/>
-  <joint name="l_forearm_backward_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.081 0 -0.132"/>
-    <parent link="LRaisingSupport"/>
-    <child link="l_forearm_backward_contact_link"/>
-  </joint>
-  <link name="l_forearm_central_contact_link"/>
-  <joint name="l_forearm_central_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.0 0 -0.152"/>
-    <parent link="LRaisingSupport"/>
-    <child link="l_forearm_central_contact_link"/>
-  </joint>
-  <link name="r_forearm_forward_contact_link"/>
-  <joint name="r_forearm_forward_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.097 0 -0.132"/>
-    <parent link="RRaisingSupport"/>
-    <child link="r_forearm_forward_contact_link"/>
-  </joint>
-  <link name="r_forearm_backward_contact_link"/>
-  <joint name="r_forearm_backward_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.081 0 -0.132"/>
-    <parent link="RRaisingSupport"/>
-    <child link="r_forearm_backward_contact_link"/>
-  </joint>
-  <link name="r_forearm_central_contact_link"/>
-  <joint name="r_forearm_central_contact_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.0 0 -0.152"/>
-    <parent link="RRaisingSupport"/>
-    <child link="r_forearm_central_contact_link"/>
-  </joint>
+  <!-- ************ HANDS ************ -->
+  <!-- For the hand we use the inertia of a parallelepiped -->
+  <!-- LINKS -->
   <link name="RSoftHand"/>
-  <link name="r_palm"/>
   <link name="RSoftHandLink">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.011908576 0.0021833446 -0.15361558"/>
-      <mass value="5.0e-01"/>
-      <inertia ixx="0.000683333333333" ixy="0" ixz="0" iyy="0.000683333333333" iyz="0" izz="0.000533333333333"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.17"/>
+      <mass value="1.2"/>
+      <inertia ixx="0.00232" ixy="0" ixz="0" iyy="0.00296" iyz="0" izz="0.00136"/>
     </inertial>
     <visual>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
       <geometry name="RSoftHandLink_visual">
         <mesh filename="package://bigman_urdf/meshes/SoftHandOpen.STL" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="black"/>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -1170,19 +1295,18 @@
     </collision>
   </link>
   <link name="LSoftHand"/>
-  <link name="l_palm"/>
   <link name="LSoftHandLink">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.011908576 -0.0021833446 -0.15361558"/>
-      <mass value="5.0e-01"/>
-      <inertia ixx="0.000683333333333" ixy="0" ixz="0" iyy="0.000683333333333" iyz="0" izz="0.000533333333333"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.17"/>
+      <mass value="1.2"/>
+      <inertia ixx="0.00232" ixy="0" ixz="0" iyy="0.00296" iyz="0" izz="0.00136"/>
     </inertial>
     <visual>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
       <geometry name="LSoftHandLink_visual">
         <mesh filename="package://bigman_urdf/meshes/SoftHandOpen.STL" scale="0.001 -0.001 0.001"/>
       </geometry>
-      <material name="black"/>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -1191,6 +1315,7 @@
       </geometry>
     </collision>
   </link>
+  <!-- JOINTS -->
   <joint name="r_handj" type="fixed">
     <parent link="RWrMot3"/>
     <child link="RSoftHandLink"/>
@@ -1199,12 +1324,7 @@
   <joint name="r_handj2" type="fixed">
     <parent link="RSoftHandLink"/>
     <child link="RSoftHand"/>
-    <origin rpy="0 0 0" xyz="0.011908576 0.0021833446 -0.15361558"/>
-  </joint>
-  <joint name="r_handj3" type="fixed">
-    <parent link="RSoftHand"/>
-    <child link="r_palm"/>
-    <origin rpy="0 0 0" xyz="0 0.025696923 0.0"/>
+    <origin rpy="0 0 0" xyz="0 0.0305 -0.21"/>
   </joint>
   <joint name="l_handj" type="fixed">
     <parent link="LWrMot3"/>
@@ -1214,14 +1334,14 @@
   <joint name="l_handj2" type="fixed">
     <parent link="LSoftHandLink"/>
     <child link="LSoftHand"/>
-    <origin rpy="0 0 0" xyz="0.011908576 -0.0021833446 -0.15361558"/>
+    <origin rpy="0 0 0" xyz="0 -0.0305 -0.21"/>
   </joint>
-  <joint name="l_handj3" type="fixed">
-    <parent link="LSoftHand"/>
-    <child link="l_palm"/>
-    <origin rpy="0 0 0" xyz="0 -0.025696923 0.0"/>
-  </joint>
-  <link name="head">
+  <!-- multisense_sl_v4 with fixed joints (NOT FOR SIMULATION) -->
+  <!-- 
+       Based on multisense_sl_v4.urdf in multisense_sl_description (DRCSIM) 
+-->
+  <!-- Head Link Simple Collision Meshes -->
+  <link name="multisense/head">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.075493 3.3383E-05 0.02774"/>
       <mass value="1.41984"/>
@@ -1241,7 +1361,7 @@
       </geometry>
     </collision>
   </link>
-  <link name="hokuyo_link">
+  <link name="multisense/hokuyo_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0.032428 0.0004084 -0.0041835"/>
       <mass value="0.057654"/>
@@ -1267,68 +1387,202 @@
       </geometry>
     </collision>
   </link>
+  <!-- Remove frome here!  
+<gazebo reference="head">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <gazebo reference="hokuyo_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+-->
   <joint name="hokuyo_joint" type="fixed">
     <origin rpy="0 0 0" xyz="-0.0446 0 0.0880"/>
-    <parent link="head"/>
-    <child link="hokuyo_link"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/hokuyo_link"/>
   </joint>
+  <!-- Remove frome here!
+  <gazebo reference="hokuyo_joint">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+-->
+  <!-- Hokuyo Laser -->
   <joint name="head_hokuyo_joint" type="fixed">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0.03 0 0.015"/>
-    <parent link="hokuyo_link"/>
-    <child link="head_hokuyo_frame"/>
+    <parent link="multisense/hokuyo_link"/>
+    <child link="multisense/head_hokuyo_frame"/>
   </joint>
-  <link name="head_hokuyo_frame"/>
+  <link name="multisense/head_hokuyo_frame"/>
+  <!-- Remove frome here!
+  <gazebo reference="head_hokuyo_frame">
+    <sensor type="gpu_ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>-->
+  <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+  <!-- <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/multisense/lidar_scan</topicName>
+        <frameName>head_hokuyo_frame</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+-->
+  <!-- Stereo Camera -->
   <joint name="left_camera_frame_joint" type="fixed">
     <!-- optical frame collocated with tilting DOF -->
     <origin xyz="0.0 0.035 -0.002"/>
-    <parent link="head"/>
-    <child link="left_camera_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/left_camera_frame"/>
   </joint>
-  <link name="left_camera_frame"/>
+  <link name="multisense/left_camera_frame"/>
   <joint name="left_camera_optical_frame_joint" type="fixed">
     <origin rpy="-1.5708 0.0 -1.5708" xyz="0 0 0"/>
-    <parent link="left_camera_frame"/>
-    <child link="left_camera_optical_frame"/>
+    <parent link="multisense/left_camera_frame"/>
+    <child link="multisense/left_camera_optical_frame"/>
   </joint>
-  <link name="left_camera_optical_frame"/>
+  <link name="multisense/left_camera_optical_frame"/>
+  <!--
+  <gazebo reference="left_camera_frame">
+    <sensor type="multicamera" name="stereo_camera">-->
+  <!-- see MultiSenseSLPlugin.h for available modes -->
+  <!--<update_rate>30.0</update_rate>
+      <camera name="left">-->
+  <!-- Spec sheet says 80deg X 45deg @ 1024x544pix.  Based on feedback
+             from teams, we're instead doing 80deg X 80deg @ 800x800pix. -->
+  <!-- <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>-->
+  <!-- Noise is sampled independently per pixel on each frame.  
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1].
+               The stddev value of 0.007 is based on experimental data 
+               from a camera in a Sandia hand pointed at a static scene
+               in a couple of different lighting conditions.  -->
+  <!-- <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <camera name="right">
+        <pose>0 -0.07 0 0 0 0</pose>-->
+  <!-- Spec sheet says 80deg X 45deg @ 1024x544pix.  Based on feedback
+             from teams, we're instead doing 80deg X 80deg @ 800x800pix. -->
+  <!-- <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>-->
+  <!-- Noise is sampled independently per pixel on each frame.  
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1].
+               The stddev value of 0.007 is based on experimental data 
+               from a camera in a Sandia hand pointed at a static scene
+               in a couple of different lighting conditions.  -->
+  <!--  <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>multisense/camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>left_camera_optical_frame</frameName>-->
+  <!-- <rightFrameName>right_camera_optical_frame</rightFrameName> -->
+  <!--  <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+-->
   <joint name="right_camera_frame_joint" type="fixed">
     <origin xyz="0.0 -0.035 -0.002"/>
-    <parent link="head"/>
-    <child link="right_camera_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/right_camera_frame"/>
   </joint>
-  <link name="right_camera_frame"/>
+  <link name="multisense/right_camera_frame"/>
   <joint name="right_camera_optical_frame_joint" type="fixed">
     <origin rpy="-1.5708 0.0 -1.5708" xyz="0 0 0"/>
-    <parent link="right_camera_frame"/>
-    <child link="right_camera_optical_frame"/>
+    <parent link="multisense/right_camera_frame"/>
+    <child link="multisense/right_camera_optical_frame"/>
   </joint>
-  <link name="right_camera_optical_frame"/>
+  <link name="multisense/right_camera_optical_frame"/>
   <joint name="center_top_led_frame_joint" type="fixed">
     <origin xyz="0.01125 0.0 0.0105"/>
-    <parent link="head"/>
-    <child link="center_top_led_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/center_top_led_frame"/>
   </joint>
-  <link name="center_top_led_frame"/>
+  <link name="multisense/center_top_led_frame"/>
   <joint name="center_bottom_led_frame_joint" type="fixed">
     <origin xyz="0.01125 0.0 -0.0155"/>
-    <parent link="head"/>
-    <child link="center_bottom_led_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/center_bottom_led_frame"/>
   </joint>
-  <link name="center_bottom_led_frame"/>
+  <link name="multisense/center_bottom_led_frame"/>
   <joint name="left_led_frame_joint" type="fixed">
     <origin rpy="0 0 0.6" xyz="-0.01443 0.07452 0.050346"/>
-    <parent link="head"/>
-    <child link="left_led_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/left_led_frame"/>
   </joint>
-  <link name="left_led_frame"/>
+  <link name="multisense/left_led_frame"/>
   <joint name="right_led_frame_joint" type="fixed">
     <origin rpy="0 0 -0.6" xyz="-0.01443 -0.07452 0.050346"/>
-    <parent link="head"/>
-    <child link="right_led_frame"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/right_led_frame"/>
   </joint>
-  <link name="right_led_frame"/>
-  <link name="head_imu_link">
+  <link name="multisense/right_led_frame"/>
+  <!--
+  <gazebo>
+    <plugin filename="libMultiSenseSLPlugin.so" name="multisense_plugin"/>
+  </gazebo>
+-->
+  <!-- imu link -->
+  <link name="multisense/head_imu_link">
     <inertial>
       <mass value="1e-5"/>
       <!-- collocate with parent link and remove mass from it -->
@@ -1343,22 +1597,68 @@
     </visual>
   </link>
   <joint name="head_imu_joint" type="fixed">
-    <parent link="head"/>
-    <child link="head_imu_link"/>
+    <parent link="multisense/head"/>
+    <child link="multisense/head_imu_link"/>
     <!-- putting it at the same z-level as the stereo -->
     <origin rpy="0 0 0" xyz="-0.0475 0.035 0.0"/>
   </joint>
+  <!--
+  <gazebo reference="head_imu_link">-->
+  <!-- this is expected to be reparented to head with appropriate offset
+         when head_imu_link is reduced by fixed joint reduction -->
+  <!-- todo: this is working with gazebo 1.4, need to write a unit test -->
+  <!--<sensor name="head_imu_sensor" type="imu">
+      <always_on>1</always_on>
+      <update_rate>1000.0</update_rate>
+      <imu>
+        <noise>
+          <type>gaussian</type>-->
+  <!-- Noise parameters from Boston Dynamics
+               (http://gazebosim.org/wiki/Sensor_noise):
+                 rates (rad/s): mean=0, stddev=2e-4
+                 accels (m/s/s): mean=0, stddev=1.7e-2
+                 rate bias (rad/s): 5e-6 - 1e-5
+                 accel bias (m/s/s): 1e-1
+               Experimentally, simulation provide rates with noise of
+               about 1e-3 rad/s and accels with noise of about 1e-1 m/s/s.
+               So we don't expect to see the noise unless number of inner iterations
+               are increased.
+
+               We will add bias.  In this model, bias is sampled once for rates
+               and once for accels at startup; the sign (negative or positive)
+               of each bias is then switched with equal probability.  Thereafter,
+               the biases are fixed additive offsets.  We choose
+               bias means and stddevs to produce biases close to the provided
+               data. -->
+  <!--  <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </sensor>
+  </gazebo>
+-->
   <joint name="neck_joint" type="fixed">
     <parent link="NeckPitch"/>
-    <child link="head"/>
+    <child link="multisense/head"/>
     <origin rpy="0 0 0" xyz="0.08765 0 0.06475"/>
   </joint>
   <link name="gaze"/>
   <joint name="gaze_joint" type="fixed">
-    <parent link="head"/>
+    <parent link="multisense/head"/>
     <child link="gaze"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
+  <!-- IMU -->
   <link name="imu_link">
     <inertial>
       <mass value="0.01"/>
