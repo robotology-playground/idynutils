@@ -705,15 +705,35 @@ bool iDynUtils::checkSelfCollision()
     return checkSelfCollisionAt(iDyn3_model.getAng());
 }
 
-bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q)
+bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q,
+                                     std::list< std::pair<std::string,std::string> >* collisionPairs)
 {
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     this->updateRobotState(q);
     moveit_robot_state->updateCollisionBodyTransforms();
+    if(collisionPairs != NULL)
+    {
+        req.contacts = true;
+        req.max_contacts = 100;
+    }
     moveit_collision_robot->checkSelfCollision(req, res,
                                                *moveit_robot_state,
                                                *allowed_collision_matrix);
+
+    if(collisionPairs != NULL)
+    {
+        for(collision_detection::CollisionResult::ContactMap::const_iterator it = res.contacts.begin();
+            it != res.contacts.end();
+            ++it)
+        {
+            std::pair<std::string, std::string> collisionPair(
+                        it->first.first.c_str(),
+                        it->first.second.c_str());
+            if(find(collisionPairs->begin(), collisionPairs->end(), collisionPair) == collisionPairs->end())
+                collisionPairs->push_back(collisionPair);
+        }
+    }
 
     return res.collision;
 

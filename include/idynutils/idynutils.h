@@ -333,11 +333,13 @@ public:
    /**
     * @brief checkSelfCollisionAt checks whether the robot is in self collision at q - uses most accurate collision detection info (i.e., no capsules)
     * @param q the robot joint configuration vector
+    * @param collisionPairs a list of pairs of string with link pairs in contact
     * @return  true if the robot is in self collision
     * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollision
     * @TODO maybe the At version could be static
     */
-   bool checkSelfCollisionAt(const yarp::sig::Vector &q);
+   bool checkSelfCollisionAt(const yarp::sig::Vector &q,
+                             std::list< std::pair<std::string,std::string> > * collisionPairs = NULL);
 
    /**
     * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.
