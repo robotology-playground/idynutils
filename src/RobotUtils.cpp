@@ -30,7 +30,7 @@ RobotUtils::RobotUtils(const std::string moduleName,
 		       const std::string srdf_path) :
     whole_robot(walkman::robot::whole_robot, moduleName, robotName, true, walkman::controlTypes::none),
     idynutils( robotName, urdf_path, srdf_path ),
-    _moduleName(moduleName),left_hand_index(left_hand_i),right_hand_index(right_hand_i)
+    _moduleName(moduleName),left_hand_index(left_hand_i),right_hand_index(right_hand_i),neck_p_index(neck_p_i),neck_y_index(neck_y_i)
 {
     this->number_of_joints = idynutils.iDyn3_model.getNrOfDOFs();
     q_sensed.resize(this->number_of_joints,0.0);
@@ -40,8 +40,8 @@ RobotUtils::RobotUtils(const std::string moduleName,
     left_hand_i = whole_robot.getNumberOfJoints() - 1;
     right_hand_i = whole_robot.getNumberOfJoints() - 2;
     loadIMUSensors();
-    neck_p_index = idynutils.head.joint_numbers[1];
-    neck_y_index = idynutils.head.joint_numbers[0];
+    neck_p_i = idynutils.head.joint_numbers[1];
+    neck_y_i = idynutils.head.joint_numbers[0];
     //get neck index, initialize neck_y_index neck_p_index and j_29
     int j=0;
     for (int i=0;i<31;i++)

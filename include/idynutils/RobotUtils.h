@@ -247,13 +247,14 @@ public:
     bool setIdleMode();
 
     const int& left_hand_index; const int & right_hand_index;
-
+    const int& neck_y_index; const int& neck_p_index;
+    
     const std::vector<std::string>& getJointNames() const;
 
 private:
     unsigned int number_of_joints;
     int left_hand_i,right_hand_i;
-    int neck_y_index, neck_p_index;
+    int neck_y_i, neck_p_i;
     int j_29[29];
     yarp::sig::Vector q_sensed;
     yarp::sig::Vector tau_sensed;
