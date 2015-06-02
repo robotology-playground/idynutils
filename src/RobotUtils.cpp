@@ -111,6 +111,18 @@ void RobotUtils::moveNeck(const yarp::sig::Vector &_q)
     whole_robot.move(_qtemp,temp,2);
 }
 
+void RobotUtils::moveNeck(double q_yaw, double q_pitch)
+{
+    int temp[2];
+    temp[0]=neck_y_index;
+    temp[1]=neck_p_index;
+    double _qtemp[2];
+    _qtemp[0] = q_yaw;
+    _qtemp[1] = q_pitch;
+    whole_robot.move(_qtemp,temp,2);
+}
+
+
 yarp::sig::Vector &RobotUtils::sensePosition()
 {
     whole_robot.sensePosition(q_sensed);

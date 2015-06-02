@@ -178,6 +178,7 @@ public:
     void moveHands(const yarp::sig::Vector &_q);
 
     void moveNeck(const yarp::sig::Vector &_q);
+    void moveNeck(double q_yaw, double q_pitch);
 
     /**
      * @brief getNumberOfActuatedJoints gets the hardware robot number of joints
