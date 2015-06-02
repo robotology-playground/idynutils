@@ -176,7 +176,8 @@ public:
     void move29(const yarp::sig::Vector &_q);
 
     void moveHands(const yarp::sig::Vector &_q);
-
+    void moveHands(double q_left, double q_right);
+    
     void moveNeck(const yarp::sig::Vector &_q);
     void moveNeck(double q_yaw, double q_pitch);
 

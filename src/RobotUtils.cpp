@@ -100,6 +100,17 @@ void RobotUtils::moveHands(const yarp::sig::Vector &_q)
     whole_robot.move(_qtemp,temp,2);
 }
 
+void RobotUtils::moveHands(double q_left, double q_right)
+{
+    int temp[2];
+    temp[0]=left_hand_index;
+    temp[1]=right_hand_index;
+    double _qtemp[2];
+    _qtemp[0]= q_left;
+    _qtemp[1]= q_right;
+    whole_robot.move(_qtemp,temp,2);
+}
+
 void RobotUtils::moveNeck(const yarp::sig::Vector &_q)
 {
     int temp[2];
