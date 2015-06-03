@@ -52,7 +52,8 @@ RobotUtils::RobotUtils(const std::string moduleName,
 	j++;
       }
     }
-//TODO     loadForceTorqueSensors();
+    
+    loadForceTorqueSensors();
 }
 
 bool RobotUtils::hasHands()
@@ -313,42 +314,31 @@ RobotUtils::IMUPtr RobotUtils::getIMU()
 
 bool RobotUtils::loadForceTorqueSensors()
 {
+    std::cout << ">------------------------ Loading FT sensor ------------------ !!!!!!!"<< std::endl;
     // create
     ft = std::shared_ptr<yarp_ft_interface>( new yarp_ft_interface("whole_robot_ft",
                                 _moduleName,
                                 idynutils.getRobotName()));
-    std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+    //std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+//     <!--legR legL armR armL -->
+    std::vector<std::string> ft_joints = {"r_leg_ft","l_leg_ft","r_arm_ft","l_arm_ft"};
     int offset = 0;
-    for(auto group: robot_groups)
-    {
-        if (group.name_ == walkman::robot::force_torque_sensors)
-        {
-            if(group.joints_.size() > 0) {
-                for(auto joint_name : group.joints_)
+                for(auto reference_frame : ft_joints)
                 {
-                    std::cout << "ft sensors found on joint " << joint_name;
-
-                    std::string reference_frame = idynutils.moveit_robot_model->getJointModel(joint_name)->
-                            getChildLinkModel()->getName();
-
-                    std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
+                  std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
 
                     try {
 
                         ftSensors[reference_frame] = FT_SIZE * offset;
 //                         ft_reference_frames.push_back(reference_frame);
-//                         std::cout << "ft on " << reference_frame << " loaded" << std::endl;
+//                         std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA ft on " << reference_frame << " loaded on offset"<<ftSensors[reference_frame] << std::endl;
+                        offset++;
                     } catch(...) {
                         std::cerr << "Error loading " << reference_frame << " ft " << std::endl;
                         return false;}
                 }
                 return true;
-            }
-        }
-        offset++;
-    }
-    std::cout << "Robot does not have any ft sensor" << std::endl;
-    return false;
+  
 }
 
 ///TODO: CHECK LINK IN GROUP imu_sensors in SRDF!!!
