@@ -605,6 +605,7 @@ bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_
     yarp::os::Property options;
     options.put("robot", robot_name);
     options.put("device", "remote_controlboard");
+    options.put("writeStrict","on");
 
     yarp::os::ConstString s;
     s = "/"+module_prefix+"/" + kinematic_chain;
