@@ -11,6 +11,8 @@
 #include <fcl/distance.h>
 #include <fcl/shape/geometric_shapes.h>
 #include <eigen_conversions/eigen_kdl.h>
+#include <iostream>
+#include <fstream>
 
 
 #define  s                1.0
@@ -136,6 +138,24 @@ double dist3D_Segment_to_Segment (const Eigen::Vector3d & segment_A_endpoint_1,
     //std::cout << "Dm: " << std::endl << Dm << std::endl;
 
     return Dm;
+}
+
+yarp::sig::Vector getRandomConfiguration (iDynUtils& robot_model, random_numbers::RandomNumberGenerator &rng)
+{
+    yarp::sig::Vector q(robot_model.iDyn3_model.getNrOfDOFs(), 0.0);
+
+    yarp::sig::Vector q_bound_max, q_bound_min;
+    q_bound_min = robot_model.iDyn3_model.getJointBoundMin();
+    q_bound_max = robot_model.iDyn3_model.getJointBoundMax();
+
+    for (unsigned int i = 0 ; i < robot_model.iDyn3_model.getNrOfDOFs() ; ++i)
+    {
+        q(i) = rng.uniformReal( q_bound_min(i), q_bound_max(i) );
+    }
+
+//    std::cout<<"whole q: "<<q.toString()<<std::endl;
+
+    return q;
 }
 
 class TestCapsuleLinksDistance
@@ -370,6 +390,304 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     EXPECT_NEAR(actual_distance, reference_distance, 1E-4) << "estimate was " << hand_computed_distance_estimate;
 
 }
+
+TEST_F(testCollisionUtils, testGenerateTrainingData)
+{
+
+    std::ofstream output, record_1;
+    output.open("fc.train", std::ofstream::trunc);
+//    record_1.open("chosen", std::ofstream::app);
+
+    this->robot.iDyn3_model.setFloatingBaseLink(this->robot.left_leg.index);
+    random_numbers::RandomNumberGenerator rng_fc;
+
+    std::string linkA = "LSoftHandLink";
+    std::string linkB = "RSoftHandLink";
+
+    std::list<std::pair<std::string,std::string>> whiteList;
+    whiteList.push_back(std::pair<std::string,std::string>(linkA,linkB));
+    compute_distance.setCollisionWhiteList(whiteList);
+
+    int counter = 0;
+//    std::vector<double> identifier;
+//    std::vector<double>::iterator iter;
+
+    for (unsigned int k = 0; k < 5000; k++)
+    {
+
+        this->q = getRandomConfiguration (robot, rng_fc);
+        this->robot.updateiDyn3Model(this->q, true);
+
+        std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+        LinkPairDistance result = results.front();
+        double actual_distance;
+        actual_distance = result.getDistance();
+
+        //    std::cout<<"actual_distance: "<<actual_distance<<std::endl;
+
+
+        if ( actual_distance < 0.8 )
+        {
+            output << "1" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+
+            counter++;
+
+//            identifier.push_back(k+1);
+
+//            record_1 << "1" << " ";
+//            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+//            {
+//                record_1 << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+//            }
+//            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+//            {
+//                record_1 << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+//            }
+//            record_1 <<"\n";
+        }
+        else
+        {
+            output << "0" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+        }
+
+    }
+    output.close();
+//    record_1.close();
+
+//    for (iter = identifier.begin(); iter != identifier.end(); iter++ )
+//    {
+//        std::cout<<*iter<<std::endl;
+//    }
+
+    std::cout<<"counter: "<<counter<<std::endl;
+
+    ASSERT_EQ(robot.iDyn3_model.getNrOfDOFs(), 31);
+
+}
+
+TEST_F(testCollisionUtils, testGenerateRealTrainingData)
+{
+
+    std::ofstream output, record_1;
+    output.open("fc.test", std::ofstream::trunc);
+    record_1.open("chosen", std::ofstream::app);
+
+    this->robot.iDyn3_model.setFloatingBaseLink(this->robot.left_leg.index);
+    random_numbers::RandomNumberGenerator rng_fc;
+
+    std::string linkL1 = "LSoftHandLink";
+    std::string linkR1 = "RSoftHandLink";
+    std::string linkL2 = "LWrMot3";
+    std::string linkR2 = "RWrMot3";
+    std::string linkL3 = "LWrMot2";
+    std::string linkR3 = "RWrMot2";
+
+    std::list<std::pair<std::string,std::string>> whiteList;
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR3));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR3));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR3));
+    compute_distance.setCollisionWhiteList(whiteList);
+
+    int counter = 0;
+    std::vector<double> identifier;
+    std::vector<double>::iterator iter;
+
+    for (unsigned int k = 0; k < 1000; k++)
+//    while (counter <= 1000)
+    {
+
+        this->q = getRandomConfiguration (robot, rng_fc);
+        this->robot.updateiDyn3Model(this->q, true);
+
+        std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+
+//            std::list<LinkPairDistance>::iterator iter_results;
+
+        results.sort();
+        LinkPairDistance result = results.front();
+        double actual_distance;
+        actual_distance = result.getDistance();
+
+//            std::cout<<"actual_distance: "<<actual_distance<<std::endl;
+//            std::cout<<"actual_distance_end: "<<actual_distance_end<<std::endl;
+//            std::cout<<"results_size: "<<results.size()<<std::endl;
+
+//            for (iter_results = results.begin(); iter_results != results.end(); iter_results++)
+//            {
+//                std::cout<<(*iter_results).getLinkNames().first<<" "<<(*iter_results).getLinkNames().second<<" "<<(*iter_results).getDistance()<<std::endl;
+//            }
+
+        if ( actual_distance < 0.2 )
+        {
+            output << "1" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+
+            counter++;
+
+            identifier.push_back(k+1);
+
+            record_1 << "1" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                record_1 << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                record_1 << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            record_1 <<"\n";
+        }
+        else
+        {
+            output << "0" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+        }
+
+    }
+    output.close();
+    record_1.close();
+
+    for (iter = identifier.begin(); iter != identifier.end(); iter++ )
+    {
+        std::cout<<*iter<<std::endl;
+    }
+
+    std::cout<<"counter: "<<counter<<std::endl;
+
+    ASSERT_EQ(robot.iDyn3_model.getNrOfDOFs(), 31);
+
+}
+
+TEST_F(testCollisionUtils, testClassifyOriginalData)
+{
+
+    std::ifstream input;
+    std::ofstream output;
+    input.open("original.data");
+    output.open("fc.test", std::ofstream::trunc);
+
+    this->robot.iDyn3_model.setFloatingBaseLink(this->robot.left_leg.index);
+    random_numbers::RandomNumberGenerator rng_fc;
+
+    std::string linkL1 = "LSoftHandLink";
+    std::string linkR1 = "RSoftHandLink";
+    std::string linkL2 = "LWrMot3";
+    std::string linkR2 = "RWrMot3";
+    std::string linkL3 = "LWrMot2";
+    std::string linkR3 = "RWrMot2";
+
+    std::list<std::pair<std::string,std::string>> whiteList;
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL1,linkR3));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL2,linkR3));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR1));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR2));
+    whiteList.push_back(std::pair<std::string,std::string>(linkL3,linkR3));
+    compute_distance.setCollisionWhiteList(whiteList);
+
+    for (unsigned int k = 0; k < 1000; k++)
+    {
+
+        this->q = getRandomConfiguration (robot, rng_fc);
+
+        for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+        {
+            input>>q[robot.left_arm.joint_numbers[i]];
+        }
+        for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+        {
+            input>>q[robot.right_arm.joint_numbers[j]];
+        }
+
+        this->robot.updateiDyn3Model(this->q, true);
+
+        std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+
+        results.sort();
+        LinkPairDistance result = results.front();
+        double actual_distance;
+        actual_distance = result.getDistance();
+
+        if ( actual_distance < 0.2 )
+        {
+//            output << actual_distance << " ";
+            output << "1" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+        }
+        else
+        {
+//            output << actual_distance << " ";
+            output << "0" << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+        }
+
+    }
+    input.close();
+    output.close();
+
+    ASSERT_EQ(robot.iDyn3_model.getNrOfDOFs(), 31);
+
+}
+
 
 TEST_F(testCollisionUtils, checkTimings)
 {

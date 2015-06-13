@@ -463,6 +463,10 @@ const std::pair<std::string, std::string> &LinkPairDistance::getLinkNames() cons
 
 bool LinkPairDistance::operator <(const LinkPairDistance &second) const
 {
-    if(this->distance < second.distance) return true;
-    else return (this->linksPair.first < second.linksPair.first);
+    if(this->distance < second.distance)
+        return true;
+    else if (this->distance > second.distance)
+        return false;
+    else
+        return (this->linksPair.first < second.linksPair.first);
 }
