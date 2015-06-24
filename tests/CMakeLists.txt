@@ -54,7 +54,7 @@ ADD_EXECUTABLE(CartesianUtilsTest     cartesian_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(CartesianUtilsTest ${TestLibs})
 add_dependencies(CartesianUtilsTest GTest-ext idynutils)
 
-ADD_EXECUTABLE(CollisionUtilsTest     collision_utils_tests.cpp)
+ADD_EXECUTABLE(CollisionUtilsTest     collision_utils_tests.cpp svm.cpp)
 TARGET_LINK_LIBRARIES(CollisionUtilsTest ${TestLibs} ${fcl_LIBRARIES})
 add_dependencies(CollisionUtilsTest GTest-ext idynutils)
 
