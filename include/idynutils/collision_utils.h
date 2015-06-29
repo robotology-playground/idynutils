@@ -286,8 +286,8 @@ public:
     std::list<LinkPairDistance> getLinkDistances(double detectionThreshold = std::numeric_limits<double>::infinity());
 
     /**
-     * @brief setCollisionWhiteListresets the allowed collision matrix by setting all collision pairs as disabled.
-     *        It then disables all collision pairs specified in the blackList. Lastly it will disable all collision pairs
+     * @brief setCollisionWhiteList resets the allowed collision matrix by setting all collision pairs as disabled.
+     *        It then enables all collision pairs specified in the whiteList. Lastly it will disable all collision pairs
      *        which are disabled in the SRDF
      * @param whiteList a list of links pairs for which to not check collision detection
      * @return

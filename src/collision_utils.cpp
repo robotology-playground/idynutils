@@ -404,6 +404,7 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
     this->generatePairsToCheck();
 
     //allowed_collision_matrix->print(std::cout);
+    return true;
 }
 
 bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::LinksPair> blackList)
@@ -430,6 +431,7 @@ bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::Lin
     this->generatePairsToCheck();
 
     //allowed_collision_matrix->print(std::cout);
+    return true;
 }
 
 
