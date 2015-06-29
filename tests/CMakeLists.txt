@@ -4,7 +4,19 @@ include(ExternalProject)
 set(PROJECTNAME tests)
 project(${PROJECTNAME})
 
+find_package(Boost REQUIRED COMPONENTS system filesystem)
+FIND_PACKAGE(catkin REQUIRED)
+FIND_PACKAGE(Eigen3 REQUIRED)
 FIND_PACKAGE(fcl REQUIRED)
+FIND_PACKAGE(geometric_shapes REQUIRED)
+FIND_PACKAGE(iDynTree REQUIRED)
+FIND_PACKAGE(kdl_parser REQUIRED)
+FIND_PACKAGE(orocos_kdl REQUIRED)
+FIND_PACKAGE(rosconsole REQUIRED)
+FIND_PACKAGE(tf REQUIRED)
+FIND_PACKAGE(urdf REQUIRED)
+FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(ICUB REQUIRED)
 
 # compite GTest
 find_package(GTest)
@@ -19,7 +31,7 @@ if (NOT GTEST_FOUND)
 endif()
 
 include_directories(${GTEST_INCLUDE_DIRS})
-link_directories(${GTEST_LIB_DIRS})
+link_directories(${GTEST_LIB_DIRS} ${ICUB_LIB_DIRS})
 
 # add local include
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
@@ -37,12 +49,11 @@ if(YCM_EP_DEVEL_MODE_idynutils)
                                 testUtilsTest
                                 YSCITest)
 endif()
-
 SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils 
               ${kdl_codyco_LIBRARIES} ${kdl_parser_LIBRARIES}
               ${moveit_core_LIBRARIES}  ${orocos_kdl_LIBRARIES} 
               ${PCL_LIBRARIES} ${urdf_LIBRARIES} 
-              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES})
+              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
 
 add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
 
