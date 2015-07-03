@@ -331,8 +331,395 @@ class testCollisionUtils : public ::testing::Test{
       whiteList_L_R_Arms.push_back(std::pair<std::string,std::string>(linkA8,linkB7));
       whiteList_L_R_Arms.push_back(std::pair<std::string,std::string>(linkA8,linkB8));
 
-        /*//////////////////////////////////////*/
+      /*//////////////////whiteList_L_Arm_Torso////////////////////*/
 
+      linkA1 = "LSoftHandLink";
+      linkA2 = "LWrMot3";
+      linkA3 = "LWrMot2";
+      linkA4 = "LForearm";
+      linkA5 = "LElb";
+      linkA6 = "LShy";
+      linkA7 = "LShr";
+      linkA8 = "LShp";
+
+      linkB1 = "Waist";
+      linkB2 = "DWL";
+      linkB3 = "DWS";
+      linkB4 = "DWYTorso";
+      linkB5 = "TorsoProtections";
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      //whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whitelist_L_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
+
+      /*//////////////////whiteList_R_Arm_Torso////////////////////*/
+
+      linkA1 = "RSoftHandLink";
+      linkA2 = "RWrMot3";
+      linkA3 = "RWrMot2";
+      linkA4 = "RForearm";
+      linkA5 = "RElb";
+      linkA6 = "RShy";
+      linkA7 = "RShr";
+      linkA8 = "RShp";
+
+      linkB1 = "Waist";
+      linkB2 = "DWL";
+      linkB3 = "DWS";
+      linkB4 = "DWYTorso";
+      linkB5 = "TorsoProtections";
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      //whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whitelist_R_Arm_Torso.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
+
+      /*//////////////////whiteList_L_Arm_L_Leg////////////////////*/
+
+      linkA1 = "LSoftHandLink";
+      linkA2 = "LWrMot3";
+      linkA3 = "LWrMot2";
+      linkA4 = "LForearm";
+      linkA5 = "LElb";
+      linkA6 = "LShy";
+      linkA7 = "LShr";
+      linkA8 = "LShp";
+
+      linkB1 = "LHipMot";
+      linkB2 = "LThighUpLeg";
+      linkB3 = "LThighLowLeg";
+      linkB4 = "LLowLeg";
+      linkB5 = "LFootmot";
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whiteList_L_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
+
+      /*//////////////////whiteList_R_Arm_R_Leg////////////////////*/
+
+      linkA1 = "RSoftHandLink";
+      linkA2 = "RWrMot3";
+      linkA3 = "RWrMot2";
+      linkA4 = "RForearm";
+      linkA5 = "RElb";
+      linkA6 = "RShy";
+      linkA7 = "RShr";
+      linkA8 = "RShp";
+
+      linkB1 = "RHipMot";
+      linkB2 = "RThighUpLeg";
+      linkB3 = "RThighLowLeg";
+      linkB4 = "RLowLeg";
+      linkB5 = "RFootmot";
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whiteList_R_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
+
+      /*//////////////////whiteList_L_Arm_R_Leg////////////////////*/
+
+      linkA1 = "LSoftHandLink";
+      linkA2 = "LWrMot3";
+      linkA3 = "LWrMot2";
+      linkA4 = "LForearm";
+      linkA5 = "LElb";
+      linkA6 = "LShy";
+      linkA7 = "LShr";
+      linkA8 = "LShp";
+
+      linkB1 = "RHipMot";
+      linkB2 = "RThighUpLeg";
+      linkB3 = "RThighLowLeg";
+      linkB4 = "RLowLeg";
+      linkB5 = "RFootmot";
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whiteList_L_Arm_R_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
+
+      /*//////////////////whiteList_R_Arm_L_Leg////////////////////*/
+
+      linkA1 = "RSoftHandLink";
+      linkA2 = "RWrMot3";
+      linkA3 = "RWrMot2";
+      linkA4 = "RForearm";
+      linkA5 = "RElb";
+      linkA6 = "RShy";
+      linkA7 = "RShr";
+      linkA8 = "RShp";
+
+      linkB1 = "LHipMot";
+      linkB2 = "LThighUpLeg";
+      linkB3 = "LThighLowLeg";
+      linkB4 = "LLowLeg";
+      linkB5 = "LFootmot";
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA1,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA2,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA3,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA4,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA5,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA6,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA7,linkB5));
+
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB1));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB2));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB3));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB4));
+      whiteList_R_Arm_L_Leg.push_back(std::pair<std::string,std::string>(linkA8,linkB5));
 
   }
 
@@ -348,7 +735,8 @@ class testCollisionUtils : public ::testing::Test{
   iDynUtils robot;
   yarp::sig::Vector q;
   ComputeLinksDistance compute_distance;
-  std::list<std::pair<std::string,std::string>> whiteList_L_R_Arms;
+  std::list<std::pair<std::string,std::string>> whiteList_L_R_Arms, whitelist_L_Arm_Torso, whitelist_R_Arm_Torso,
+  whiteList_L_Arm_L_Leg, whiteList_R_Arm_R_Leg, whiteList_L_Arm_R_Leg, whiteList_R_Arm_L_Leg;
 
 };
 
@@ -593,7 +981,7 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
     this->robot.iDyn3_model.setFloatingBaseLink(this->robot.left_leg.index);
     random_numbers::RandomNumberGenerator rng_fc;
 
-    compute_distance.setCollisionWhiteList(whiteList_L_R_Arms);
+    compute_distance.setCollisionWhiteList(whiteList_R_Arm_L_Leg);
 
     int counter1 = 0;
     int counter2 = 0;
@@ -602,7 +990,8 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
 //    std::vector<double>::iterator iter;
 
 //    for (unsigned int k = 0; k < 10000; k++)
-    while (counter1 < 1000 || counter2 < 2000 )
+    while (counter1 < 2000 || counter2 < 4000 )
+//    while (counter1 < 1000)
     {
 
         this->q = getRandomConfiguration (robot, rng_fc);
@@ -615,12 +1004,13 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
 
 //            std::list<LinkPairDistance>::iterator iter_results;
 
-        results.sort();
         LinkPairDistance result = results.front();
         double actual_distance;
         actual_distance = result.getDistance();
 
 //            std::cout<<"actual_distance: "<<actual_distance<<std::endl;
+//            std::cout<<"first link: "<<result.getLinkNames().first << std::endl;
+//            std::cout<<"second link: "<<result.getLinkNames().second << std::endl;
 //            std::cout<<"actual_distance_end: "<<actual_distance_end<<std::endl;
 //            std::cout<<"results_size: "<<results.size()<<std::endl;
 
@@ -631,16 +1021,20 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
 
         if ( actual_distance > 0.00 && actual_distance < 0.15 )
         {
-            if (counter1 < 1000){
+            if (counter1 < 2000){
             output << "1" << " ";
 //            output << actual_distance << " ";
-            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            for(unsigned int i = 0; i < robot.right_arm.joint_numbers.size(); i++)
             {
-                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+                output << i+1 << ":" << q[robot.right_arm.joint_numbers[i]] << " ";
             }
-            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            for(unsigned int k = 0; k < robot.torso.joint_numbers.size(); k++)
             {
-                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+                output << robot.right_arm.joint_numbers.size() + k + 1 << ":" << q[robot.torso.joint_numbers[k]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.left_leg.joint_numbers.size()-1; j++)
+            {
+                output << robot.right_arm.joint_numbers.size() + robot.torso.joint_numbers.size() + j + 1 << ":" << q[robot.left_leg.joint_numbers[j]] << " ";
             }
             output <<"\n";
 
@@ -662,16 +1056,20 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
         }
         else if ( actual_distance > 0.20 && actual_distance < 0.50 )
         {
-            if (counter2 < 2000){
+            if (counter2 < 4000){
             output << "0" << " ";
 //            output << actual_distance << " ";
-            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            for(unsigned int i = 0; i < robot.right_arm.joint_numbers.size(); i++)
             {
-                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+                output << i+1 << ":" << q[robot.right_arm.joint_numbers[i]] << " ";
             }
-            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+            for(unsigned int k = 0; k < robot.torso.joint_numbers.size(); k++)
             {
-                output << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+                output << robot.right_arm.joint_numbers.size() + k + 1 << ":" << q[robot.torso.joint_numbers[k]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.left_leg.joint_numbers.size()-1; j++)
+            {
+                output << robot.right_arm.joint_numbers.size() + robot.torso.joint_numbers.size() + j + 1 << ":" << q[robot.left_leg.joint_numbers[j]] << " ";
             }
             output <<"\n";
 
@@ -698,6 +1096,133 @@ TEST_F(testCollisionUtils, testGenerateRealTrainingData)
     ASSERT_EQ(robot.iDyn3_model.getNrOfDOFs(), 31);
 
 }
+
+TEST_F(testCollisionUtils, testGenerateRealTrainingData_temp)
+{
+
+    std::ofstream output;
+    output.open("fc.test", std::ofstream::trunc);
+//    record_1.open("chosen", std::ofstream::app);
+
+    this->robot.iDyn3_model.setFloatingBaseLink(this->robot.left_leg.index);
+    random_numbers::RandomNumberGenerator rng_fc;
+
+    compute_distance.setCollisionWhiteList(whiteList_L_Arm_R_Leg);
+
+    int counter1 = 0;
+//    int counter2 = 0;
+//      int counter = 0;
+//    std::vector<double> identifier;
+//    std::vector<double>::iterator iter;
+
+//    for (unsigned int k = 0; k < 10000; k++)
+//    while (counter1 < 2000 || counter2 < 4000 )
+    while (counter1 < 1000)
+    {
+
+        this->q = getRandomConfiguration (robot, rng_fc);
+        this->robot.updateiDyn3Model(this->q, true);
+
+//        double tic = yarp::os::SystemClock::nowSystem();
+        std::list<LinkPairDistance> results = compute_distance.getLinkDistances();
+//        std::cout << "getLinkDistances() t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
+
+//            std::list<LinkPairDistance>::iterator iter_results;
+
+        LinkPairDistance result = results.front();
+        double actual_distance;
+        actual_distance = result.getDistance();
+
+//            std::cout<<"actual_distance: "<<actual_distance<<std::endl;
+//            std::cout<<"first link: "<<result.getLinkNames().first << std::endl;
+//            std::cout<<"second link: "<<result.getLinkNames().second << std::endl;
+//            std::cout<<"actual_distance_end: "<<actual_distance_end<<std::endl;
+//            std::cout<<"results_size: "<<results.size()<<std::endl;
+
+//            for (iter_results = results.begin(); iter_results != results.end(); iter_results++)
+//            {
+//                std::cout<<(*iter_results).getLinkNames().first<<" "<<(*iter_results).getLinkNames().second<<" "<<(*iter_results).getDistance()<<std::endl;
+//            }
+
+        if ( actual_distance > 0.29 && actual_distance < 0.30 )
+        {
+            if (counter1 < 1000){
+            output << "0" << " ";
+//            output << actual_distance << " ";
+            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+            {
+                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+            }
+            for(unsigned int k = 0; k < robot.torso.joint_numbers.size(); k++)
+            {
+                output << robot.left_arm.joint_numbers.size() + k + 1 << ":" << q[robot.torso.joint_numbers[k]] << " ";
+            }
+            for(unsigned int j = 0; j < robot.right_leg.joint_numbers.size()-1; j++)
+            {
+                output << robot.left_arm.joint_numbers.size() + robot.torso.joint_numbers.size() + j + 1 << ":" << q[robot.right_leg.joint_numbers[j]] << " ";
+            }
+            output <<"\n";
+
+            counter1++;
+            }
+
+//            identifier.push_back(k+1);
+
+//            record_1 << "1" << " ";
+//            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+//            {
+//                record_1 << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+//            }
+//            for(unsigned int j = 0; j < robot.right_arm.joint_numbers.size(); j++)
+//            {
+//                record_1 << robot.left_arm.joint_numbers.size() + j + 1 << ":" << q[robot.right_arm.joint_numbers[j]] << " ";
+//            }
+//            record_1 <<"\n";
+        }
+//        else if ( actual_distance > 0.20 && actual_distance < 0.50 )
+//        {
+//            if (counter2 < 4000){
+//            output << "0" << " ";
+//            output << actual_distance << " ";
+//            for(unsigned int i = 0; i < robot.left_arm.joint_numbers.size(); i++)
+//            {
+//                output << i+1 << ":" << q[robot.left_arm.joint_numbers[i]] << " ";
+//            }
+//            for(unsigned int k = 0; k < robot.torso.joint_numbers.size(); k++)
+//            {
+//                output << robot.left_arm.joint_numbers.size() + k + 1 << ":" << q[robot.torso.joint_numbers[k]] << " ";
+//            }
+//            for(unsigned int j = 0; j < robot.right_leg.joint_numbers.size()-1; j++)
+//            {
+//                output << robot.left_arm.joint_numbers.size() + robot.torso.joint_numbers.size() + j + 1 << ":" << q[robot.right_leg.joint_numbers[j]] << " ";
+//            }
+//            output <<"\n";
+
+//            counter2++;
+//            }
+//        }
+        else
+        {}
+
+    }
+    output.close();
+//    record_1.close();
+
+//    for (iter = identifier.begin(); iter != identifier.end(); iter++ )
+//    {
+//        std::cout<<*iter<<std::endl;
+//    }
+
+//    std::cout<<"counter: "<<counter<<std::endl;
+
+    std::cout<<"counter1: "<<counter1<<std::endl;
+//    std::cout<<"counter2: "<<counter2<<std::endl;
+
+    ASSERT_EQ(robot.iDyn3_model.getNrOfDOFs(), 31);
+
+}
+
 
 TEST_F(testCollisionUtils, testPredictbyModelFile)
 {
@@ -726,8 +1251,6 @@ TEST_F(testCollisionUtils, testPredictbyModelFile)
 
     double input_get;
 
-    double tic = yarp::os::SystemClock::nowSystem();
-
     for (unsigned int k = 0; k < 1000; k++)
     {
 
@@ -740,8 +1263,10 @@ TEST_F(testCollisionUtils, testPredictbyModelFile)
         x[14].index = -1;
 
 
-
+        double tic = yarp::os::SystemClock::nowSystem();
         predict_label = svm_predict(fc_model,x);
+        std::cout << "svm_predict() t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
+
 
         predict_label_int = (int)predict_label;
 
@@ -755,8 +1280,6 @@ TEST_F(testCollisionUtils, testPredictbyModelFile)
 
 
     }
-
-    std::cout << "svm_predict() t: " << yarp::os::SystemClock::nowSystem() - tic << std::endl;
 
     free(x);
 

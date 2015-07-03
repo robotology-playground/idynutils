@@ -278,7 +278,8 @@ void ComputeLinksDistance::generatePairsToCheck()
                 collision_detection::AllowedCollision::Type collisionType;
                 if(allowed_collision_matrix->getAllowedCollision(*it_A,*it_B,collisionType) &&
                    collisionType == collision_detection::AllowedCollision::NEVER)
-                pairsToCheck.push_back(ComputeLinksDistance::LinksPair(this,*it_A,*it_B));
+                {pairsToCheck.push_back(ComputeLinksDistance::LinksPair(this,*it_A,*it_B));
+                    std::cout<<*it_A<<" "<<*it_B<<std::endl;}
             }
         }
     }
@@ -376,8 +377,7 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
     typedef std::list<LinkPairDistance::LinksPair>::iterator iter_pairs;
     for(iter_pairs it = whiteList.begin(); it != whiteList.end(); ++it)
     {
-        if( collision_objects_.count(it->first) > 0 &&
-            collision_objects_.count(it->second) > 0)
+        if( collision_objects_.count(it->first) > 0 && collision_objects_.count(it->second) > 0)
             allowed_collision_matrix->setEntry(it->first, it->second, false);
         else {
             std::string link_not_found;
@@ -404,6 +404,7 @@ bool ComputeLinksDistance::setCollisionWhiteList(std::list<LinkPairDistance::Lin
     this->generatePairsToCheck();
 
     //allowed_collision_matrix->print(std::cout);
+    return true;
 }
 
 bool ComputeLinksDistance::setCollisionBlackList(std::list<LinkPairDistance::LinksPair> blackList)
