@@ -128,7 +128,11 @@ install_basic_package_files(idynutils   VARS_PREFIX ${VARS_PREFIX}
 include(AddUninstallTarget)
 
 add_subdirectory(doc)
-add_subdirectory(examples)
+
+set(COMPILE_EXAMPLES FALSE CACHE BOOL "Compile the examples?")
+if(COMPILE_EXAMPLES)
+	add_subdirectory(examples)
+endif(COMPILE_EXAMPLES)
 
 #######################
 # Add Testing target  #
