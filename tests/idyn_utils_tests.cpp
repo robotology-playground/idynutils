@@ -49,7 +49,9 @@ class testIDynUtils: public ::testing::Test, public iDynUtils
 {
 protected:
     testIDynUtils():
-        iDynUtils("coman"),
+        iDynUtils("coman",
+                  std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                  std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf"),
         q(iDyn3_model.getNrOfDOFs(),0.0)
     {
 
@@ -310,6 +312,7 @@ TEST_F(testFoo, testInitialization)
         fixed_joints.push_back("torso_joint");
         fixed_joints.push_back("gaze_joint");
         fixed_joints.push_back("imu_joint");
+        fixed_joints.push_back("imu_joint2");
         fixed_joints.push_back("backpack_joint");
         fixed_joints.push_back("torso_protection_joint");
 
@@ -622,8 +625,12 @@ TEST_F(testIDynUtils, testSetChainIndex)
 
 TEST_F(testIDynUtils, testWorld)
 {
-    iDynUtils idynutils1("coman");
-    iDynUtils idynutils2("coman");
+    iDynUtils idynutils1("coman",
+                         std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                         std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf");
+    iDynUtils idynutils2("coman",
+                         std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                         std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf");
     idynutils2.iDyn3_model.setFloatingBaseLink(idynutils2.left_leg.index);
 
     yarp::sig::Vector q(idynutils1.iDyn3_model.getNrOfDOFs(), 0.0);
@@ -932,8 +939,12 @@ TEST_P(testIDynUtilsWithAndWithoutUpdate, testAnchorSwitchConsistency)
 {
     bool updateIDynAfterSwitch = GetParam();
 
-    iDynUtils normal_model("coman");
-    iDynUtils com_model("coman");
+    iDynUtils normal_model("coman",
+                           std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                           std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf");
+    iDynUtils com_model("coman",
+                        std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                        std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf");
 
     setGoodInitialPosition();
 
@@ -983,7 +994,9 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
         followingFootName = left_leg.end_effector_name;
     } else ASSERT_TRUE(false);
 
-    iDynUtils normal_model("coman");
+    iDynUtils normal_model("coman",
+                           std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                           std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "coman/coman.srdf");
     setGoodInitialPosition();
 
     yarp::sig::Vector q_whole = this->iDyn3_model.getAng();
