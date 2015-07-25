@@ -4,6 +4,8 @@
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <yarp/os/Time.h>
+#include <idynutils/idynutils.h>
+
 
 namespace{
 
@@ -155,6 +157,15 @@ TEST_F(testsTestsUtils, testGetRandomFrame)
             "Y is "      << Y <<
             " which not between " << rotMin << " and " << rotMax;
     }
+}
+
+TEST_F(testsTestsUtils, testIDYNUTILS_TESTS_ROBOTS_DIR)
+{
+    std::cout<<"IDYNUTILS_TESTS_ROBOTS_DIR = "+std::string(IDYNUTILS_TESTS_ROBOTS_DIR)<<std::endl;
+    EXPECT_FALSE(std::string(IDYNUTILS_TESTS_ROBOTS_DIR) == "");
+    iDynUtils robot("bigman",
+          std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf",
+          std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.srdf");
 }
 
 TEST_F(testsTestsUtils, testInitializeIfNeeded)
