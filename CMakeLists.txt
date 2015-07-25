@@ -41,7 +41,6 @@ endif()
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
-FIND_PACKAGE(kdl_codyco REQUIRED)
 FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
@@ -58,7 +57,7 @@ FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
 #endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
-                            ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+                            ${PCL_INCLUDE_DIRS})
 
 # for every file in idynutils_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
@@ -77,7 +76,7 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/yarp_single_chain_interface.cpp
                                 ${idynutils_INCLUDES})
 
-TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES} ${kdl_codyco_LIBRARIES}
+TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES}
                                         ${kdl_parser_LIBRARIES} ${moveit_core_LIBRARIES} 
                                         ${orocos_kdl_LIBRARIES} ${srdfdom_LIBRARIES} 
                                         ${urdf_LIBRARIES} ${YARP_LIBRARIES}
