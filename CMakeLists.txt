@@ -41,7 +41,6 @@ endif()
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
-FIND_PACKAGE(kdl_codyco REQUIRED)
 FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
@@ -77,7 +76,7 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/yarp_single_chain_interface.cpp
                                 ${idynutils_INCLUDES})
 
-TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES} ${kdl_codyco_LIBRARIES}
+TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES}
                                         ${kdl_parser_LIBRARIES} ${moveit_core_LIBRARIES} 
                                         ${orocos_kdl_LIBRARIES} ${srdfdom_LIBRARIES} 
                                         ${urdf_LIBRARIES} ${YARP_LIBRARIES}
