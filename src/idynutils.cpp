@@ -53,25 +53,15 @@ iDynUtils::iDynUtils(const std::string robot_name_,
 
     g[2] = 9.81;
 
-    std::string folder = std::string(robot_name_+"_folder");
-    // initialize the path for urdf
-    if( urdf_path != "" ) {
-	robot_urdf_folder = urdf_path;
-    }
-    else {
-	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
-	robot_urdf_folder = robot_folder+"/urdf/"+robot_name_+".urdf";
-    }
-    
-    // initialize the path for srdf
-    if( srdf_path != "" ) {
-	robot_srdf_folder = srdf_path;
-    }
-    else {
-	std::string robot_folder = std::string(getenv(folder.c_str()));	//NOTE do the getenv only if needed TODO check NULL
-	robot_srdf_folder = robot_folder+"/srdf/"+robot_name_+".srdf";
-    }
-	
+    if( urdf_path != "" )
+        robot_urdf_folder = urdf_path;
+    else
+        yError("The urdf path is empty!");
+
+    if( srdf_path != "" )
+        robot_srdf_folder = srdf_path;
+    else
+        yError("The srdf path is empty!");
     
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
@@ -240,7 +230,6 @@ bool iDynUtils::iDyn3Model()
     std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
-    std::string model_folder, srdf_folder;
     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
 
     if (!urdf_model->initFile(robot_urdf_folder))
@@ -250,6 +239,7 @@ bool iDynUtils::iDyn3Model()
     }
     else
     {
+        std::cout<<"URDF LOADED"<<std::endl;
         robot_srdf.reset(new srdf::Model());
         if(!robot_srdf->initFile(*urdf_model, robot_srdf_folder))
         {
@@ -258,6 +248,7 @@ bool iDynUtils::iDyn3Model()
         }
         else
         {
+            std::cout<<"SRDF LOADED"<<std::endl;
             moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
             std::ostringstream robot_info;
             moveit_robot_model->printModelInfo(robot_info);
@@ -270,8 +261,7 @@ bool iDynUtils::iDyn3Model()
             loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
 
             moveit_collision_robot.reset(new collision_detection::CollisionRobotFCL(moveit_robot_model));
-
-            //ROS_INFO(robot_info.str().c_str());
+            std::cout<<"ROBOT LOADED in MOVEIT!"<<std::endl;
         }
     }
     
@@ -296,6 +286,7 @@ bool iDynUtils::iDyn3Model()
     if (!kdl_parser::treeFromUrdfModel(*urdf_model, robot_kdl_tree)){
         std::cout<<"Failed to construct kdl tree"<<std::endl;
         return false;}
+    std::cout<<"ROBOT LOADED in KDL"<<std::endl;
     
     // Here the iDyn3 model of the robot is generated
     iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
