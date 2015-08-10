@@ -36,6 +36,7 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
+FIND_PACKAGE(fcl REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
                                             filters
                                             surface
@@ -91,6 +92,9 @@ target_include_directories(idynutils PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DI
 
 set_target_properties(idynutils PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
                                 SOVERSION ${${VARS_PREFIX}_VERSION})
+
+target_link_libraries(idynutils LINK_PUBLIC ${fcl_LIBRARIES})
+
 
 install(DIRECTORY include/ 
         DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"

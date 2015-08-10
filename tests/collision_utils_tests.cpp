@@ -234,7 +234,7 @@ class testCollisionUtils : public ::testing::Test{
 
 TEST_F(testCollisionUtils, testDistanceChecksAreInvariant) {
 
-      std::list<std::pair<std::string,std::string>> whiteList;
+      std::list<std::pair<std::string,std::string> > whiteList;
       whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
       compute_distance.setCollisionWhiteList(whiteList);
 
@@ -262,7 +262,7 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     std::string linkA = "LSoftHandLink";
     std::string linkB = "RSoftHandLink";
 
-    std::list<std::pair<std::string,std::string>> whiteList;
+    std::list<std::pair<std::string,std::string> > whiteList;
     whiteList.push_back(std::pair<std::string,std::string>(linkA,linkB));
     compute_distance.setCollisionWhiteList(whiteList);
 

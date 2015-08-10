@@ -24,7 +24,7 @@
 #include <iCub/iDynTree/DynTree.h>
 #include <kdl_parser/kdl_parser.hpp>
 #include <moveit/robot_model/robot_model.h>
-#include <moveit/collision_detection_fcl/collision_world_fcl.h>
+//#include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit_msgs/DisplayRobotState.h>
 #include <yarp/math/Math.h>
