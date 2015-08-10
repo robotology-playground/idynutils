@@ -20,7 +20,6 @@
 #ifndef _COLLISION_UTILS_H_
 #define _COLLISION_UTILS_H_
 
-#include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <kdl/frames.hpp>
 #include <idynutils/idynutils.h>
 #include <limits>

@@ -264,7 +264,16 @@ bool iDynUtils::iDyn3Model()
             moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
             std::ostringstream robot_info;
             moveit_robot_model->printModelInfo(robot_info);
-            //ROS_INFO(robot_info.str().c_str());
+            moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
+            allowed_collision_matrix.reset(
+                new collision_detection::AllowedCollisionMatrix(
+                    moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), false));
+
+            //this->disableConsecutiveLinksInACM(allowed_collision_matrix);
+            loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
+
+            moveit_collision_robot.reset(new collision_detection::CollisionRobotFCL(moveit_robot_model));
+            std::cout<<"ROBOT LOADED in MOVEIT!"<<std::endl;
         }
     }
     
