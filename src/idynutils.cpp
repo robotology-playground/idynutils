@@ -192,8 +192,8 @@ bool iDynUtils::setJointNames()
 
     std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
-    for(std::vector<srdf::Model::Group>::iterator it_groups = coman_groups.begin();
-        it_groups != coman_groups.end();
+    for(std::vector<srdf::Model::Group>::iterator it_groups = robot_groups.begin();
+        it_groups != robot_groups.end();
         ++it_groups)
     {
         srdf::Model::Group& group = *it_groups;
@@ -538,8 +538,9 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
-    for(auto joint_name: chain.joint_names)
-        chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(joint_name));
+    for(std::vector<std::string>::const_iterator joint_name = chain.joint_names.begin();
+        joint_name != chain.joint_names.end(); ++joint_name)
+        chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(*joint_name));
 }
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
