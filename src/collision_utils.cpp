@@ -125,6 +125,11 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     boost::shared_ptr< ::urdf::Mesh> collisionGeometry = boost::dynamic_pointer_cast< ::urdf::Mesh> (link->collision->geometry);
 
                     shapes::Mesh *mesh = shapes::createMeshFromResource(collisionGeometry->filename);
+                    if(mesh == NULL)
+                    {
+                        std::cout << "Error loading mesh for link " << link->name << std::endl;
+                        continue;
+                    }
 
                     std::vector<fcl::Vec3f> vertices;
                     std::vector<fcl::Triangle> triangles;
