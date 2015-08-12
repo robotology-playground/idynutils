@@ -378,6 +378,14 @@ public:
     */
    moveit_msgs::DisplayRobotState getDisplayRobotStateMsg();
 
+   /**
+    * @brief getBaseLink returns the base link as defined in the SRDF.
+    * Notice that it is in general different from the floating base link, even though upon instantiation
+    * a new iDynUtils object will have a coincident floating base link and base link.
+    * @return the robot base link as defined in the SRDF
+    */
+   std::string getBaseLink();
+
 protected:
     /**
      * @brief joint_names this vector contains ALL the active joint names
@@ -497,6 +505,12 @@ protected:
      * @brief g gravity vector
      */
     yarp::sig::Vector g;
+
+    /**
+     * @brief base_link_name is the link to which the floating base is attached during robot loading
+     * Notice that, while the floating base link can be changed, the base_link_name will remain constant
+     */
+    std::string base_link_name;
 
     std::string robot_name;
     std::string robot_urdf_folder;

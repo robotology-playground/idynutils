@@ -45,7 +45,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     head(walkman::robot::head),
     robot_name(robot_name_),
     g(3,0.0),
-    anchor_name("l_sole"),
+    anchor_name(""),  // temporary value. Will get updated as soon as we load kinematic chains
     world_is_inited(false)
 {
     worldT.resize(4,4);
@@ -72,6 +72,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     if(!setJointNames_ok){
         std::cout<<"Problems Setting Joint names"<<std::endl;
         assert(setJointNames_ok && "No chains found!");}
+    anchor_name = left_leg.end_effector_name;
 
     setControlledKinematicChainsJointNumbers();
 
@@ -239,7 +240,6 @@ bool iDynUtils::iDyn3Model()
     /// iDyn3 Model creation
     // Giving name to references for FT sensors and IMU
     std::vector<std::string> joint_sensor_names;
-    std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
@@ -298,7 +298,7 @@ bool iDynUtils::iDyn3Model()
             }
         }
         if (group.name_==walkman::robot::base)
-            base_link_name=group.links_[0];
+            this->base_link_name=group.links_[0];
     }
     
     if (!kdl_parser::treeFromUrdfModel(*urdf_model, robot_kdl_tree)){
@@ -307,7 +307,7 @@ bool iDynUtils::iDyn3Model()
     std::cout<<"ROBOT LOADED in KDL"<<std::endl;
     
     // Here the iDyn3 model of the robot is generated
-    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
+    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, this->base_link_name);
     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
     int nJ = iDyn3_model.getNrOfDOFs();
@@ -818,6 +818,11 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
     moveit_msgs::DisplayRobotState msg;
     robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
     return msg;
+}
+
+std::string iDynUtils::getBaseLink()
+{
+    return this->base_link_name;
 }
 
 moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::sig::Vector &q)
