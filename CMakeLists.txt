@@ -95,6 +95,8 @@ set_target_properties(idynutils PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
 
 target_link_libraries(idynutils LINK_PUBLIC ${fcl_LIBRARIES})
 
+message("fcl version: ${fcl_VERSION} ${fcl_MAJOR_VERSION}")
+
 
 install(DIRECTORY include/ 
         DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"

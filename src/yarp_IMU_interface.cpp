@@ -21,10 +21,13 @@
 #include <iCub/iDynTree/yarp_kdl.h>
 
 
-yarp_IMU_interface::yarp_IMU_interface(std::string readerName, bool useSI, std::string robot_name, std::string reference_frame)
-:yarp_IMU_interface(readerName,robot_name,useSI,reference_frame)
+yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
+                                       bool useSI,
+                                       std::string robot_name,
+                                       std::string reference_frame)
+: _output(1), _useSI(useSI), _ok(false), _reference_frame(reference_frame)
 {
-
+    _init(readerName, robot_name);
 }
 
 
@@ -35,37 +38,7 @@ yarp_IMU_interface::yarp_IMU_interface(std::string readerName,
                                        std::string reference_frame)
     : _output(1), _useSI(useSI), _ok(false), _reference_frame(reference_frame)
 {
-    _output.resize(12,0.0);
-
-    std::string portName = "/" + readerName + "/inertial:i";
-    if(imuReader.open(portName)) {
-        if (yarp::os::NetworkBase::exists("/inertial"))
-        {
-			std::cout<<"IMU: trying to connect to: /inertial to "<<portName<<std::endl;
-            if(yarp::os::Network::connect("/inertial",portName.c_str())) {
-                _ok = true;
-                std::cout<<"IMU: connected from /inertial to "<<portName<<std::endl;
-            }
-        }
-        else if (yarp::os::NetworkBase::exists("/"+robot_name+"/inertial"))
-        {
-			std::cout<<"IMU: trying to connect to: /"<<robot_name<<"/inertial to "<<portName<<std::endl;
-            if(yarp::os::Network::connect("/"+robot_name+"/inertial",portName.c_str())) {
-                _ok = true;
-                std::cout<<"IMU: connected from /"<<robot_name<<"/inertial to "<<portName<<std::endl;
-            }
-        }
-        else
-        {
-            std::cout<<"IMU: no remote IMU port found, probably wrong name"<<std::endl;
-            _ok=false;
-        }
-    }
-    else
-    {
-        std::cout<<"IMU: could not open local port "<<portName<<std::endl;
-        _ok=false;
-    }
+    _init(readerName, robot_name);
 }
 
 yarp_IMU_interface::~yarp_IMU_interface()
@@ -140,5 +113,41 @@ void yarp_IMU_interface::sense(KDL::Rotation &orientation,
                                      yOrientation(2));
     YarptoKDL(yLinearAcceleration, linearAcceleration);
     YarptoKDL(yAngularVelocity, angularVelocity);
+}
+
+void yarp_IMU_interface::_init(std::string readerName,
+                               std::string robot_name)
+{
+    _output.resize(12,0.0);
+
+    std::string portName = "/" + readerName + "/inertial:i";
+    if(imuReader.open(portName)) {
+        if (yarp::os::NetworkBase::exists("/inertial"))
+        {
+            std::cout<<"IMU: trying to connect to: /inertial to "<<portName<<std::endl;
+            if(yarp::os::Network::connect("/inertial",portName.c_str())) {
+                _ok = true;
+                std::cout<<"IMU: connected from /inertial to "<<portName<<std::endl;
+            }
+        }
+        else if (yarp::os::NetworkBase::exists("/"+robot_name+"/inertial"))
+        {
+            std::cout<<"IMU: trying to connect to: /"<<robot_name<<"/inertial to "<<portName<<std::endl;
+            if(yarp::os::Network::connect("/"+robot_name+"/inertial",portName.c_str())) {
+                _ok = true;
+                std::cout<<"IMU: connected from /"<<robot_name<<"/inertial to "<<portName<<std::endl;
+            }
+        }
+        else
+        {
+            std::cout<<"IMU: no remote IMU port found, probably wrong name"<<std::endl;
+            _ok=false;
+        }
+    }
+    else
+    {
+        std::cout<<"IMU: could not open local port "<<portName<<std::endl;
+        _ok=false;
+    }
 }
 
