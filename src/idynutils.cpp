@@ -226,7 +226,8 @@ bool iDynUtils::iDyn3Model()
 {
     /// iDyn3 Model creation
     // Giving name to references for FT sensors and IMU
-    std::vector<std::string> joint_sensor_names;
+    std::vector<std::string> joint_ft_sensor_names;
+    std::vector<std::string> imu_link_names;
     std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
@@ -274,11 +275,18 @@ bool iDynUtils::iDyn3Model()
             for (auto joint:group.joints_)
             {
                 if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED)
-                    joint_sensor_names.push_back(joint);
+                    joint_ft_sensor_names.push_back(joint);
                 else
                     assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
             }
         }
+
+        if(group.name_==walkman::robot::imu_sensors)
+        {
+            for(unsigned int i = 0; i < group.links_.size(); ++i)
+                imu_link_names.push_back(group.links_[i]);
+        }
+
         if (group.name_==walkman::robot::base)
             base_link_name=group.links_[0];
     }
@@ -289,7 +297,12 @@ bool iDynUtils::iDyn3Model()
     std::cout<<"ROBOT LOADED in KDL"<<std::endl;
     
     // Here the iDyn3 model of the robot is generated
-    iDyn3_model.constructor(robot_kdl_tree, joint_sensor_names, base_link_name);
+    std::string imu_link_idyntree = "";
+    if(!imu_link_names.empty())
+        imu_link_idyntree = imu_link_names[0]; //The first IMU is used in the constructor of idyntree
+    else
+        imu_link_idyntree = base_link_name; //The base_link is used as imu_link in idyntree
+    iDyn3_model.constructor(robot_kdl_tree, joint_ft_sensor_names, imu_link_idyntree);
     std::cout<<"Loaded"<<robot_name<<"in iDynTree!"<<std::endl;
     
     int nJ = iDyn3_model.getNrOfDOFs();
