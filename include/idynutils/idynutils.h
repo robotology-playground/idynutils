@@ -85,6 +85,11 @@ public:
 class iDynUtils
 {
 public:
+
+    typedef std::string ft_reference_frame;
+    typedef yarp::sig::Vector ft_value;
+    typedef std::pair<ft_reference_frame, ft_value> ft_measure;
+
     /**
      * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf.
      * Some assumptions are done in the constructor:
@@ -156,6 +161,21 @@ public:
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const bool set_world_pose = false);
+    /**
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
+     * @param q robot configuration
+     * @param force_torque_measurement update force_torque stored in the idyntree model
+     * @param set_world_pose do we update the base link pose wrt the world frame?
+     *
+     * NB: The order for which the function updateForceTorqueMeasurement() is called is
+     *     important! The standard updateiDyn3Model() will call inside the function
+     *     dynamicRNEA() that will overwrite the internal vector of measurement. For
+     *     this reason we first call the calssical updateiDyn3Model() and then we
+     *     call updateForceTorqueMeasurement() taht will set the FT measurements.
+     */
+    void updateiDyn3Model(const yarp::sig::Vector &q,
+                          const std::vector<ft_measure> &force_torque_measurement,
+                          const bool set_world_pose = false);
 
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
@@ -166,6 +186,24 @@ public:
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const yarp::sig::Vector& dq,
+                          const bool set_world_pose = false);
+
+    /**
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
+     * @param q robot configuration
+     * @param dq robot joint velocities
+     * @param force_torque_measurement update force_torque stored in the idyntree model
+     * @param set_world_pose do we update the base link pose wrt the world frame?
+     *
+     * NB: The order for which the function updateForceTorqueMeasurement() is called is
+     *     important! The standard updateiDyn3Model() will call inside the function
+     *     dynamicRNEA() that will overwrite the internal vector of measurement. For
+     *     this reason we first call the calssical updateiDyn3Model() and then we
+     *     call updateForceTorqueMeasurement() taht will set the FT measurements.
+     */
+    void updateiDyn3Model(const yarp::sig::Vector &q,
+                          const yarp::sig::Vector& dq,
+                          const std::vector<ft_measure> &force_torque_measurement,
                           const bool set_world_pose = false);
 
     /**
@@ -183,6 +221,26 @@ public:
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const yarp::sig::Vector& dq_ref,
                           const yarp::sig::Vector& ddq_ref,
+                          const bool set_world_pose = false);
+
+    /**
+     * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
+     * @param q robot configuration
+     * @param dq robot joint velocities
+     * @param ddq_ref robot joint accelerations
+     * @param force_torque_measurement update force_torque stored in the idyntree model
+     * @param set_world_pose do we update the base link pose wrt the world frame?
+     *
+     * NB: The order for which the function updateForceTorqueMeasurement() is called is
+     *     important! The standard updateiDyn3Model() will call inside the function
+     *     dynamicRNEA() that will overwrite the internal vector of measurement. For
+     *     this reason we first call the calssical updateiDyn3Model() and then we
+     *     call updateForceTorqueMeasurement() taht will set the FT measurements.
+     */
+    void updateiDyn3Model(const yarp::sig::Vector &q,
+                          const yarp::sig::Vector& dq,
+                          const yarp::sig::Vector& ddq_ref,
+                          const std::vector<ft_measure> &force_torque_measurement,
                           const bool set_world_pose = false);
 
 
@@ -485,6 +543,8 @@ protected:
     void updateRobotState(const yarp::sig::Vector &q);
 
     void updateRobotState();
+
+    bool updateForceTorqueMeasurement(const ft_measure& force_torque_measurement);
 
     /**
      * @brief worldT Transformation between world and base_link

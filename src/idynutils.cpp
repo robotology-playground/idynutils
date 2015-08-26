@@ -496,10 +496,43 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     this->updateiDyn3Model(q,zeros,zeros, set_world_pose);
 }
 
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector &q,
+                                 const std::vector<ft_measure> &force_torque_measurement,
+                                 const bool set_world_pose)
+{
+    this->updateiDyn3Model(q, zeros, zeros, set_world_pose);
+
+    for(unsigned int i = 0; i < force_torque_measurement.size(); ++i)
+        updateForceTorqueMeasurement(force_torque_measurement[i]);
+}
+
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const yarp::sig::Vector& dq,
                                  const bool set_world_pose) {
     this->updateiDyn3Model(q,dq,zeros, set_world_pose);
+}
+
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector &q,
+                                 const yarp::sig::Vector &dq,
+                                 const std::vector<ft_measure> &force_torque_measurement,
+                                 const bool set_world_pose)
+{
+    this->updateiDyn3Model(q, dq, zeros, set_world_pose);
+
+    for(unsigned int i = 0; i < force_torque_measurement.size(); ++i)
+        updateForceTorqueMeasurement(force_torque_measurement[i]);
+}
+
+void iDynUtils::updateiDyn3Model(const yarp::sig::Vector &q,
+                                 const yarp::sig::Vector &dq,
+                                 const yarp::sig::Vector &ddq_ref,
+                                 const std::vector<ft_measure> &force_torque_measurement,
+                                 const bool set_world_pose)
+{
+    this->updateiDyn3Model(q, dq, ddq_ref, set_world_pose);
+
+    for(unsigned int i = 0; i < force_torque_measurement.size(); ++i)
+        updateForceTorqueMeasurement(force_torque_measurement[i]);
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
@@ -834,4 +867,18 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
         moveit_robot_state->setJointPositions(joint_names[i],
                                               &q[iDyn3_model.getDOFIndex(joint_names[i])]);
     }
+}
+
+bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_measurement)
+{
+    moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(
+                force_torque_measurement.first);
+
+    int ft_index = iDyn3_model.getFTSensorIndex(
+                ft_link->getParentJointModel()->getName());
+
+    if(iDyn3_model.setSensorMeasurement(ft_index, force_torque_measurement.second))
+        return true;
+
+    return false;
 }

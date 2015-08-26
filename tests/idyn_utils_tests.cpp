@@ -430,6 +430,138 @@ TEST_F(testIDynUtils, testUpdateIdyn3Model)
     }
 }
 
+TEST_F(testIDynUtils, testUpdateIdyn3ModelFT)
+{
+    yarp::sig::Vector q(this->iDyn3_model.getNrOfDOFs(), 0.0);
+    yarp::sig::Vector dq(q);
+    yarp::sig::Vector ddq(q);
+
+    std::vector<std::string> ft_reference_frames;
+    ft_reference_frames.push_back("r_wrist");
+    ft_reference_frames.push_back("l_wrist");
+    ft_reference_frames.push_back("l_ankle");
+    ft_reference_frames.push_back("r_ankle");
+
+    std::vector<yarp::sig::Vector> ft_values;
+    yarp::sig::Vector ft_value(6,0.0);
+    for(unsigned int i = 0; i < ft_value.size(); ++i)
+        ft_value[i] = i;
+    ft_values.push_back(ft_value);
+    for(unsigned int i = 0; i < ft_value.size(); ++i)
+        ft_value[i] = 2.0*i;
+    ft_values.push_back(ft_value);
+    for(unsigned int i = 0; i < ft_value.size(); ++i)
+        ft_value[i] = -3.0*i;
+    ft_values.push_back(ft_value);
+    for(unsigned int i = 0; i < ft_value.size(); ++i)
+        ft_value[i] = 4.0*i;
+    ft_values.push_back(ft_value);
+
+    std::vector<iDynUtils::ft_measure> ft_measurements;
+    for(unsigned int i = 0; i < 4; ++i){
+        iDynUtils::ft_measure ft_measurement;
+
+        ft_measurement.first = ft_reference_frames[i];
+        if(i == 2) //For the third measure we want to change the sign!
+            ft_measurement.second = -1.0*ft_values[i];
+        else
+            ft_measurement.second = ft_values[i];
+
+        ft_measurements.push_back(ft_measurement);
+    }
+
+    this->updateiDyn3Model(q, dq, ddq, ft_measurements);
+
+    /// In this case I expect that the world is the Identity
+    yarp::sig::Matrix I(4,4); I.eye();
+    for(unsigned int i = 0; i < I.rows(); ++i)
+    {
+        for(unsigned int j = 0; j < I.cols(); ++j)
+            EXPECT_DOUBLE_EQ(I(i,j), this->worldT(i,j));
+    }
+
+    std::cout<<"World "<<std::endl; cartesian_utils::printHomogeneousTransform(this->worldT);std::cout<<std::endl;
+    yarp::sig::Matrix base_link_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
+    std::cout<<"base_link_T_l_sole "<<std::endl; cartesian_utils::printHomogeneousTransform(base_link_T_l_sole);std::cout<<std::endl;
+
+    KDL::Frame base_link_T_l_ankle = this->iDyn3_model.getPositionKDL(this->iDyn3_model.getLinkIndex("l_ankle"));
+
+    /// In this case I update the world pose considering l_sole as my inertial frame
+    this->updateiDyn3Model(q, dq, ddq, ft_measurements, true);
+
+    std::cout<<"World "<<std::endl; cartesian_utils::printHomogeneousTransform(this->worldT);std::cout<<std::endl;
+    yarp::sig::Matrix world_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
+    std::cout<<"world_T_l_sole "<<std::endl; cartesian_utils::printHomogeneousTransform(world_T_l_sole);std::cout<<std::endl;
+    std::cout<<"anchor_T_world "<<std::endl; cartesian_utils::printKDLFrame(this->anchor_T_world);std::cout<<std::endl;
+
+
+    //I expect the world under the base_link so worldT.x = 0.0 and worldT.y = 0.0 (will change in future!)
+    EXPECT_DOUBLE_EQ(worldT(0,3), 0.0);
+    EXPECT_DOUBLE_EQ(worldT(1,3), 0.0);
+    //I expect the base_link at "-" the same height of the l_sole ref. frame
+    EXPECT_DOUBLE_EQ(worldT(2,3), -base_link_T_l_sole(2,3));
+    //I expect the base_link orientation the opposite of the l_sole ref_frame, in this particular case btw is the I
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+            EXPECT_DOUBLE_EQ(worldT(i,j), I(i,j));
+    }
+
+    yarp::sig::Matrix world_link_T_l_sole = this->iDyn3_model.getPosition(this->iDyn3_model.getLinkIndex("l_sole"));
+    //Now poses are computed wrt the new set world
+    EXPECT_DOUBLE_EQ(world_link_T_l_sole(0,3), 0.0);
+    EXPECT_DOUBLE_EQ(world_link_T_l_sole(1,3), base_link_T_l_sole(1,3));
+    EXPECT_DOUBLE_EQ(world_link_T_l_sole(2,3), 0.0);
+
+    /// Here I rotate the left foot of 45° on the pitch
+    double pitch = M_PI_2/2.0;
+    q[this->left_leg.joint_numbers.at(this->left_leg.joint_numbers.size()-1)] = pitch;
+    this->updateiDyn3Model(q, dq, ddq, ft_measurements, true);
+
+    //I expect the base_link rotated of -45° wrt world
+    KDL::Rotation rotY;
+    rotY.DoRotY(pitch);
+    KDL::Frame T(rotY, KDL::Vector(0.0, 0.0, 0.0));
+
+    KDL::Frame l_ankle_T_l_sole = this->iDyn3_model.getPositionKDL(this->iDyn3_model.getLinkIndex("l_ankle"), this->iDyn3_model.getLinkIndex("l_sole"));
+    KDL::Frame rotated_l_ankle_T_base_link = T.Inverse() * base_link_T_l_ankle.Inverse();
+    std::cout<<"rotated_l_ankle_T_base_link "<<std::endl; cartesian_utils::printKDLFrame(rotated_l_ankle_T_base_link);std::cout<<std::endl;
+    KDL::Frame l_sole_T_base_link = l_ankle_T_l_sole.Inverse() * rotated_l_ankle_T_base_link;
+    std::cout<<"l_sole_T_base_link "<<std::endl; cartesian_utils::printKDLFrame(l_sole_T_base_link);std::cout<<std::endl;
+
+    //I expect the world under the base_link so worldT.x = 0.0 and worldT.y = 0.0 (will change in future!)
+    std::cout<<"World "<<std::endl; cartesian_utils::printHomogeneousTransform(this->worldT);std::cout<<std::endl;
+    EXPECT_DOUBLE_EQ(worldT(0,3), l_sole_T_base_link(0,3));
+    EXPECT_DOUBLE_EQ(worldT(1,3), 0.0);
+    //I expect the base_link at "-" the same height of the l_sole ref. frame
+    EXPECT_DOUBLE_EQ(worldT(2,3), l_sole_T_base_link(2,3));
+    for(unsigned int i = 0; i < 3; ++i)
+    {
+        for(unsigned int j = 0; j < 3; ++j)
+            EXPECT_DOUBLE_EQ(this->worldT(i,j), T.Inverse()(i,j));
+    }
+
+
+    for(unsigned int i = 0; i < 4; ++i)
+    {
+        moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(ft_reference_frames[i]);
+        int ft_index = iDyn3_model.getFTSensorIndex(ft_link->getParentJointModel()->getName());
+
+        yarp::sig::Vector ft(6, 0.0);
+        EXPECT_TRUE(this->iDyn3_model.getSensorMeasurement(ft_index, ft));
+
+        for(unsigned int j = 0; j < 6; ++j){
+            if(i == 2)
+                EXPECT_DOUBLE_EQ(ft_values[i][j], -1.0*ft[j]);
+            else
+                EXPECT_DOUBLE_EQ(ft_values[i][j], ft[j]);
+        }
+    }
+
+
+
+}
+
 TEST_F(testIDynUtils, testCheckSelfCollision)
 {
     std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf";
