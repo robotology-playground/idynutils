@@ -558,6 +558,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3ModelFT)
         }
     }
 
+    EXPECT_TRUE(this->getNrOfFTSensors() == ft_measurements.size());
 
 
 }

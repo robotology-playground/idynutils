@@ -46,7 +46,8 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     robot_name(robot_name_),
     g(3,0.0),
     anchor_name("l_sole"),
-    world_is_inited(false)
+    world_is_inited(false),
+    _number_of_ft_sensors(0)
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -274,11 +275,14 @@ bool iDynUtils::iDyn3Model()
         {
             for (auto joint:group.joints_)
             {
-                if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED)
+                if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED){
                     joint_ft_sensor_names.push_back(joint);
+                    _number_of_ft_sensors += 1;
+                }
                 else
                     assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
             }
+
         }
 
         if(group.name_==walkman::robot::imu_sensors)

@@ -121,6 +121,12 @@ public:
     iCub::iDynTree::DynTree iDyn3_model;
 
     /**
+     * @brief getNrOfFTSensors return # of FT sensors in the model
+     * @return # of FT sensors in the model
+     */
+    unsigned int getNrOfFTSensors() const { return _number_of_ft_sensors;}
+
+    /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
      * @param q_chain vector of joint values in robot order
      * @param q_out whole body vector of joint values in model order
@@ -561,6 +567,8 @@ protected:
     std::string robot_srdf_folder;
 
     bool world_is_inited;
+
+    unsigned int _number_of_ft_sensors;
 };
 
 #endif // IDYNUTILS_H
