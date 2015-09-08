@@ -97,10 +97,24 @@ public:
     static KDL::Frame getRandomFrame(const double lengthMin, const double lengthMax,
                                      const double rotMin, const double rotMax);
 
+    /**
+     * @brief startYarpServer start a YARP server in a separate process
+     * @return false if can not start
+     */
     static bool startYarpServer();
 
+    /**
+     * @brief stopYarpServer stop an existing YARP server
+     * @return false if can not stop or not existing YARP server
+     */
     static bool stopYarpServer();
 
+    /**
+     * @brief matrixAreEqual check that two matrices are the same
+     * @param m0 first matrix
+     * @param m1 second matrix
+     * @return true if equal
+     */
     static inline bool matrixAreEqual(const yarp::sig::Matrix& m0,
                                       const yarp::sig::Matrix& m1)
     {
@@ -130,6 +144,12 @@ public:
         return areEqual;
     }
 
+    /**
+     * @brief vectorAreEqual check that two vectors are the same
+     * @param v0 first vector
+     * @param v1 second vector
+     * @return true if equal
+     */
     static inline bool vectorAreEqual(const yarp::sig::Vector& v0,
                                       const yarp::sig::Vector& v1)
     {
@@ -156,6 +176,31 @@ public:
         }
         return areEqual;
     }
+
+    /**
+     * @brief startGazebo start a GAZEBO simulation in another process. Both gzserver
+     * and gzclient are sarted so the simulation will be visualized in a gui
+     * @param world_file a world file to load
+     * @return false if not possible to start simulation
+     */
+    static bool startGazebo(const std::string& world_file = "");
+    /**
+     * @brief stopGazebo stop a GAZEBO simulation
+     * @return false if not possible or not existing
+     */
+    static bool stopGazebo();
+    /**
+     * @brief startGZServer start a GAZEBO simulation in another process. Only gzserver
+     * is sarted so the simulation will not be visualized in a gui
+     * @param world_file a world file to load
+     * @return false if not possible to start simulation
+     */
+    static bool startGZServer(const std::string& world_file = "");
+    /**
+     * @brief stopGZServer stop a GAZEBO simulation
+     * @return false if not possible or not existing
+     */
+    static bool stopGZServer();
 };
 
 #endif

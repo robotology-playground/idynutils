@@ -116,10 +116,39 @@ bool tests_utils::startYarpServer()
     if (exit_ == -1) return false;
     return true;
 }
+
 bool tests_utils::stopYarpServer()
 {
     int exit_ = system("killall yarpserver&");
     if (exit_ == -1) return false;
     return true;
+}
+
+bool tests_utils::startGZServer(const std::string& world_file)
+{
+    std::string str = "gzserver -s libgazebo_yarp_clock.so "+world_file+" &";
+    int exit_ = system(str.c_str());
+    if (exit_ == -1) return false;
+    return true;
+}
+
+bool tests_utils::stopGZServer()
+{
+    int exit_ = system("killall gzserver");
+    if (exit_ == -1) return false;
+    return true;
+}
+
+bool tests_utils::startGazebo(const std::string& world_file)
+{
+    std::string str = "gazebo -s libgazebo_yarp_clock.so "+world_file+" &";
+    int exit_ = system(str.c_str());
+    if (exit_ == -1) return false;
+    return true;
+}
+
+bool tests_utils::stopGazebo()
+{
+    return stopGZServer();
 }
 
