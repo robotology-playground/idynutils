@@ -440,6 +440,8 @@ public:
     */
    moveit_msgs::DisplayRobotState getDisplayRobotStateMsg();
 
+   const std::vector<std::string> getForceTorqueFrameNames(){return _ft_sensor_frames;}
+
 protected:
     /**
      * @brief joint_names this vector contains ALL the active joint names
@@ -552,6 +554,8 @@ protected:
 
     bool updateForceTorqueMeasurement(const ft_measure& force_torque_measurement);
 
+    void readForceTorqueSensorsNames();
+
     /**
      * @brief worldT Transformation between world and base_link
      */
@@ -569,6 +573,7 @@ protected:
     bool world_is_inited;
 
     unsigned int _number_of_ft_sensors;
+    std::vector<std::string> _ft_sensor_frames;
 };
 
 #endif // IDYNUTILS_H

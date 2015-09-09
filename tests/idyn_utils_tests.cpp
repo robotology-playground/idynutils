@@ -322,7 +322,23 @@ TEST_F(testFoo, testInitialization)
             EXPECT_TRUE(it != fixed_joints.end())<<idynutils.getFixedJointNames()[i]<<" not found at index "<<i<<std::endl;}
 
 
+      std::vector<std::string> ft_names = idynutils.getForceTorqueFrameNames();
+      std::vector<std::string> ground_truth_ft_names;
+      ground_truth_ft_names.push_back("l_leg_ft");
+      ground_truth_ft_names.push_back("r_leg_ft");
+      ground_truth_ft_names.push_back("l_arm_ft");
+      ground_truth_ft_names.push_back("r_arm_ft");
 
+      EXPECT_EQ(ft_names.size(), ground_truth_ft_names.size());
+      for(unsigned int i = 0; i < ft_names.size(); ++i)
+      {
+          bool a = false;
+          if(std::find(ground_truth_ft_names.begin(),
+                       ground_truth_ft_names.end(), ft_names[i]) !=
+                       ground_truth_ft_names.end())
+              a = true;
+          EXPECT_TRUE(a);
+      }
 
 }
 
