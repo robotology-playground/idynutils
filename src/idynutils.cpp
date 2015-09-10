@@ -723,16 +723,21 @@ const std::list<std::string>& iDynUtils::getLinksInContact(){
 }
 
 void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_contact){
-    std::list<std::string> tmp_list;
-    for(std::list<std::string>::const_iterator it = list_links_in_contact.begin(); it != list_links_in_contact.end(); it++)
+    if(list_links_in_contact.empty())
+        links_in_contact.clear();
+    else
     {
-        int link_index = iDyn3_model.getLinkIndex(*it);
-        if(!(link_index == -1))
-            tmp_list.push_back(*it);
-    }
+        std::list<std::string> tmp_list;
+        for(std::list<std::string>::const_iterator it = list_links_in_contact.begin(); it != list_links_in_contact.end(); it++)
+        {
+            int link_index = iDyn3_model.getLinkIndex(*it);
+            if(!(link_index == -1))
+                tmp_list.push_back(*it);
+        }
 
-    if(!tmp_list.empty())
-        links_in_contact = tmp_list;
+        if(!tmp_list.empty())
+            links_in_contact = tmp_list;
+    }
 }
 
 bool iDynUtils::checkSelfCollision()
