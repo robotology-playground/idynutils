@@ -46,9 +46,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     robot_name(robot_name_),
     g(3,0.0),
     anchor_name("l_sole"),
-    world_is_inited(false),
-    _number_of_ft_sensors(0),
-    _ft_sensor_frames()
+    world_is_inited(false)
 {
     worldT.resize(4,4);
     worldT.eye();
@@ -280,7 +278,6 @@ bool iDynUtils::iDyn3Model()
             {
                 if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED){
                     joint_ft_sensor_names.push_back(joint);
-                    _number_of_ft_sensors += 1;
                 }
                 else
                     assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
@@ -895,7 +892,7 @@ bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_meas
     return false;
 }
 
-void iDynUtils::readForceTorqueSensorsNames()
+bool iDynUtils::readForceTorqueSensorsNames()
 {
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
     for(auto group: robot_groups)
@@ -914,9 +911,10 @@ void iDynUtils::readForceTorqueSensorsNames()
 
                     _ft_sensor_frames.push_back(reference_frame);
                 }
-
+                return true;
             }
         }
     }
     std::cout << "Robot does not have any ft sensor" << std::endl;
+    return false;
 }

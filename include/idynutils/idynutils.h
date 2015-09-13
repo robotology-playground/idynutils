@@ -124,7 +124,7 @@ public:
      * @brief getNrOfFTSensors return # of FT sensors in the model
      * @return # of FT sensors in the model
      */
-    unsigned int getNrOfFTSensors() const { return _number_of_ft_sensors;}
+    unsigned int getNrOfFTSensors() const { return _ft_sensor_frames.size();}
 
     /**
      * @brief fromRobotToIDyn update q_chain values in q_out using joint numbers of chain.
@@ -554,7 +554,7 @@ protected:
 
     bool updateForceTorqueMeasurement(const ft_measure& force_torque_measurement);
 
-    void readForceTorqueSensorsNames();
+    bool readForceTorqueSensorsNames();
 
     /**
      * @brief worldT Transformation between world and base_link
@@ -572,7 +572,6 @@ protected:
 
     bool world_is_inited;
 
-    unsigned int _number_of_ft_sensors;
     std::vector<std::string> _ft_sensor_frames;
 };
 
