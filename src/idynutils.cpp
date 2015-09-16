@@ -56,12 +56,12 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     if( urdf_path != "" )
         robot_urdf_folder = urdf_path;
     else
-        yError("The urdf path is empty!");
+        std::cout << "The urdf path is empty!" << std::endl;
 
     if( srdf_path != "" )
         robot_srdf_folder = srdf_path;
     else
-        yError("The srdf path is empty!");
+        std::cout << "The srdf path is empty!" << std::endl;
     
     bool iDyn3Model_loaded = iDyn3Model();
     if(!iDyn3Model_loaded){
