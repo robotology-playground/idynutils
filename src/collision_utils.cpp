@@ -1,6 +1,7 @@
 #include <boost/filesystem.hpp>
 #include <idynutils/collision_utils.h>
 #include <kdl_parser/kdl_parser.hpp>
+#include <fcl/config.h>
 #include <fcl/BV/OBBRSS.h>
 #include <fcl/BVH/BVH_model.h>
 #include <fcl/distance.h>
@@ -125,6 +126,11 @@ bool ComputeLinksDistance::parseCollisionObjects(const std::string &robot_urdf_p
                     boost::shared_ptr< ::urdf::Mesh> collisionGeometry = boost::dynamic_pointer_cast< ::urdf::Mesh> (link->collision->geometry);
 
                     shapes::Mesh *mesh = shapes::createMeshFromResource(collisionGeometry->filename);
+                    if(mesh == NULL)
+                    {
+                        std::cout << "Error loading mesh for link " << link->name << std::endl;
+                        continue;
+                    }
 
                     std::vector<fcl::Vec3f> vertices;
                     std::vector<fcl::Triangle> triangles;
@@ -333,7 +339,9 @@ std::list<LinkPairDistance> ComputeLinksDistance::getLinkDistances(double detect
         fcl::CollisionObject* collObj_shapeB = it->collisionObjectB.get();
 
         fcl::DistanceRequest request;
+#if FCL_MINOR_VERSION > 2
         request.gjk_solver_type = fcl::GST_INDEP;
+#endif
         request.enable_nearest_points = true;
 
         // result will be returned via the collision result structure

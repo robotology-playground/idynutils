@@ -10,8 +10,6 @@
 #include <cmath>
 #include <fcl/distance.h>
 #include <fcl/shape/geometric_shapes.h>
-#include <eigen_conversions/eigen_kdl.h>
-
 
 #define  s                1.0
 #define  dT               0.001* s
@@ -29,6 +27,16 @@ KDL::Frame fcl2KDL(const fcl::Transform3f &in)
     f.M = KDL::Rotation::Quaternion(q.getX(), q.getY(), q.getZ(), q.getW());
 
     return f;
+}
+
+// local version of vectorKDLToEigen since oldest versions are bogous.
+// To use instead of:
+// #include <eigen_conversions/eigen_kdl.h>
+// tf::vectorKDLToEigen
+void vectorKDLToEigen(const KDL::Vector &k, Eigen::Matrix<double, 3, 1> &e)
+{
+  for(int i = 0; i < 3; ++i)
+    e[i] = k[i];
 }
 
 yarp::sig::Vector getGoodInitialPosition(iDynUtils& idynutils) {
@@ -234,7 +242,7 @@ class testCollisionUtils : public ::testing::Test{
 
 TEST_F(testCollisionUtils, testDistanceChecksAreInvariant) {
 
-      std::list<std::pair<std::string,std::string>> whiteList;
+      std::list<std::pair<std::string,std::string> > whiteList;
       whiteList.push_back(std::pair<std::string,std::string>("LSoftHandLink","RSoftHandLink"));
       compute_distance.setCollisionWhiteList(whiteList);
 
@@ -262,7 +270,7 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     std::string linkA = "LSoftHandLink";
     std::string linkB = "RSoftHandLink";
 
-    std::list<std::pair<std::string,std::string>> whiteList;
+    std::list<std::pair<std::string,std::string> > whiteList;
     whiteList.push_back(std::pair<std::string,std::string>(linkA,linkB));
     compute_distance.setCollisionWhiteList(whiteList);
 
@@ -304,7 +312,9 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
         ).Norm();
 
     fcl::DistanceRequest distance_request;
+#if FCL_MINOR_VERSION > 2
     distance_request.gjk_solver_type = fcl::GST_INDEP;
+#endif
     distance_request.enable_nearest_points = true;
 
     fcl::DistanceResult distance_result;
@@ -317,9 +327,13 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     fcl::distance(left_hand_collision_object, right_hand_collision_object,
                   distance_request,
                   distance_result);
-
+#if FCL_MINOR_VERSION > 2
     double actual_distance_check_original =
         (distance_result.nearest_points[0] - distance_result.nearest_points[1]).norm();
+#else
+    double actual_distance_check_original =
+        (distance_result.nearest_points[0] - distance_result.nearest_points[1]).length();
+#endif
 
     KDL::Vector lefthand_capsule_ep1, lefthand_capsule_ep2,
                 righthand_capsule_ep1, righthand_capsule_ep2;
@@ -339,10 +353,10 @@ TEST_F(testCollisionUtils, testCapsuleDistance) {
     Eigen::Vector3d lefthand_CP, righthand_CP;
     double reference_distance;
 
-    tf::vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
-    tf::vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
-    tf::vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
-    tf::vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
+    vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
+    vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
+    vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
+    vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
 
     reference_distance = dist3D_Segment_to_Segment (lefthand_capsule_ep1_eigen,
                                                     lefthand_capsule_ep2_eigen,
@@ -415,7 +429,9 @@ TEST_F(testCollisionUtils, checkTimings)
     {
         tic = yarp::os::SystemClock::nowSystem();
         fcl::DistanceRequest distance_request;
+#if FCL_MINOR_VERSION > 2
         distance_request.gjk_solver_type = fcl::GST_INDEP;
+#endif
         distance_request.enable_nearest_points = true;
 
         fcl::DistanceResult distance_result;
@@ -434,7 +450,9 @@ TEST_F(testCollisionUtils, checkTimings)
     {
         tic = yarp::os::SystemClock::nowSystem();
         fcl::DistanceRequest distance_request;
+#if FCL_MINOR_VERSION > 2
         distance_request.gjk_solver_type = fcl::GST_INDEP;
+#endif
         distance_request.enable_nearest_points = false;
 
         fcl::DistanceResult distance_result;
@@ -466,10 +484,10 @@ TEST_F(testCollisionUtils, checkTimings)
     Eigen::Vector3d lefthand_CP, righthand_CP;
     double reference_distance;
 
-    tf::vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
-    tf::vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
-    tf::vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
-    tf::vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
+    vectorKDLToEigen(lefthand_capsule_ep1, lefthand_capsule_ep1_eigen);
+    vectorKDLToEigen(lefthand_capsule_ep2, lefthand_capsule_ep2_eigen);
+    vectorKDLToEigen(righthand_capsule_ep1, righthand_capsule_ep1_eigen);
+    vectorKDLToEigen(righthand_capsule_ep2, righthand_capsule_ep2_eigen);
 
     reference_distance = dist3D_Segment_to_Segment (lefthand_capsule_ep1_eigen,
                                                     lefthand_capsule_ep2_eigen,
@@ -494,7 +512,9 @@ TEST_F(testCollisionUtils, testGlobalToLinkCoordinates)
     boost::shared_ptr<fcl::CollisionObject> collision_geometry_r = collision_objects_test[linkB];
 
     fcl::DistanceRequest distance_request;
+#if FCL_MINOR_VERSION > 2
     distance_request.gjk_solver_type = fcl::GST_INDEP;
+#endif
     distance_request.enable_nearest_points = true;
 
     fcl::DistanceResult distance_result;

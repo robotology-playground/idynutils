@@ -40,7 +40,9 @@ public:
      * @brief kinematic_chain constructor
      * @param chain_name name associated to the kinematic chain
      */
-    kinematic_chain(std::string chain_name):chain_name(chain_name)
+    kinematic_chain(std::string chain_name) :
+        chain_name(chain_name),
+        index(end_effector_index)
     {
 
     }
@@ -74,7 +76,7 @@ public:
   /**
    * @brief end_effector_index index of the end effector
    */
-  int end_effector_index; int &index = end_effector_index;
+  int end_effector_index; int& index; //int &index = end_effector_index;
 
   /**
    * @brief joint_numbers a vector of joint IDs for this kinematic chain. All the joint IDs are unique for the whole body.
@@ -440,7 +442,16 @@ public:
     */
    moveit_msgs::DisplayRobotState getDisplayRobotStateMsg();
 
+
    const std::vector<std::string> getForceTorqueFrameNames(){return _ft_sensor_frames;}
+   
+   /**
+    * @brief getBaseLink returns the base link as defined in the SRDF.
+    * Notice that it is in general different from the floating base link, even though upon instantiation
+    * a new iDynUtils object will have a coincident floating base link and base link.
+    * @return the robot base link as defined in the SRDF
+    */
+   std::string getBaseLink();
 
 protected:
     /**
@@ -566,13 +577,17 @@ protected:
      */
     yarp::sig::Vector g;
 
+    /**
+     * @brief base_link_name is the link to which the floating base is attached during robot loading
+     * Notice that, while the floating base link can be changed, the base_link_name will remain constant
+     */
+    std::string base_link_name;
+
     std::string robot_name;
     std::string robot_urdf_folder;
     std::string robot_srdf_folder;
 
     bool world_is_inited;
-
-    std::vector<std::string> _ft_sensor_frames;
 };
 
 #endif // IDYNUTILS_H

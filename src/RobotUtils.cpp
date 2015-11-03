@@ -635,13 +635,19 @@ RobotUtils::IMUPtr RobotUtils::getIMU()
 bool RobotUtils::loadForceTorqueSensors()
 {
     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
-    for(auto group: robot_groups)
+    for(std::vector<srdf::Model::Group>::iterator it_groups = robot_groups.begin();
+        it_groups != robot_groups.end();
+        ++it_groups)
     {
+        srdf::Model::Group& group = *it_groups;
         if (group.name_ == walkman::robot::force_torque_sensors)
         {
             if(group.joints_.size() > 0) {
-                for(auto joint_name : group.joints_)
+                for(std::vector<std::string>::iterator it_joints = group.joints_.begin();
+                    it_joints != group.joints_.end();
+                    ++it_joints)
                 {
+                    std::string &joint_name = *it_joints;
                     std::cout << "ft sensors found on joint " << joint_name;
 
                     std::string reference_frame = idynutils.moveit_robot_model->getJointModel(joint_name)->
@@ -650,7 +656,7 @@ bool RobotUtils::loadForceTorqueSensors()
                     std::cout << " on frame " << reference_frame << ". Loading ft ..." << std::endl; std::cout.flush();
 
                     try {
-                        std::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
+                        boost::shared_ptr<yarp_ft_interface> ft( new yarp_ft_interface(reference_frame,
                                                         _moduleName,
                                                         idynutils.getRobotName(), reference_frame) );
 
@@ -674,8 +680,11 @@ bool RobotUtils::loadForceTorqueSensors()
 bool RobotUtils::loadIMUSensors()
 {
     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
-    for(auto group: robot_groups)
+    for(std::vector<srdf::Model::Group>::iterator it_groups = robot_groups.begin();
+        it_groups != robot_groups.end();
+        ++it_groups)
     {
+        srdf::Model::Group& group = *it_groups;
         if (group.name_ == walkman::robot::imu_sensors)
         {
             if(group.joints_.size() > 0) {

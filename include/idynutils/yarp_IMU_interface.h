@@ -87,6 +87,9 @@ public:
     
     
 private:
+    void _init(std::string readerName,
+               std::string robot_name);
+
     void _sense();
 
     /**

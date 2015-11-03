@@ -26,7 +26,6 @@
 #include <iostream>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
-#include <mutex>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/BufferedPort.h>
 
@@ -70,7 +69,7 @@ private:
     yarp::sig::Vector input;
     std::string _reference_frame;
     
-    yarp::dev::IAnalogSensor *FT_sensor=0;
+    yarp::dev::IAnalogSensor *FT_sensor;
     yarp::dev::PolyDriver polyDriver_FT;
     
 };

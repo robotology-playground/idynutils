@@ -24,6 +24,7 @@
 yarp_ft_interface::yarp_ft_interface(std::string deviceId,
                                      std::string module_prefix_with_no_slash,
                                      std::string robot_name, std::string reference_frame)
+    : FT_sensor(NULL)
 {
     yarp::os::Property FT_prop;
     FT_prop.put("device", "analogsensorclient");

@@ -23,7 +23,6 @@
 #include <yarp/dev/all.h>
 #include <vector>
 #include <iostream>
-#include <mutex>
 #include <vector>
 #include <math.h>
 #include <yarp/os/RateThread.h>

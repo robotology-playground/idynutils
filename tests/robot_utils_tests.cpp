@@ -13,11 +13,11 @@ namespace {
     class testRobotUtils: public ::testing::Test
     {
     protected:
-        std::shared_ptr<ComanUtils> coman;
+        boost::shared_ptr<ComanUtils> coman;
         ::yarp::os::Network yarp_network;
 
         testRobotUtils() {
-            coman = std::shared_ptr<ComanUtils>(new ComanUtils("TestRobotUtils"));
+            coman = boost::shared_ptr<ComanUtils>(new ComanUtils("TestRobotUtils"));
         }
 
         virtual ~testRobotUtils() {
@@ -35,7 +35,10 @@ namespace {
     {
         RobotUtils::KinematicChains k_chains = coman->getKinematicChains();
         EXPECT_TRUE(k_chains.size() == 5);
-        for(auto chain : k_chains) {
+        for(RobotUtils::KinematicChains::iterator it_chains = k_chains.begin();
+            it_chains != k_chains.end();
+            ++it_chains) {
+            RobotUtils::KinematicChainPtr& chain = *it_chains;
             std::cout << "testGetKinematicChains: Iterating over chain "
                       << chain->chain_name << std::endl;
         }

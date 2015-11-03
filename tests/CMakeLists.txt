@@ -30,7 +30,7 @@ if (NOT GTEST_FOUND)
 endif()
 
 include_directories(${GTEST_INCLUDE_DIRS})
-link_directories(${GTEST_LIB_DIRS} ${ICUB_LIB_DIRS})
+link_directories(${GTEST_LIB_DIRS})
 
 # add local include
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
@@ -49,10 +49,10 @@ if(YCM_EP_DEVEL_MODE_idynutils)
                                 YSCITest)
 endif()
 SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils 
-              ${kdl_codyco_LIBRARIES} ${kdl_parser_LIBRARIES}
+              ${kdl_parser_LIBRARIES}
               ${moveit_core_LIBRARIES}  ${orocos_kdl_LIBRARIES} 
               ${PCL_LIBRARIES} ${urdf_LIBRARIES} 
-              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
+              ${srdfdom_LIBRARIES} ${YARP_LIBRARIES})
 
 add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
 

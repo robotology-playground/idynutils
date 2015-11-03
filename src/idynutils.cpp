@@ -45,7 +45,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     head(walkman::robot::head),
     robot_name(robot_name_),
     g(3,0.0),
-    anchor_name("l_sole"),
+    anchor_name(""),  // temporary value. Will get updated as soon as we load kinematic chains
     world_is_inited(false)
 {
     worldT.resize(4,4);
@@ -72,6 +72,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     if(!setJointNames_ok){
         std::cout<<"Problems Setting Joint names"<<std::endl;
         assert(setJointNames_ok && "No chains found!");}
+    anchor_name = left_leg.end_effector_name;
 
     setControlledKinematicChainsJointNumbers();
 
@@ -99,13 +100,19 @@ const std::vector<std::string>& iDynUtils::getFixedJointNames() const {
 
 bool iDynUtils::findGroupChain(const std::vector<std::string>& chain_list, const std::vector<srdf::Model::Group>& groups,std::string chain_name, int& group_index)
 {
-    for (auto iterator_chain:chain_list)
+    for (std::vector<std::string>::const_iterator it_chain = chain_list.begin();
+         it_chain != chain_list.end();
+         ++it_chain)
     {
+        const std::string& iterator_chain = *it_chain;
         if (iterator_chain==chain_name)
         {
             int index=0;
-            for(auto group:groups)
+            for(std::vector<srdf::Model::Group>::const_iterator it_groups = groups.begin();
+                it_groups != groups.end();
+                ++it_groups)
             {
+                const srdf::Model::Group& group = *it_groups;
                 if (group.name_==chain_name)
                 {
                     group_index=index;
@@ -124,13 +131,16 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
     const KDL::Tree& robot = iDyn3_model.getKDLTree();
     if (group.chains_.size()==1)
     {
-        auto chain=group.chains_[0];
+        std::pair<std::string, std::string> chain=group.chains_[0];
         KDL::Chain temp;
         
         robot.getChain(chain.first,chain.second,temp);
         if (!setChainIndex(chain.second,k_chain)) return false;
-        for (KDL::Segment& segment: temp.segments)
+        for (std::vector<KDL::Segment>::iterator it_segments = temp.segments.begin();
+             it_segments != temp.segments.end();
+             ++it_segments)
         {
+            KDL::Segment& segment = *it_segments;
             if (segment.getJoint().getType()==KDL::Joint::None)
                 k_chain.fixed_joint_names.push_back(segment.getJoint().getName());
             else
@@ -142,13 +152,13 @@ bool iDynUtils::setChainJointNames(const srdf::Model::Group& group, kinematic_ch
         {
             if(moveit_robot_model->getJointModel(explicit_joints[i])->getType() == moveit::core::JointModel::FIXED)
             {
-                auto it = std::find (k_chain.fixed_joint_names.begin(), k_chain.fixed_joint_names.end(), explicit_joints[i]);
+                std::vector<std::string>::iterator it = std::find (k_chain.fixed_joint_names.begin(), k_chain.fixed_joint_names.end(), explicit_joints[i]);
                 if (it == k_chain.fixed_joint_names.end())
                     k_chain.fixed_joint_names.push_back(explicit_joints[i]);
             }
             else
             {
-                auto it = std::find (k_chain.joint_names.begin(), k_chain.joint_names.end(), explicit_joints[i]);
+                std::vector<std::string>::iterator it = std::find (k_chain.joint_names.begin(), k_chain.joint_names.end(), explicit_joints[i]);
                 if (it == k_chain.joint_names.end())
                     k_chain.joint_names.push_back(explicit_joints[i]);
             }
@@ -185,8 +195,11 @@ bool iDynUtils::setJointNames()
 
     std::cout<<GREEN<<"KINEMATICS CHAINS & JOINTS:"<<DEFAULT<<std::endl;
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
-    for(auto group: robot_groups)
+    for(std::vector<srdf::Model::Group>::iterator it_groups = robot_groups.begin();
+        it_groups != robot_groups.end();
+        ++it_groups)
     {
+        srdf::Model::Group& group = *it_groups;
         if (group.name_==walkman::robot::chains)
         {
             int group_index=-1;
@@ -270,15 +283,20 @@ bool iDynUtils::iDyn3Model()
     
     std::vector<srdf::Model::Group> groups = robot_srdf->getGroups();
 
-    for(auto group: groups)
+    for(std::vector<srdf::Model::Group>::iterator it_groups = groups.begin();
+        it_groups != groups.end();
+        ++it_groups)
     {
+        srdf::Model::Group& group = *it_groups;
         if (group.name_==walkman::robot::force_torque_sensors)
         {
-            for (auto joint:group.joints_)
+            for (std::vector<std::string>::iterator it_joints = group.joints_.begin();
+                 it_joints != group.joints_.end();
+                 ++it_joints)
             {
-                if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED){
-                    joint_ft_sensor_names.push_back(joint);
-                }
+                std::string& joint = *it_joints;
+                if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED)
+                    joint_sensor_names.push_back(joint);
                 else
                     assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
             }
@@ -579,8 +597,9 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
 {
-    for(auto joint_name: chain.joint_names)
-        chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(joint_name));
+    for(std::vector<std::string>::const_iterator joint_name = chain.joint_names.begin();
+        joint_name != chain.joint_names.end(); ++joint_name)
+        chain.joint_numbers.push_back(iDyn3_model.getDOFIndex(*joint_name));
 }
 
 void iDynUtils::setControlledKinematicChainsJointNumbers()
@@ -735,6 +754,9 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
         if(!tmp_list.empty())
             links_in_contact = tmp_list;
     }
+
+    if(!tmp_list.empty())
+        links_in_contact = tmp_list;
 }
 
 bool iDynUtils::checkSelfCollision()
@@ -854,6 +876,11 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
     moveit_msgs::DisplayRobotState msg;
     robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
     return msg;
+}
+
+std::string iDynUtils::getBaseLink()
+{
+    return this->base_link_name;
 }
 
 moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::sig::Vector &q)

@@ -26,17 +26,6 @@ endif(COMMAND cmake_policy)
 include(ExternalProject)
 PROJECT(idynutils)
 
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-else()
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-endif()
-
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 FIND_PACKAGE(YARP REQUIRED)
@@ -47,6 +36,7 @@ FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
+FIND_PACKAGE(fcl REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
                                             filters
                                             surface
@@ -57,7 +47,7 @@ FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    #common
 #endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS}
-                            ${kdl_codyco_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+                            ${PCL_INCLUDE_DIRS})
 
 # for every file in idynutils_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE idynutils_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/idynutils" *.h*)
@@ -102,6 +92,11 @@ target_include_directories(idynutils PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DI
 
 set_target_properties(idynutils PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
                                 SOVERSION ${${VARS_PREFIX}_VERSION})
+
+target_link_libraries(idynutils LINK_PUBLIC ${fcl_LIBRARIES})
+
+message("fcl version: ${fcl_VERSION} ${fcl_MAJOR_VERSION}")
+
 
 install(DIRECTORY include/ 
         DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}"

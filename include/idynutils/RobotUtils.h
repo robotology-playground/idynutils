@@ -26,6 +26,7 @@
 #include <idynutils/yarp_ft_interface.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
+#include <boost/shared_ptr.hpp>
 
 /**
  * @brief The RobotUtils class eases whole body control for the coman robot.
@@ -36,8 +37,8 @@ public:
     typedef std::pair<yarp::sig::Vector, yarp::sig::Vector> Impedance;
     typedef std::map<std::string,  Impedance> ImpedanceMap;
     typedef std::map<std::string,  yarp::sig::Vector> VelocityMap;
-    typedef std::shared_ptr<yarp_IMU_interface> IMUPtr;
-    typedef std::shared_ptr<yarp_ft_interface> ftPtr;
+    typedef boost::shared_ptr<yarp_IMU_interface> IMUPtr;
+    typedef boost::shared_ptr<yarp_ft_interface> ftPtr;
     typedef std::map<std::string, ftPtr> ftPtrMap;
     typedef std::map<std::string, yarp::sig::Vector> ftReadings;
     typedef kinematic_chain* KinematicChainPtr;

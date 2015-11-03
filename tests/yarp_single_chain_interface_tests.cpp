@@ -13,11 +13,11 @@ namespace {
     class testYSCI: public ::testing::Test
     {
     protected:
-        std::shared_ptr<ComanUtils> coman;
+        boost::shared_ptr<ComanUtils> coman;
         ::yarp::os::Network yarp_network;
 
         testYSCI() {
-            coman = std::shared_ptr<ComanUtils>(new ComanUtils("TestRobotUtils"));
+            coman = boost::shared_ptr<ComanUtils>(new ComanUtils("TestRobotUtils"));
         }
 
         virtual ~testYSCI() {
