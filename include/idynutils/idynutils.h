@@ -588,6 +588,8 @@ protected:
     std::string robot_srdf_folder;
 
     bool world_is_inited;
+    
+    std::vector<std::string> _ft_sensor_frames;
 };
 
 #endif // IDYNUTILS_H

@@ -243,7 +243,6 @@ bool iDynUtils::iDyn3Model()
     // Giving name to references for FT sensors and IMU
     std::vector<std::string> joint_ft_sensor_names;
     std::vector<std::string> imu_link_names;
-    std::string base_link_name;
 
     urdf_model.reset(new urdf::Model());
     std::cout<<" - USING ROBOT "<<robot_name<<" - "<<std::endl;
@@ -296,7 +295,7 @@ bool iDynUtils::iDyn3Model()
             {
                 std::string& joint = *it_joints;
                 if (moveit_robot_model->getJointModel(joint)->getType() == moveit::core::JointModel::FIXED)
-                    joint_sensor_names.push_back(joint);
+                    joint_ft_sensor_names.push_back(joint);
                 else
                     assert(false && "joint inside the force torque sensor list of the srdf has to be fixed!!");
             }
