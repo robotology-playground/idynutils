@@ -919,16 +919,18 @@ bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_meas
 bool iDynUtils::readForceTorqueSensorsNames()
 {
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
-    for(auto group: robot_groups)
+    for(std::vector<srdf::Model::Group>::iterator it_groups = robot_groups.begin();
+        it_groups != robot_groups.end();
+        ++it_groups)
     {
-        if (group.name_ == walkman::robot::force_torque_sensors)
+        if (it_groups->name_ == walkman::robot::force_torque_sensors)
         {
-            if(group.joints_.size() > 0) {
-                for(auto joint_name : group.joints_)
+            if(it_groups->joints_.size() > 0) {
+                for(int i = 0; i < it_groups->joints_.size(); i++)
                 {
-                    std::cout << "ft sensor found on joint " << joint_name;
+                    std::cout << "ft sensor found on joint " << it_groups->joints_[i];
 
-                    std::string reference_frame = moveit_robot_model->getJointModel(joint_name)->
+                    std::string reference_frame = moveit_robot_model->getJointModel(it_groups->joints_[i])->
                             getChildLinkModel()->getName();
 
                     std::cout << " on frame " << reference_frame <<std::endl; std::cout.flush();
@@ -939,6 +941,8 @@ bool iDynUtils::readForceTorqueSensorsNames()
             }
         }
     }
+    
+
     std::cout << "Robot does not have any ft sensor" << std::endl;
     return false;
 }
