@@ -754,8 +754,6 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
             links_in_contact = tmp_list;
     }
 
-    if(!tmp_list.empty())
-        links_in_contact = tmp_list;
 }
 
 bool iDynUtils::checkSelfCollision()
