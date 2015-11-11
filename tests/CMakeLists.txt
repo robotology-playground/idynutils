@@ -84,6 +84,8 @@ ADD_EXECUTABLE(testUtilsTest     tests_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(testUtilsTest ${TestLibs})
 add_dependencies(testUtilsTest GTest-ext idynutils)
 
+add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
+
 add_test(NAME cartesian_utils_tests COMMAND CartesianUtilsTest)
 add_test(NAME collision_utils_tests COMMAND CollisionUtilsTest)
 add_test(NAME idyn_utils_tests COMMAND iDynUtilsTest)

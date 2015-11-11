@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <idynutils/yarp_single_chain_interface.h>
-#include <idynutils/comanutils.h>
+#include <idynutils/RobotUtils.h>
 #include <yarp/math/Math.h>
 #include <kdl/frames_io.hpp>
 #include <memory>
@@ -13,11 +13,14 @@ namespace {
     class testYSCI: public ::testing::Test
     {
     protected:
-        boost::shared_ptr<ComanUtils> coman;
+        boost::shared_ptr<RobotUtils> coman;
         ::yarp::os::Network yarp_network;
 
         testYSCI() {
-            coman = boost::shared_ptr<ComanUtils>(new ComanUtils("TestRobotUtils"));
+            coman = boost::shared_ptr<RobotUtils>(new RobotUtils("TestRobotUtils",
+                                                                 "coman",
+                                                                 std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                                                                 std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.srdf"));
         }
 
         virtual ~testYSCI() {
