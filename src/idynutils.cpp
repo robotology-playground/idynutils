@@ -611,69 +611,6 @@ void iDynUtils::setControlledKinematicChainsJointNumbers()
     setJointNumbers(head);
 }
 
-///TODO: REMOVE THIS!
-yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const int contacts) {
-    yarp::sig::Matrix J_left_foot, J_right_foot, J_left_hand, J_right_hand;
-    yarp::sig::Matrix J_contacts;
-
-    if(contacts & CONTACT_LEFT_FOOT) {
-        this->iDyn3_model.getJacobian(this->left_leg.end_effector_index, J_left_foot);
-        J_contacts = J_left_foot;
-    }
-
-    if(contacts & CONTACT_RIGHT_FOOT) {
-        this->iDyn3_model.getJacobian(this->right_leg.end_effector_index, J_right_foot);
-        if(J_contacts.rows() == 0)
-            J_contacts = J_right_foot;
-        else
-            J_contacts = pile(J_contacts, J_right_foot);
-    }
-
-    if(contacts & CONTACT_LEFT_HAND) {
-        this->iDyn3_model.getJacobian(this->left_arm.end_effector_index, J_left_hand);
-        if(J_contacts.rows() == 0)
-            J_contacts = J_left_hand;
-        else
-            J_contacts = pile(J_contacts, J_left_hand);
-    }
-
-    if(contacts & CONTACT_RIGHT_HAND) {
-        this->iDyn3_model.getJacobian(this->right_arm.end_effector_index, J_right_hand);
-        if(J_contacts.rows() == 0)
-            J_contacts = J_right_hand;
-        else
-            J_contacts = pile(J_contacts, J_right_hand);
-    }
-
-    return computeFloatingBaseProjector(J_contacts);
-
-}
-
-///TODO: REMOVE THIS!
-yarp::sig::Matrix iDynUtils::computeFloatingBaseProjector(const yarp::sig::Matrix& JContacts) {
-    int nJ = this->iDyn3_model.getNrOfDOFs();
-    /**
-     * @brief nullContacts is a R^{n+6xn+6} matrix that projects into
-     *                     the null space of J_contacts
-     */
-    yarp::sig::Matrix nullContacts = nullspaceProjection(JContacts, 1E-6);
-    assert(nullContacts.cols() == nullContacts.rows());
-    assert(nullContacts.cols() == nJ + 6);
-
-    yarp::sig::Matrix floatingBaseProjector;
-
-    floatingBaseProjector = pinv(nullContacts.submatrix(6,6 + nJ-1,
-                                                        6,6 + nJ-1),1E-7)
-                                                        *
-                                nullContacts.submatrix(6,6 + nJ -1,
-                                                       0,6 + nJ -1);
-
-    assert(floatingBaseProjector.cols() == 6+nJ);
-    assert(floatingBaseProjector.rows() == nJ);
-
-    return floatingBaseProjector;
-}
-
 bool iDynUtils::switchAnchor(const std::string& new_anchor)
 {
     int link_index = iDyn3_model.getLinkIndex(new_anchor);
