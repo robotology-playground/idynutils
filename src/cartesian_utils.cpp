@@ -19,6 +19,7 @@
 
 #include <idynutils/cartesian_utils.h>
 #include <yarp/math/Math.h>
+#include <boost/shared_ptr.hpp>
 
 using namespace yarp::math;
 
@@ -264,4 +265,38 @@ yarp::sig::Matrix cartesian_utils::computeHessian(const yarp::sig::Vector &x,
     }
 
     return hessian;
+}
+
+void cartesian_utils::computeRealLinksFromFakeLinks(const std::list<std::string>& input_links,
+                                                    const boost::shared_ptr<urdf::Model> _urdf,
+                                                    std::list<std::string>& output_links)
+{
+    boost::shared_ptr<urdf::Model> urdf = _urdf;
+
+    std::list<std::string>::const_iterator iter;
+    for(iter = input_links.begin();
+        iter != input_links.end();
+        iter++)
+    {
+        std::string link_name = *iter;
+        boost::shared_ptr<const urdf::Link> link = urdf->getLink(link_name);
+
+        bool true_link = false;
+        std::string body_name = "";
+        while(!true_link){
+            if(!(link->inertial)) //Then the link is a "fake" link and we need the parent
+                link = link->getParent();
+            else{ //The link is a "true" link
+                true_link = true;
+                body_name = link->name;
+            }
+
+            if(true_link)
+            {
+                if(!(std::find(output_links.begin(), output_links.end(), body_name) != output_links.end()))
+                    output_links.push_back(body_name);
+            }
+
+        }
+    }
 }

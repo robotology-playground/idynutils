@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <idynutils/idynutils.h>
 #include <idynutils/cartesian_utils.h>
 #include <boost/version.hpp>
 #if BOOST_VERSION / 100 % 1000 > 46
@@ -205,6 +206,36 @@ TEST_F(testCartesianUtils, testComputeGradient)
 
         EXPECT_NEAR(df, df_numerical[0], 1E-6);
     }
+}
+
+TEST_F(testCartesianUtils, testComputeRealLinksFromFakeLinks)
+{
+    iDynUtils robot("coman",
+                    std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.urdf",
+                    std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"coman/coman.srdf");
+
+    std::list<std::string> body_in_contact;
+    cartesian_utils::computeRealLinksFromFakeLinks(robot.getLinksInContact(),
+                                                   robot.urdf_model,
+                                                   body_in_contact);
+    EXPECT_EQ(body_in_contact.size(), 2);
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "LFoot") != body_in_contact.end());
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "RFoot") != body_in_contact.end());
+
+    body_in_contact.clear();
+    std::list<std::string> links_in_contact = robot.getLinksInContact();
+    links_in_contact.push_back("LSoftHand");
+    links_in_contact.push_back("l_hand_upper_left_link");
+    links_in_contact.push_back("r_hand_upper_left_link");
+    robot.setLinksInContact(links_in_contact);
+    cartesian_utils::computeRealLinksFromFakeLinks(robot.getLinksInContact(),
+                                                   robot.urdf_model,
+                                                   body_in_contact);
+    EXPECT_EQ(body_in_contact.size(), 4);
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "LFoot") != body_in_contact.end());
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "RFoot") != body_in_contact.end());
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "LSoftHand") != body_in_contact.end());
+    EXPECT_TRUE(std::find(body_in_contact.begin(), body_in_contact.end(), "RSoftHand") != body_in_contact.end());
 }
 
 }

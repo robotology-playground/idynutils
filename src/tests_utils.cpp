@@ -119,7 +119,7 @@ bool tests_utils::startYarpServer()
 
 bool tests_utils::stopYarpServer()
 {
-    int exit_ = system("killall yarpserver&");
+    int exit_ = system("killall yarpserver");
     if (exit_ == -1) return false;
     return true;
 }
@@ -149,6 +149,8 @@ bool tests_utils::startGazebo(const std::string& world_file)
 
 bool tests_utils::stopGazebo()
 {
+    int exit_ = system("killall gzclient");
+    if (exit_ == -1) return false;
     return stopGZServer();
 }
 

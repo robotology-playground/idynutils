@@ -23,6 +23,8 @@
 #include <yarp/sig/all.h>
 #include <kdl/frames.hpp>
 #include <vector>
+#include <list>
+#include <urdf/model.h>
 
 /**
   This class implements quaternion error as in the paper:
@@ -374,6 +376,16 @@ public:
     static yarp::sig::Matrix computeHessian( const yarp::sig::Vector &x,
                                               GradientVector &vec,
                                               const double &step = 1E-3);
+
+    /**
+     * @brief computeRealLinksFromFakeLinks given a list of links (fake or real) it outputs a list of only real links
+     * @param input_links input list of links
+     * @param _urdf urdf of the robot
+     * @param output_links output list of links
+     */
+    static void computeRealLinksFromFakeLinks(const std::list<std::string>& input_links,
+                                       const boost::shared_ptr<urdf::Model> _urdf,
+                                       std::list<std::string>& output_links);
 
 };
 
