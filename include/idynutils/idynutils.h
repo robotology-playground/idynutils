@@ -544,8 +544,23 @@ protected:
     void setWorldPose(const KDL::Frame& anchor_T_world, const std::string& anchor = "l_sole");
 
 
+    /**
+     * @brief updateRobotState updates the internal moveit model.
+     * Collision checking functions (i.e. checkSelfCollition() and checkSelfCollisionAt())
+     * and conversion functions (i.e. getRobotStateMsg() , @getRobotStateMsgAt())
+     * automatically update the robot state, so that it is not necessary
+     * to call this function manually.
+     * @param q the joint angles of the robot state
+     */
     void updateRobotState(const yarp::sig::Vector &q);
 
+    /**
+     * @brief updateRobotState updates the internal moveit model. Takes joint angles form the iDyn3 model.
+     * Collision checking functions (i.e. checkSelfCollition() and checkSelfCollisionAt())
+     * and conversion functions (i.e. getRobotStateMsg() , @getRobotStateMsgAt())
+     * automatically update the robot state, so that it is not necessary
+     * to call this function manually.
+     */
     void updateRobotState();
 
     bool updateForceTorqueMeasurement(const ft_measure& force_torque_measurement);
