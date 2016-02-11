@@ -21,6 +21,7 @@
 #define __CONTROLTYPE_HPP__
 
 #include <yarp/dev/IInteractionMode.h>
+#include <stdexcept>
 
 namespace walkman {
     /**
@@ -111,6 +112,8 @@ namespace walkman {
          */
         const ControlType torque = ControlType::fromYarp(VOCAB_CM_TORQUE, yarp::dev::VOCAB_IM_UNKNOWN);
 
+        const ControlType velocity = ControlType::fromYarp(VOCAB_CM_VELOCITY, yarp::dev::VOCAB_IM_STIFF);
+
         /**
          * @brief idle this controlType implies we set our robot to a non controlled status. By setting this
          * the robot will collapse. It is needed (when the robot is hanging from a a crane) to switch from
@@ -138,6 +141,7 @@ namespace walkman {
         if(*this == walkman::controlTypes::position) return "position";
         if(*this == walkman::controlTypes::positionDirect) return "position direct";
         if(*this == walkman::controlTypes::torque) return "torque";
+        if(*this == walkman::controlTypes::velocity) return "velocity";
         if(*this == walkman::controlTypes::none) return "none";
         return "Unrecognized control type";
     }
@@ -152,13 +156,14 @@ namespace walkman {
                     (controlMode == VOCAB_CM_POSITION_DIRECT && interactionMode == VOCAB_IM_COMPLIANT) ||
                     (controlMode == VOCAB_CM_POSITION && interactionMode == VOCAB_IM_STIFF)            ||
                     (controlMode == VOCAB_CM_POSITION_DIRECT && interactionMode == VOCAB_IM_STIFF)     ||
+                    (controlMode == VOCAB_CM_VELOCITY && interactionMode == VOCAB_IM_STIFF)            ||
                     ((controlMode == VOCAB_CM_UNKNOWN || controlMode == -1) &&
                      (interactionMode == VOCAB_IM_UNKNOWN || interactionMode == -1))) {
             ControlType ct;
             ct._controlType = std::make_pair(controlMode, interactionMode);
             return ct;
         }
-        else throw("unknown control type");
+        else throw std::runtime_error( "unknown control type");
     }
 
     inline std::pair<const int, const yarp::dev::InteractionModeEnum>  ControlType::toYarp() const {
