@@ -117,6 +117,14 @@ public:
      */
     yarp::sig::Vector& sensePosition();
 
+    
+    /**
+     * @brief sensePosition returns the position of the robot's joints
+     * @param dataTiming returns vector of time stamps corresponding to each joint
+     * @return
+     */
+    void sensePositionTimed(yarp::sig::Vector& jointPosition, yarp::sig::Vector &dataTiming);
+    
     /**
      * @brief senseVelocity returns the velocities of the robot's joints
      * @return
@@ -422,6 +430,15 @@ private:
     yarp::sig::Vector q_sensed_torso;
     yarp::sig::Vector q_sensed_head;
 
+    yarp::sig::Vector q_senseTime_left_hand;
+    yarp::sig::Vector q_senseTime_right_hand;
+    yarp::sig::Vector q_senseTime_left_arm;
+    yarp::sig::Vector q_senseTime_right_arm;
+    yarp::sig::Vector q_senseTime_left_leg;
+    yarp::sig::Vector q_senseTime_right_leg;
+    yarp::sig::Vector q_senseTime_torso;
+    yarp::sig::Vector q_senseTime_head;
+    
     yarp::sig::Vector qdot_sensed;
 
     yarp::sig::Vector qdot_sensed_left_arm;

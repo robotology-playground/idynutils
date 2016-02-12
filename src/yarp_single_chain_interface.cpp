@@ -348,6 +348,11 @@ void yarp_single_chain_interface::sensePosition(yarp::sig::Vector& q_sensed) {
     sense(q_sensed);
 }
 
+void yarp_single_chain_interface::sensePositionTimed(yarp::sig::Vector& q_sensed, yarp::sig::Vector& lastTimeStamps) {
+    senseTimed(q_sensed,lastTimeStamps);
+    
+}
+
 yarp::sig::Vector yarp_single_chain_interface::sense() {
     encodersMotor->getEncoders(q_buffer.data());
     if(_useSI) convertEncoderToSI(q_buffer);
@@ -371,6 +376,16 @@ void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed) {
     if(q_sensed.size() != this->joints_number)
         q_sensed.resize(this->joints_number);
     encodersMotor->getEncoders(q_sensed.data());
+    if(_useSI) convertEncoderToSI(q_sensed);
+}
+
+void yarp_single_chain_interface::senseTimed(yarp::sig::Vector& q_sensed, yarp::sig::Vector& lastTimeStamps) {
+    if(lastTimeStamps.size() != this->joints_number)
+        lastTimeStamps.resize(this->joints_number);
+    if(q_sensed.size() != this->joints_number)
+        q_sensed.resize(this->joints_number); 
+    
+    encodersMotor->getEncodersTimed(q_sensed.data(), lastTimeStamps.data());
     if(_useSI) convertEncoderToSI(q_sensed);
 }
 

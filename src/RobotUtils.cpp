@@ -356,6 +356,35 @@ yarp::sig::Vector &RobotUtils::sensePosition()
     return q_sensed;
 }
 
+void RobotUtils::sensePositionTimed(yarp::sig::Vector& jointPosition, yarp::sig::Vector &dataTiming)
+{
+                                                     
+    right_arm.sensePositionTimed (     q_sensed_right_arm ,q_senseTime_left_arm  );
+    left_arm.sensePositionTimed(       q_sensed_left_arm  ,q_senseTime_right_arm );
+    torso.sensePositionTimed(          q_sensed_torso     ,q_senseTime_left_leg  );
+    right_leg.sensePositionTimed(      q_sensed_right_leg ,q_senseTime_right_leg );
+    left_leg.sensePositionTimed(       q_sensed_left_leg  ,q_senseTime_torso     );
+    if(head.isAvailable)                            
+      head.sensePositionTimed(         q_sensed_head      ,q_senseTime_head      );
+
+    fromRobotToIdyn(q_sensed_right_arm,
+                    q_sensed_left_arm,
+                    q_sensed_torso,
+                    q_sensed_right_leg,
+                    q_sensed_left_leg,
+                    q_sensed_head,
+                    jointPosition);
+
+    fromRobotToIdyn(q_senseTime_right_arm,
+                    q_senseTime_left_arm,
+                    q_senseTime_torso,
+                    q_senseTime_right_leg,
+                    q_senseTime_left_leg,
+                    q_senseTime_head,
+                    dataTiming);   
+}
+
+
 yarp::sig::Vector &RobotUtils::senseVelocity()
 {
     right_arm.senseVelocity(qdot_sensed_right_arm);

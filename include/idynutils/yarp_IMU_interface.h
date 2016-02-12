@@ -74,7 +74,7 @@ public:
     void sense(yarp::sig::Vector& orientation,
                yarp::sig::Vector& linearAcceleration,
                yarp::sig::Vector& angularVelocity);
-
+    
     /**
      * @brief sense
      * @param orientation KDL orientation vector
@@ -85,6 +85,11 @@ public:
                KDL::Vector &linearAcceleration,
                KDL::Vector &angularVelocity);
     
+    /**
+     * @brief returns time stamp of the latest data read by sense command
+     * @param timeStamp time stamp in [s] 
+     */
+    void getLastTimeStamp(double &timeStamp);
     
 private:
     void _init(std::string readerName,
@@ -110,6 +115,11 @@ private:
      */
     bool _useSI;
 
+    /**
+     * @brief _timeStamp stores a time stamp of the last retreived sensor data
+     */
+    yarp::os::Stamp _timeStamp;
+    
     /**
      * @brief _reference_frame where the lectures are taken
      */
