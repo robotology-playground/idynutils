@@ -277,6 +277,10 @@ public:
 
     bool isInImpedanceMode();
 
+    bool setVelocityMode();
+
+    bool isInVelocityMode();
+
     bool useSI() const;
 
     ~yarp_single_chain_interface();
@@ -365,7 +369,7 @@ private:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
-
+    yarp::dev::IVelocityControl2 *velocityControl;
 };
 
 

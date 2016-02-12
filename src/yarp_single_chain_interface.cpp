@@ -41,7 +41,8 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     // init list for control interfaces
     encodersMotor(NULL), controlLimits(NULL), controlMode(NULL),
     interactionMode(NULL), pidControl(NULL), positionControl(NULL),
-    positionDirect(NULL), impedancePositionControl(NULL), torqueControl(NULL)
+    positionDirect(NULL), impedancePositionControl(NULL), torqueControl(NULL),\
+    velocityControl(NULL)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -59,6 +60,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
+        temp=temp&&polyDriver.view(velocityControl);
         internal_isAvailable = temp;
 
         // optional interfaces
@@ -301,6 +303,16 @@ bool walkman::yarp_single_chain_interface::isInImpedanceMode()
     return (getControlType() == walkman::controlTypes::impedance);
 }
 
+bool yarp_single_chain_interface::setVelocityMode()
+{
+    return setControlType(walkman::controlTypes::velocity);
+}
+
+bool walkman::yarp_single_chain_interface::isInVelocityMode()
+{
+    return (getControlType() == walkman::controlTypes::velocity);
+}
+
 bool walkman::yarp_single_chain_interface::useSI() const
 {
     return _useSI;
@@ -395,7 +407,14 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
             if(!torqueControl->setRefTorques(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
             break;
-        case VOCAB_CM_IDLE:
+        case VOCAB_CM_VELOCITY:
+            if(!velocityControl->velocityMove(u_sent.data()))
+                std::cout<<"Cannot move "<< kinematic_chain <<" using Velocity Ctrl"<<std::endl;
+            break;
+        /*case VOCAB_CM_MIXED:
+            break;
+        */
+        case VOCAB_CM_IDLE:        
         default:
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
             break;
