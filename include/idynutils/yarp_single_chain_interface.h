@@ -293,6 +293,10 @@ public:
      */
     bool getJointLimits(yarp::sig::Vector& lowerLimits,
                         yarp::sig::Vector& upperLimits);
+    
+    void senseTemperature(yarp::sig::Vector temperature_sensed);
+    
+    yarp::sig::Vector senseTemperature();
 
     bool setPositionMode();
 
@@ -381,6 +385,7 @@ private:
     yarp::sig::Vector tau_buffer;
     yarp::sig::Vector q_motor_buffer;
     yarp::sig::Vector q_ref_feedback_buffer;
+    yarp::sig::Vector temperature_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
     bool _useSI;
@@ -405,6 +410,7 @@ private:
     yarp::dev::IPositionDirect *positionDirect;
     yarp::dev::IImpedanceControl *impedancePositionControl;
     yarp::dev::ITorqueControl *torqueControl;
+    yarp::dev::IMotor *temperatureMotor;
 
 };
 

@@ -40,10 +40,11 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     tau_buffer(1,0.0),
     q_motor_buffer(1,0.0),
     q_ref_feedback_buffer(1,0.0),
+    temperature_buffer(1,0.0),
     // init list for control interfaces
     encodersMotor(NULL), motorEncoders(NULL), controlLimits(NULL), controlMode(NULL),
     interactionMode(NULL), pidControl(NULL), positionControl(NULL),
-    positionDirect(NULL), impedancePositionControl(NULL), torqueControl(NULL)
+    positionDirect(NULL), impedancePositionControl(NULL), torqueControl(NULL), temperatureMotor(NULL)
 {
     internal_isAvailable=false;
     if (module_prefix_with_no_slash.find_first_of("/")!=std::string::npos)
@@ -62,6 +63,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
         temp=temp&&polyDriver.view(torqueControl);
+        temp=temp&&polyDriver.view(temperatureMotor);
         internal_isAvailable = temp;
 
         // optional interfaces
@@ -88,6 +90,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     tau_buffer.resize(joints_number);
     q_motor_buffer.resize(joints_number);
     q_ref_feedback_buffer.resize(joints_number);
+    temperature_buffer.resize(joints_number);
     
     if(!setControlType(controlType))
         std::cout << "PROBLEM initializing " << kinematic_chain << " with " << controlType << std::endl;
@@ -432,7 +435,7 @@ void yarp_single_chain_interface::move(const yarp::sig::Vector& u_d)
             if(!torqueControl->setRefTorques(u_sent.data()))
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Torque Ctrl"<<std::endl;
             break;
-        case VOCAB_CM_IDLE:
+        case VOCAB_CM_IDLE: 
         default:
                 std::cout<<"Cannot move "<< kinematic_chain <<" using Idle Ctrl"<<std::endl;
             break;
@@ -680,3 +683,18 @@ inline double yarp_single_chain_interface::convertMotorCommandFromSI(const doubl
 {
     return in * 180.0 / M_PI;
 }
+
+yarp::sig::Vector walkman::yarp_single_chain_interface::senseTemperature()
+{
+    temperatureMotor->getTemperatures(temperature_buffer.data());
+    return temperature_buffer;
+}
+
+
+void walkman::yarp_single_chain_interface::senseTemperature(yarp::sig::Vector temperature_sensed)
+{
+    if(temperature_sensed.size() != this->joints_number)
+        temperature_sensed.resize(this->joints_number);
+    temperatureMotor->getTemperatures(temperature_sensed.data());
+}
+

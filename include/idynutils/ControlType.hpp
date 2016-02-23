@@ -145,8 +145,10 @@ namespace walkman {
     inline ControlType ControlType::fromYarp(const int& controlMode,
                                 const yarp::dev::InteractionModeEnum& interactionMode) throw() {
         using namespace yarp::dev;
-        if(controlMode == VOCAB_CM_POSITION && interactionMode == VOCAB_IM_COMPLIANT)
-            throw("unknown control type impedance + position. Maybe try impedance + positionDirect");
+        if(controlMode == VOCAB_CM_POSITION && interactionMode == VOCAB_IM_COMPLIANT) {
+            std::cout<< "unknown control type impedance + position. Maybe try impedance + positionDirect" << std::endl;
+            
+        }
         else if(    controlMode == VOCAB_CM_TORQUE  ||
                     controlMode == VOCAB_CM_IDLE    ||
                     (controlMode == VOCAB_CM_POSITION_DIRECT && interactionMode == VOCAB_IM_COMPLIANT) ||
@@ -158,7 +160,9 @@ namespace walkman {
             ct._controlType = std::make_pair(controlMode, interactionMode);
             return ct;
         }
-        else throw("unknown control type");
+        else {
+            std::cout<< "unknown control type -> " << yarp::os::Vocab::decode(controlMode) << " interactionMode " << yarp::os::Vocab::decode(interactionMode)  << std::endl;
+        }
     }
 
     inline std::pair<const int, const yarp::dev::InteractionModeEnum>  ControlType::toYarp() const {

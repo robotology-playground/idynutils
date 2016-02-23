@@ -344,23 +344,24 @@ bool RobotUtils::loadForceTorqueSensors()
 ///TODO: CHECK LINK IN GROUP imu_sensors in SRDF!!!
 bool RobotUtils::loadIMUSensors()
 {
-    std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
-    for(auto group: robot_groups)
-    {
-        if (group.name_ == walkman::robot::imu_sensors)
-        {
-            if(group.joints_.size() > 0) {
-                try {
-                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true));
-                    std::cout << "IMU loaded" << std::endl;
-                    return true;
-                } catch(...) {
-                    std::cerr << "Error loading IMU" << std::endl;
-                    return false;
-                }
-            }
-        }
-    }
-    std::cout << "Robot does not have an IMU" << std::endl;
-    return false;
+//     std::vector<srdf::Model::Group> robot_groups = idynutils.robot_srdf->getGroups();
+//     for(auto group: robot_groups)
+//     {
+//         if (group.name_ == walkman::robot::imu_sensors)
+//         {
+//             if(group.joints_.size() > 0) {
+//                 try {
+//                     IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true));
+//                     std::cout << "IMU loaded" << std::endl;
+//                     return true;
+//                 } catch(...) {
+//                     std::cerr << "Error loading IMU" << std::endl;
+//                     return false;
+//                 }
+//             }
+//         }
+//     }
+//     std::cout << "Robot does not have an IMU" << std::endl;
+    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true));
+    return true;
 }
