@@ -63,7 +63,13 @@ public:
      * @return a string with the reference frame where the ft are measured
      */
 //     std::string getReferenceFrame(){return _reference_frame;}
-    
+  
+        
+    /**
+     * @brief returns time stamp of the latest data read by sense command
+     * @param timeStamp time stamp in [s] 
+     */
+    double getLastTimeStamp();
     
 private:
     int ft_channels;
@@ -71,6 +77,7 @@ private:
 //     std::string _reference_frame;
 
     yarp::dev::IAnalogSensor *FT_sensor=0;
+    yarp::dev::IPreciselyTimed *_timeStampInterface;
     yarp::dev::PolyDriver polyDriver_FT;
     
 };

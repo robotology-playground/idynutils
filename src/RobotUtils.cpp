@@ -146,6 +146,12 @@ void RobotUtils::sensePosition(yarp::sig::Vector& q_sensed)
     whole_robot.sensePosition(q_sensed);
 }
 
+void RobotUtils::sensePositionTimed(yarp::sig::Vector& jointPosition, yarp::sig::Vector &dataTiming)
+{
+
+	whole_robot.sensePositionTimed(q_sensed, dataTiming);                                                     
+	
+}
 
 yarp::sig::Vector &RobotUtils::senseTorque()
 {
@@ -198,6 +204,21 @@ bool RobotUtils::senseftSensor(const std::string &ft_frame,
         yarp::sig::Vector ft_global;
         bool ret = ft->sense(ft_global);
         ftReading = ft_global.subVector(ftSensors[ft_frame], ftSensors[ft_frame] + (FT_SIZE - 1));
+        ft->getLastTimeStamp();
+        return ret;
+    }
+    return false;
+}
+bool RobotUtils::senseftSensorTimed(const std::string &ft_frame,
+                               yarp::sig::Vector &ftReading, 
+                               double &timeStamp
+                                   )
+{
+    if(ftSensors.count(ft_frame)) {
+        yarp::sig::Vector ft_global;
+        bool ret = ft->sense(ft_global);
+        ftReading = ft_global.subVector(ftSensors[ft_frame], ftSensors[ft_frame] + (FT_SIZE - 1));
+        timeStamp = ft->getLastTimeStamp();
         return ret;
     }
     return false;

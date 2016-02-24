@@ -85,6 +85,11 @@ public:
                KDL::Vector &linearAcceleration,
                KDL::Vector &angularVelocity);
     
+    /**
+     * @brief returns time stamp of the latest data read by sense command
+     * @param timeStamp time stamp in [s] 
+     */
+    double getLastTimeStamp();
     
 private:
     void _sense();
@@ -107,6 +112,11 @@ private:
      */
     bool _useSI;
 
+    /**
+     * @brief _timeStamp stores a time stamp of the last retreived sensor data
+     */
+    yarp::os::Stamp _timeStamp;
+    
     /**
      * @brief _reference_frame where the lectures are taken
      */

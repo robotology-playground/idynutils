@@ -109,6 +109,14 @@ public:
     void sensePosition(yarp::sig::Vector&);
 
     /**
+     * @brief sensePosition returns the position of the robot's joints
+     * @param dataTiming returns vector of time stamps corresponding to each joint
+     * @return
+     */
+    void sensePositionTimed(yarp::sig::Vector& jointPosition, yarp::sig::Vector &dataTiming);
+    
+
+    /**
      * @brief senseMotorPosition returns the position of the robot's joints
      * @return
      */
@@ -160,6 +168,20 @@ public:
     bool senseftSensor(const std::string &ft_frame,
                        yarp::sig::Vector& ftReading);
 
+    
+    /**
+     * @brief senseftSensor senses the ft sensor on specified chain
+     * @param chain the yarp single chain interface corresponding to
+     *        the chain where the ft sensor is located.
+     * @param ftReading the reading back from the ft sensor
+     * @param timeStamp time stamp of the last FT data
+     * @return true if succeed
+     */
+    bool senseftSensorTimed(const std::string &ft_frame,
+                            yarp::sig::Vector &ftReading, 
+                            double &timeStamp
+                                );    
+    
     /**
      * @brief sensePosition returns the position of the robot's joints
      * @param q_left_hand a vector where the left hand position will be stored
@@ -259,6 +281,7 @@ private:
     int neck_y_i, neck_p_i;
     int j_29[29];
     yarp::sig::Vector q_sensed;
+    yarp::sig::Vector q_senseTime;
     yarp::sig::Vector tau_sensed;
     yarp::sig::Vector q_motor_sensed;
     yarp::sig::Vector q_ref_feedback_sensed;

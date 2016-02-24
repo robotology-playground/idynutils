@@ -94,6 +94,16 @@ public:
      */
     virtual void sense(yarp::sig::Vector& q_sensed);
 
+    
+    /**
+     * @brief senseTimed returns joint positions and time stamps 
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     * @param lastTimeStamps \f$R^{n_\text{chain\_joints}}\f$ vector which contains time stamps in [s]
+     */
+    void senseTimed(yarp::sig::Vector& q_sensed, yarp::sig::Vector& lastTimeStamps);
+
     /**
      * @brief sense returns joint motor positions
      * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
@@ -142,6 +152,16 @@ public:
      * \f$[deg]\f$ is useSI is false
      */
     void sensePosition(yarp::sig::Vector &q_sensed);
+
+    
+    /**
+     * @brief sensePosition returns joint positions and time stamps of the data 
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     * @param lastTimeStamps \f$R^{n_\text{chain\_joints}}\f$ vector which contains time stamps in [s]
+     */
+    void sensePositionTimed(yarp::sig::Vector& q_sensed, yarp::sig::Vector& lastTimeStamps);
 
     /**
      * @brief sensePositionRefFeedback returns motor position

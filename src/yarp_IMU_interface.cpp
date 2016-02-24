@@ -89,6 +89,10 @@ void yarp_IMU_interface::_sense()
 
     yarp::os::Bottle* bottleData;
     bottleData = imuReader.read(false);
+
+    //Reads the time stamp from a yarp port 
+    imuReader.getEnvelope(_timeStamp);
+
     if( !(bottleData == NULL) )
         if(bottleData->size() == 12)
             for(unsigned int i = 0; i < 12; ++i )
@@ -121,6 +125,13 @@ void yarp_IMU_interface::sense(yarp::sig::Vector &orientation,
     linearAcceleration = _output.subVector(3,5);
     angularVelocity.resize(3);
     angularVelocity = _output.subVector(6,8);
+
+}
+
+
+double yarp_IMU_interface::getLastTimeStamp()
+{
+    return _timeStamp.getTime();   
 }
 
 void yarp_IMU_interface::sense(KDL::Rotation &orientation,

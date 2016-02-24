@@ -24,6 +24,7 @@
 yarp_ft_interface::yarp_ft_interface(std::string deviceId,
                                      std::string module_prefix_with_no_slash,
                                      std::string robot_name/*, std::string reference_frame*/)
+	:_timeStampInterface(NULL)
 {
     yarp::os::Property FT_prop;
     FT_prop.put("device", "analogsensorclient");
@@ -58,6 +59,14 @@ yarp_ft_interface::yarp_ft_interface(std::string deviceId,
     else
       ft_channels = FT_sensor->getChannels();
 
+    result = polyDriver_FT.view(this->_timeStampInterface);
+    if (!result)
+    {
+        std::cout<<"FT SENSORS: error connecting to the time stamp channel"<<std::endl<<std::endl<<std::endl;
+//         assert(result && "polydriver did not provide an time stamp interface between /robot_name/deviceId/analog:o/forceTorque and \
+        /robot_name/module_prefix_with_no_slash/deviceId/analog:i/forceTorque");
+    }
+
 //     _reference_frame = reference_frame;
 }
 
@@ -86,4 +95,17 @@ bool yarp_ft_interface::sense(yarp::sig::Vector &wrench_sensed)
     }
     #endif
     return ( FT_sensor->read(wrench_sensed) == yarp::dev::IAnalogSensor::AS_OK );
+}
+
+
+double yarp_ft_interface::getLastTimeStamp()
+{    
+    #ifndef      NDEBUG //loss of performance and lot of output, but in debug mode this is what you want
+    if (!_timeStampInterface)
+    {
+        std::cout<<"FT SENSORS: you are reading from a disconnected sensor, please be careful!!"<<std::endl;
+        return 0;
+    }
+    #endif
+  return _timeStampInterface->getLastInputStamp().getTime();
 }
