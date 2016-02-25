@@ -89,6 +89,8 @@ iDynUtils::iDynUtils(const std::string robot_name_,
 
     readForceTorqueSensorsNames();
     readIMUSensorsNames();
+    _w_R_imu.first = "";
+    _w_R_imu.second = yarp::sig::Matrix();
 }
 
 const std::vector<std::string>& iDynUtils::getJointNames() const {
@@ -907,5 +909,16 @@ bool iDynUtils::readIMUSensorsNames()
         }
     }
     std::cout << "Robot does not have any imu sensor" << std::endl;
+    return false;
+}
+
+bool iDynUtils::setIMUOrientation(const yarp::sig::Matrix& world_R_imu, const std::string& reference_frame)
+{
+    if(std::find(_imu_sensor_frames.begin(), _imu_sensor_frames.end(), reference_frame) != _imu_sensor_frames.end())
+    {
+       _w_R_imu.first = reference_frame;
+       _w_R_imu.second = world_R_imu;
+       return true;
+    }
     return false;
 }

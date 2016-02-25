@@ -92,6 +92,11 @@ public:
     typedef yarp::sig::Vector ft_value;
     typedef std::pair<ft_reference_frame, ft_value> ft_measure;
 
+    typedef std::string imu_reference_frame;
+    typedef yarp::sig::Matrix world_R_imu;
+    typedef std::pair<imu_reference_frame, world_R_imu> imu_orientation_measure;
+
+
     /**
      * @brief iDynUtils constructor that uses <robot_name>_folder as path for the urdf and srdf.
      * Some assumptions are done in the constructor:
@@ -431,7 +436,9 @@ public:
    const std::vector<std::string> getForceTorqueFrameNames(){return _ft_sensor_frames;}
 
    const std::vector<std::string> getIMUFrameNames(){return _imu_sensor_frames;}
-   
+
+   bool setIMUOrientation(const yarp::sig::Matrix& world_R_imu, const std::string& reference_frame);
+   const  imu_orientation_measure getIMUOrientation(){return _w_R_imu;}
    /**
     * @brief getBaseLink returns the base link as defined in the SRDF.
     * Notice that it is in general different from the floating base link, even though upon instantiation
@@ -595,6 +602,8 @@ protected:
     
     std::vector<std::string> _ft_sensor_frames;
     std::vector<std::string> _imu_sensor_frames;
+
+    imu_orientation_measure _w_R_imu;
 };
 
 #endif // IDYNUTILS_H
