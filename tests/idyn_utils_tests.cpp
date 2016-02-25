@@ -340,6 +340,22 @@ TEST_F(testFoo, testInitialization)
           EXPECT_TRUE(a);
       }
 
+      std::vector<std::string> imu_names = idynutils.getIMUFrameNames();
+      std::vector<std::string> ground_truth_imu_names;
+      ground_truth_imu_names.push_back("imu_link");
+      ground_truth_imu_names.push_back("imu_link2");
+      ground_truth_imu_names.push_back("multisense/head_imu_link");
+
+      EXPECT_EQ(imu_names.size(), ground_truth_imu_names.size());
+      for(unsigned int i = 0; i < imu_names.size(); ++i)
+      {
+          bool a = false;
+          if(std::find(ground_truth_imu_names.begin(),
+                       ground_truth_imu_names.end(), imu_names[i]) !=
+                       ground_truth_imu_names.end())
+              a = true;
+          EXPECT_TRUE(a);
+      }
 }
 
 TEST_F(testIDynUtils, testFromRobotToIDynThree)
@@ -453,10 +469,11 @@ TEST_F(testIDynUtils, testUpdateIdyn3ModelFT)
     yarp::sig::Vector ddq(q);
 
     std::vector<std::string> ft_reference_frames;
-    ft_reference_frames.push_back("r_wrist");
-    ft_reference_frames.push_back("l_wrist");
-    ft_reference_frames.push_back("l_ankle");
-    ft_reference_frames.push_back("r_ankle");
+    ft_reference_frames.push_back("r_arm_ft");
+    ft_reference_frames.push_back("l_arm_ft");
+    ft_reference_frames.push_back("r_leg_ft");
+    ft_reference_frames.push_back("l_leg_ft");
+
 
     std::vector<yarp::sig::Vector> ft_values;
     yarp::sig::Vector ft_value(6,0.0);

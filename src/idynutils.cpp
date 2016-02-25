@@ -88,6 +88,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     links_in_contact.push_back("r_foot_upper_right_link");
 
     readForceTorqueSensorsNames();
+    readIMUSensorsNames();
 }
 
 const std::vector<std::string>& iDynUtils::getJointNames() const {
@@ -853,6 +854,7 @@ bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_meas
     return false;
 }
 
+//TODO: ADD CHECK THAT JOINT EXISTS
 bool iDynUtils::readForceTorqueSensorsNames()
 {
     std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
@@ -881,5 +883,29 @@ bool iDynUtils::readForceTorqueSensorsNames()
     
 
     std::cout << "Robot does not have any ft sensor" << std::endl;
+    return false;
+}
+
+bool iDynUtils::readIMUSensorsNames()
+{
+    std::vector<srdf::Model::Group> robot_groups = robot_srdf->getGroups();
+    for(unsigned int i = 0; i < robot_groups.size(); ++i)
+    {
+        srdf::Model::Group group = robot_groups[i];
+        if(group.name_ == walkman::robot::imu_sensors){
+            if(group.links_.size() > 0){
+                for(unsigned int j = 0; j < group.links_.size(); ++j)
+                {
+                    std::string link = group.links_[j];
+                    std::cout << "imu sensor found on link "<<link<<std::endl;
+
+                    _imu_sensor_frames.push_back(link);
+
+                }
+                return true;
+            }
+        }
+    }
+    std::cout << "Robot does not have any imu sensor" << std::endl;
     return false;
 }

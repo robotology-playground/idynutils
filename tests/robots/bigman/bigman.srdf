@@ -106,6 +106,12 @@
     <joint name="l_arm_ft_joint"/>
     <joint name="r_arm_ft_joint"/>
   </group>
+  <group name="imu_sensors">
+    <link name="imu_link"/>
+    <link name="sossio"/>
+    <link name="imu_link2"/>
+    <link name="multisense/head_imu_link"/>
+  </group>
   <group name="left_arm">
     <chain base_link="DWYTorso" tip_link="l_wrist"/>
   </group>

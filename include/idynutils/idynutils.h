@@ -429,6 +429,8 @@ public:
 
 
    const std::vector<std::string> getForceTorqueFrameNames(){return _ft_sensor_frames;}
+
+   const std::vector<std::string> getIMUFrameNames(){return _imu_sensor_frames;}
    
    /**
     * @brief getBaseLink returns the base link as defined in the SRDF.
@@ -567,6 +569,8 @@ protected:
 
     bool readForceTorqueSensorsNames();
 
+    bool readIMUSensorsNames();
+
     /**
      * @brief worldT Transformation between world and base_link
      */
@@ -590,6 +594,7 @@ protected:
     bool world_is_inited;
     
     std::vector<std::string> _ft_sensor_frames;
+    std::vector<std::string> _imu_sensor_frames;
 };
 
 #endif // IDYNUTILS_H
