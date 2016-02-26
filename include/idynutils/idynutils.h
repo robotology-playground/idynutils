@@ -604,6 +604,8 @@ protected:
     std::vector<std::string> _imu_sensor_frames;
 
     imu_orientation_measure _w_R_imu;
+
+    void updateWorldOrientationWithIMU();
 };
 
 #endif // IDYNUTILS_H

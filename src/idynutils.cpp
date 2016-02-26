@@ -571,12 +571,17 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
     // setting the world pose
 
-    if(set_world_pose) {
+    if(set_world_pose)
+    {
             if(!world_is_inited) {
                 this->initWorldPose();
                 world_is_inited = true;
             } this->updateWorldPose();
-        }
+
+            // here we check if the user set also IMU orientation measurements
+            if(_w_R_imu.first.compare("") != 0 && _w_R_imu.second.rows() == 3 && _w_R_imu.second.cols() == 3)
+                updateWorldOrientationWithIMU();
+    }
 
     // This is the fake Inertial Measure
     g.zero();
@@ -921,4 +926,17 @@ bool iDynUtils::setIMUOrientation(const yarp::sig::Matrix& world_R_imu, const st
        return true;
     }
     return false;
+}
+
+void iDynUtils::updateWorldOrientationWithIMU()
+{
+    KDL::Frame world_T_imu; world_T_imu.Identity();
+    cartesian_utils::fromYARPMatrixtoKDLRotation(_w_R_imu.second, world_T_imu.M);
+
+    KDL::Frame anchor_T_imu = iDyn3_model.getPositionKDL(
+                iDyn3_model.getLinkIndex(anchor_name),
+                iDyn3_model.getLinkIndex(std::string(_w_R_imu.first)));
+
+    KDL::Frame anchor_T_world_ = anchor_T_imu * world_T_imu.Inverse();
+    anchor_T_world.M = anchor_T_world_.M;
 }
