@@ -242,6 +242,13 @@ public:
     static void fromKDLFrameToYARPMatrix(const KDL::Frame& Ti, yarp::sig::Matrix& To);
 
     /**
+     * @brief fromKDLRotationToYARPMatrix convert a KDL::Rotation in a yarp::sig::Matrix
+     * @param Ri KDL::Rotation
+     * @param Ro yarp::sig::Matrix
+     */
+    static void fromKDLRotationToYARPMatrix(const KDL::Rotation& Ri, yarp::sig::Matrix& Ro);
+
+    /**
      * @brief fromKDLTwistToYARPVector convert a KDL::Twist in a yarp::sig::Vector
      * @param vi KDL::Twist
      * @param vo yarp::sig::Vector
@@ -254,6 +261,13 @@ public:
      * @param To KDL::Frame
      */
     static void fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix& Ti, KDL::Frame& To);
+
+    /**
+     * @brief fromYARPMatrixtoKDLRotation convert a yarp::sig::Matrix in a KDL::Rotation
+     * @param Ri yarp::sig::Matrix
+     * @param Ro KDL::Rotation
+     */
+    static void fromYARPMatrixtoKDLRotation(const yarp::sig::Matrix& Ri, KDL::Rotation& Ro);
 
     /**
      * @brief fromYARPVectortoKDLTwist convert a yarp::sig::Vector in a KDL::Twist

@@ -152,6 +152,15 @@ void cartesian_utils::fromKDLFrameToYARPMatrix(const KDL::Frame &Ti, yarp::sig::
     To(2,0) = Ti.M.UnitX().z(); To(2,1) = Ti.M.UnitY().z(); To(2,2) = Ti.M.UnitZ().z(); To(2,3) = Ti.p.z();
 }
 
+void cartesian_utils::fromKDLRotationToYARPMatrix(const KDL::Rotation& Ri, yarp::sig::Matrix& Ro)
+{
+    Ro.resize(3,3);
+    Ro.eye();
+    Ro(0,0) = Ri.data[0]; Ro(0,1) = Ri.data[1]; Ro(0,2) = Ri.data[2];
+    Ro(1,0) = Ri.data[3]; Ro(1,1) = Ri.data[4]; Ro(1,2) = Ri.data[5];
+    Ro(2,0) = Ri.data[6]; Ro(2,1) = Ri.data[7]; Ro(2,2) = Ri.data[8];
+}
+
 void cartesian_utils::fromKDLTwistToYARPVector(const KDL::Twist& vi, yarp::sig::Vector& vo)
 {
     vo.resize(6, 0.0);
@@ -167,6 +176,13 @@ void cartesian_utils::fromYARPMatrixtoKDLFrame(const yarp::sig::Matrix &Ti, KDL:
     To.M.data[0] = Ti(0,0); To.M.data[1] = Ti(0,1); To.M.data[2] = Ti(0,2);
     To.M.data[3] = Ti(1,0); To.M.data[4] = Ti(1,1); To.M.data[5] = Ti(1,2);
     To.M.data[6] = Ti(2,0); To.M.data[7] = Ti(2,1); To.M.data[8] = Ti(2,2);
+}
+
+void cartesian_utils::fromYARPMatrixtoKDLRotation(const yarp::sig::Matrix& Ri, KDL::Rotation& Ro)
+{
+    Ro.data[0] = Ri(0,0); Ro.data[1] = Ri(0,1); Ro.data[2] = Ri(0,2);
+    Ro.data[3] = Ri(1,0); Ro.data[4] = Ri(1,1); Ro.data[5] = Ri(1,2);
+    Ro.data[6] = Ri(2,0); Ro.data[7] = Ri(2,1); Ro.data[8] = Ri(2,2);
 }
 
 void cartesian_utils::fromYARPVectortoKDLTwist(const yarp::sig::Vector& vi, KDL::Twist& vo)
