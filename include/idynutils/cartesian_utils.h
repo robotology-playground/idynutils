@@ -301,6 +301,7 @@ public:
      * @param T KDL::Frame
      */
     static void printKDLFrame(const KDL::Frame& T);
+    static void printKDLRotation(const KDL::Rotation& R);
 
     /**
      * @brief printKDLTwist print a KDL::Twist

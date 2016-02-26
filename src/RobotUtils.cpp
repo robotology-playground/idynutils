@@ -687,14 +687,19 @@ bool RobotUtils::loadIMUSensors()
         srdf::Model::Group& group = *it_groups;
         if (group.name_ == walkman::robot::imu_sensors)
         {
-            if(group.joints_.size() > 0) {
-                try {
-                    IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true));
-                    std::cout << "IMU loaded" << std::endl;
-                    return true;
-                } catch(...) {
-                    std::cerr << "Error loading IMU" << std::endl;
-                    return false;
+            if(group.links_.size() > 0) {
+                for(unsigned int j = 0; j < group.links_.size(); ++j)
+                {
+                    try {
+                        std::string link = group.links_[j];
+                        IMU = IMUPtr(new yarp_IMU_interface(_moduleName, idynutils.getRobotName(),true, link));
+
+                        std::cout << "IMU loaded" << std::endl;
+                        return true;
+                    } catch(...) {
+                        std::cerr << "Error loading IMU" << std::endl;
+                        return false;
+                    }
                 }
             }
         }

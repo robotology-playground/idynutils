@@ -84,6 +84,8 @@ public:
     void sense(KDL::Rotation &orientation,
                KDL::Vector &linearAcceleration,
                KDL::Vector &angularVelocity);
+
+    std::string getReferenceFrame(){return _reference_frame;}
     
     
 private:

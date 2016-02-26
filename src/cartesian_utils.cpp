@@ -156,9 +156,9 @@ void cartesian_utils::fromKDLRotationToYARPMatrix(const KDL::Rotation& Ri, yarp:
 {
     Ro.resize(3,3);
     Ro.eye();
-    Ro(0,0) = Ri.data[0]; Ro(0,1) = Ri.data[1]; Ro(0,2) = Ri.data[2];
-    Ro(1,0) = Ri.data[3]; Ro(1,1) = Ri.data[4]; Ro(1,2) = Ri.data[5];
-    Ro(2,0) = Ri.data[6]; Ro(2,1) = Ri.data[7]; Ro(2,2) = Ri.data[8];
+    Ro(0,0) = Ri.UnitX().x(); Ro(0,1) = Ri.UnitY().x(); Ro(0,2) = Ri.UnitZ().x();
+    Ro(1,0) = Ri.UnitX().y(); Ro(1,1) = Ri.UnitY().y(); Ro(1,2) = Ri.UnitZ().y();
+    Ro(2,0) = Ri.UnitX().z(); Ro(2,1) = Ri.UnitY().z(); Ro(2,2) = Ri.UnitZ().z();
 }
 
 void cartesian_utils::fromKDLTwistToYARPVector(const KDL::Twist& vi, yarp::sig::Vector& vo)
@@ -214,6 +214,23 @@ void cartesian_utils::printKDLFrame(const KDL::Frame& T)
 
     std::cout<<"Position: [ "<<T.p.x()<<" "<<T.p.y()<<" "<<T.p.z()<<" ] [m]"<<std::endl;
     std::cout<<"RPY: [ "<<toDeg(R)<<" "<<toDeg(P)<<" "<<toDeg(Y)<<" ] [deg]"<<std::endl;
+    std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
+}
+
+void cartesian_utils::printKDLRotation(const KDL::Rotation& R)
+{
+    double r = 0.0;
+    double P = 0.0;
+    double Y = 0.0;
+    R.GetRPY(r,P,Y);
+
+    double qx = 0.0;
+    double qy = 0.0;
+    double qz = 0.0;
+    double qw = 0.0;
+    R.GetQuaternion(qx, qy, qz, qw);
+
+    std::cout<<"RPY: [ "<<toDeg(r)<<" "<<toDeg(P)<<" "<<toDeg(Y)<<" ] [deg]"<<std::endl;
     std::cout<<"Quaternion: [ "<<qx<<" "<<qy<<" "<<qz<<" "<<qw<<" ]"<<std::endl;
 }
 
