@@ -939,4 +939,6 @@ void iDynUtils::updateWorldOrientationWithIMU()
 
     KDL::Frame anchor_T_world_ = anchor_T_imu * world_T_imu.Inverse();
     anchor_T_world.M = anchor_T_world_.M;
+
+    this->setWorldPose(anchor_T_world, anchor_name);
 }
