@@ -24,6 +24,24 @@
 using namespace yarp::math;
 
 #define toDeg(X) (X*180.0/M_PI)
+
+yarp::sig::Vector cartesian_utils::computeCapturePoint(const yarp::sig::Vector& floating_base_velocity,
+                                                       const yarp::sig::Vector& com_velocity,
+                                                       const yarp::sig::Vector& com_pose)
+{
+    yarp::sig::Vector cp(3,0.0);
+
+    yarp::sig::Vector com_velocity_ = com_velocity + floating_base_velocity;
+
+    double g = 9.81;
+
+    cp[0] = com_pose[0] + com_velocity_[0]*sqrt(com_pose[2]/g);
+    cp[1] = com_pose[1] + com_velocity_[1]*sqrt(com_pose[2]/g);
+    cp[2] = 0.0;
+
+    return cp;
+}
+
 yarp::sig::Vector cartesian_utils::computeFootZMP(const yarp::sig::Vector &forces, const yarp::sig::Vector &torques,
                                                   const double d, const double fz_threshold)
 {
