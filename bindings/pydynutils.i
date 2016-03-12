@@ -13,6 +13,7 @@
 /* Note : always include headers following the inheritance order */
 // OpenSoT
 
+%include "iCub/iDynTree/DynTree.h"
 %include "idynutils/idynutils.h"
 
 namespace std {
