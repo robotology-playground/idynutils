@@ -128,6 +128,11 @@ if(COMPILE_EXAMPLES)
 	add_subdirectory(examples)
 endif(COMPILE_EXAMPLES)
 
+set(COMPILE_BINDINGS TRUE CACHE BOOL "Compile python bindings?")
+if(COMPILE_BINDINGS)
+    add_subdirectory(bindings)
+endif(COMPILE_BINDINGS)
+
 #######################
 # Add Testing target  #
 #######################

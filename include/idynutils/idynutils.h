@@ -82,6 +82,15 @@ public:
    * @brief joint_numbers a vector of joint IDs for this kinematic chain. All the joint IDs are unique for the whole body.
    */
   std::vector<unsigned int> joint_numbers;
+
+  void operator=(const kinematic_chain& k)
+  {
+    this->chain_name = k.chain_name;
+    this->end_effector_name = k.end_effector_name;
+    this->joint_names = k.joint_names;
+    this->fixed_joint_names = k.fixed_joint_names;
+    this->end_effector_index = k.end_effector_index;
+  }
 };
 
 class iDynUtils
