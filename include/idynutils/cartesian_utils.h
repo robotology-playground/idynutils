@@ -131,6 +131,28 @@ class cartesian_utils
 public:
 
     /**
+     * @brief pnpoly this code is EXACTLY the code of the PNPOLY - Point Inclusion in Polygon Test
+        W. Randolph Franklin (WRF) to test if a point is inside a plygon
+        (https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html)
+     * @param nvert Number of vertices in the polygon
+     * @param vertx Arrays containing the x-coordinates of the polygon's vertices
+     * @param verty Arrays containing the y-coordinates of the polygon's vertices
+     * @param testx X-coordinate of the test point
+     * @param testy Y-coordinate of the test point
+     * @return 0 if false
+     */
+    static int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
+    {
+        int i, j, c = 0;
+          for (i = 0, j = nvert-1; i < nvert; j = i++) {
+            if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+             (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+               c = !c;
+          }
+          return c;
+    }
+
+    /**
      * @brief computeCapturePoint computes the capture point position in world frame
      * @param floating_base_velocity is the velocity of the floating base in world frame
      * @param com_velocity is the velocity of the com in world frame (computed only by joint values)
