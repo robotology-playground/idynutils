@@ -201,6 +201,14 @@ public:
      * @return false if not possible or not existing
      */
     static bool stopGZServer();
+
+    /**
+     * @brief _kbhit capture any input in a asynchrounous way.
+     * Based on the implementation in:
+     *      http://www.flipcode.com/archives/_kbhit_for_Linux.shtml
+     * @return 1 if a key is pressed
+     */
+    static int _kbhit();
 };
 
 #endif
