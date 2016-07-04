@@ -577,7 +577,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3ModelFT)
 
     for(unsigned int i = 0; i < 4; ++i)
     {
-        moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(ft_reference_frames[i]);
+        const moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(ft_reference_frames[i]);
         int ft_index = iDyn3_model.getFTSensorIndex(ft_link->getParentJointModel()->getName());
 
         yarp::sig::Vector ft(6, 0.0);

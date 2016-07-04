@@ -267,18 +267,12 @@ bool iDynUtils::iDyn3Model()
         else
         {
             std::cout<<"SRDF LOADED"<<std::endl;
-            moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
+
+            moveit_planning_scene.reset(new planning_scene::PlanningScene(urdf_model, robot_srdf));
+            moveit_robot_model = moveit_planning_scene->getRobotModel();
             std::ostringstream robot_info;
             moveit_robot_model->printModelInfo(robot_info);
-            moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
-            allowed_collision_matrix.reset(
-                new collision_detection::AllowedCollisionMatrix(
-                    moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), false));
-
-            //this->disableConsecutiveLinksInACM(allowed_collision_matrix);
-            loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
-
-            moveit_collision_robot.reset(new collision_detection::CollisionRobotFCL(moveit_robot_model));
+            moveit_collision_robot = moveit_planning_scene->getCollisionRobotNonConst();
             std::cout<<"ROBOT LOADED in MOVEIT!"<<std::endl;
         }
     }
@@ -703,7 +697,7 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 
 bool iDynUtils::checkCollisionWithWorld()
 {
-    //moveit_
+    return moveit_planning_scene->isStateColliding();
 }
 
 bool iDynUtils::checkSelfCollision()
@@ -717,15 +711,15 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q,
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     this->updateRobotState(q);
-    moveit_robot_state->updateCollisionBodyTransforms();
+    moveit_planning_scene->getCurrentStateNonConst().updateCollisionBodyTransforms();
     if(collisionPairs != NULL)
     {
         req.contacts = true;
         req.max_contacts = 100;
     }
     moveit_collision_robot->checkSelfCollision(req, res,
-                                               *moveit_robot_state,
-                                               *allowed_collision_matrix);
+                                               moveit_planning_scene->getCurrentStateNonConst(),
+                                               moveit_planning_scene->getAllowedCollisionMatrixNonConst());
 
     if(collisionPairs != NULL)
     {
@@ -821,7 +815,7 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
 {
     this->updateRobotState();
     moveit_msgs::DisplayRobotState msg;
-    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
     return msg;
 }
 
@@ -834,7 +828,7 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::
 {
     this->updateRobotState(q);
     moveit_msgs::DisplayRobotState msg;
-    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
     return msg;
 }
 
@@ -847,14 +841,15 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
 {
     for(unsigned int i = 0; i < joint_names.size(); ++i) {
         // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
-        moveit_robot_state->setJointPositions(joint_names[i],
-                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
+        moveit_planning_scene->
+            getCurrentStateNonConst().setJointPositions(joint_names[i],
+                                                        &q[iDyn3_model.getDOFIndex(joint_names[i])]);
     }
 }
 
 bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_measurement)
 {
-    moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(
+    const moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(
                 force_torque_measurement.first);
 
     int ft_index = iDyn3_model.getFTSensorIndex(
