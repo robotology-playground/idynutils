@@ -261,6 +261,7 @@ public:
     boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
     robot_model::RobotModelPtr moveit_robot_model; // A robot model
     robot_state::RobotStatePtr moveit_robot_state;
+    planning_scene::PlanningScenePtr moveit_planning_scene; // the moveit scene
 
     boost::shared_ptr<collision_detection::CollisionRobot> moveit_collision_robot;
     collision_detection::AllowedCollisionMatrixPtr allowed_collision_matrix;
@@ -378,6 +379,12 @@ public:
    const std::list<std::string>& getLinksInContact();
 
    void setLinksInContact(const std::list<std::string>& list_links_in_contact);
+
+   /**
+    * @brief checkCollisionWithWorld checks whether the robot is in collision with the environment
+    * @return true if the robot is in collision with the environment
+    */
+   bool checkCollisionWithWorld();
 
    /**
     * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)

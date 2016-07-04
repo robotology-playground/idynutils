@@ -701,6 +701,11 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 
 }
 
+bool iDynUtils::checkCollisionWithWorld()
+{
+    //moveit_
+}
+
 bool iDynUtils::checkSelfCollision()
 {
     return checkSelfCollisionAt(iDyn3_model.getAng());
