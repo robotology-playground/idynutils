@@ -385,6 +385,19 @@ public:
    bool checkCollisionWithWorld();
 
    /**
+    * @brief checkCollisionWithWorldAt checks whether the robot is in collision with the environment at configuration q
+    * @param q the robot joint configuration vector
+    * @return
+    */
+   bool checkCollisionWithWorldAt(const yarp::sig::Vector &q);
+
+   /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsg a message containing the octomap data referred to the vision sensor frame of referenece
+    */
+   void updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg);
+
+   /**
     * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)
     * @return true if the robot is in self collision
     * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollisionAt

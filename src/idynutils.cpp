@@ -697,7 +697,22 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 
 bool iDynUtils::checkCollisionWithWorld()
 {
+    return this->checkCollisionWithWorldAt(iDyn3_model.getAng());
+}
+
+bool iDynUtils::checkCollisionWithWorldAt(const yarp::sig::Vector& q)
+{
+    this->updateRobotState(q);
     return moveit_planning_scene->isStateColliding();
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg)
+{
+    this->updateRobotState(iDyn3_model.getAng());
+    Eigen::Affine3d T_empty;
+    moveit_planning_scene->getCurrentStateNonConst().updateStateWithLinkAt(octomapMsg.header.frame_id, T_empty);
+    moveit_planning_scene->processOctomapMsg(octomapMsg);
+    return;
 }
 
 bool iDynUtils::checkSelfCollision()
