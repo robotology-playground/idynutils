@@ -6,6 +6,8 @@
 #include <yarp/math/SVD.h>
 #include <yarp/os/Time.h>
 #include <kdl/frames_io.hpp>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -617,6 +619,44 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = 0.15;
     begin = yarp::os::Time::now();
     EXPECT_FALSE(idynutils.checkSelfCollisionAt(q));
+    std::cout << "Single self-collision (not in collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+}
+
+TEST_F(testIDynUtils, testWorldCollision)
+{
+    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf";
+    std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
+    rosbag::Bag bag;
+    bag.open(std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag", rosbag::bagmode::Read);
+    octomap_msgs::Octomap msg;
+    std::vector<std::string> topics;
+    topics.push_back(std::string("octomap_binary"));
+    rosbag::View view(bag, rosbag::TopicQuery(topics));
+    rosbag::View::const_iterator i_m = view.begin();
+    rosbag::MessageInstance const m = *i_m;
+    octomap_msgs::Octomap::ConstPtr octomapMsg = m.instantiate<octomap_msgs::Octomap>();
+    ASSERT_EQ(octomapMsg->header.seq, 23);
+    bag.close();
+
+    iDynUtils idynutils("bigman", urdf_file, srdf_file);
+    q = idynutils.iDyn3_model.getAng();
+    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = 0.15;
+    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = -0.15;
+    idynutils.updateiDyn3Model(q, true);
+
+    idynutils.updateOccupancyMap(*octomapMsg);
+
+    double begin = yarp::os::Time::now();
+    EXPECT_TRUE(idynutils.checkCollisionWithWorld());
+    std::cout << "Single self-collision (during collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+
+    q = idynutils.iDyn3_model.getAng();
+    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
+    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = 0.15;
+    begin = yarp::os::Time::now();
+    EXPECT_FALSE(idynutils.checkCollisionWithWorld());
     std::cout << "Single self-collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
 }
