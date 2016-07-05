@@ -398,6 +398,12 @@ public:
    void updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg);
 
    /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsgWithPose a message containing the octomap data referred to the vision sensor frame of referenece, plus a transform
+    */
+   void updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose);
+
+   /**
     * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)
     * @return true if the robot is in self collision
     * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollisionAt

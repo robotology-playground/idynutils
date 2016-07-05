@@ -710,8 +710,14 @@ void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg)
 {
     this->updateRobotState(iDyn3_model.getAng());
     Eigen::Affine3d T_empty;
-    moveit_planning_scene->getCurrentStateNonConst().updateStateWithLinkAt(octomapMsg.header.frame_id, T_empty);
     moveit_planning_scene->processOctomapMsg(octomapMsg);
+    return;
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose)
+{
+    this->updateRobotState(iDyn3_model.getAng());
+    moveit_planning_scene->processOctomapMsg(octomapMsgWithPose);
     return;
 }
 

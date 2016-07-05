@@ -8,6 +8,7 @@
 #include <kdl/frames_io.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <eigen_conversions/eigen_msg.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -89,6 +90,29 @@ protected:
 
         updateiDyn3Model(q,true);
     }
+
+    yarp::sig::Vector getGoodInitialPositionBigman(iDynUtils& idynutils) {
+        yarp::sig::Vector q(idynutils.iDyn3_model.getNrOfDOFs(), 0.0);
+        yarp::sig::Vector leg(idynutils.left_leg.getNrOfDOFs(), 0.0);
+        leg[2] = -25.0 * M_PI/180.0;
+        leg[3] =  50.0 * M_PI/180.0;
+        leg[4] = -25.0 * M_PI/180.0;
+        idynutils.fromRobotToIDyn(leg, q, idynutils.left_leg);
+        idynutils.fromRobotToIDyn(leg, q, idynutils.right_leg);
+        yarp::sig::Vector arm(idynutils.left_arm.getNrOfDOFs(), 0.0);
+        arm[0] = 20.0 * M_PI/180.0;
+        arm[1] = 10.0 * M_PI/180.0;
+        arm[2] = -15.0 * M_PI/180.0;
+        arm[3] = -80.0 * M_PI/180.0;
+        idynutils.fromRobotToIDyn(arm, q, idynutils.left_arm);
+        arm[1] = -arm[1];
+        arm[2] = -arm[2];
+        idynutils.fromRobotToIDyn(arm, q, idynutils.right_arm);
+
+        std::cout << "Q_initial: " << q.toString() << std::endl;
+        return q;
+    }
+
 
     yarp::sig::Vector q;
 };
@@ -625,39 +649,63 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
 
 TEST_F(testIDynUtils, testWorldCollision)
 {
-    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR)+"bigman/bigman.urdf";
+    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.urdf";
     std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
+    std::cout << "OPENING OCTOMAP BAG:\n" + std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag" + "\n..";
     rosbag::Bag bag;
     bag.open(std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag", rosbag::bagmode::Read);
     octomap_msgs::Octomap msg;
     std::vector<std::string> topics;
-    topics.push_back(std::string("octomap_binary"));
+    topics.push_back(std::string("/octomap_binary"));
     rosbag::View view(bag, rosbag::TopicQuery(topics));
     rosbag::View::const_iterator i_m = view.begin();
-    rosbag::MessageInstance const m = *i_m;
+    rosbag::MessageInstance m = *i_m;
     octomap_msgs::Octomap::ConstPtr octomapMsg = m.instantiate<octomap_msgs::Octomap>();
-    ASSERT_EQ(octomapMsg->header.seq, 23);
+    EXPECT_EQ(octomapMsg->header.seq, 23);
     bag.close();
+    std::cout << " DONE" << std::endl;
+    std::cout.flush();
 
     iDynUtils idynutils("bigman", urdf_file, srdf_file);
-    q = idynutils.iDyn3_model.getAng();
-    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = 0.15;
-    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = -0.15;
+    q = this->getGoodInitialPositionBigman(idynutils);
     idynutils.updateiDyn3Model(q, true);
 
-    idynutils.updateOccupancyMap(*octomapMsg);
-
     double begin = yarp::os::Time::now();
-    EXPECT_TRUE(idynutils.checkCollisionWithWorld());
-    std::cout << "Single self-collision (during collision) detection took "
+    EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen before updating octomap\n------\n";
+    std::cout << "Single world-robot collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
 
-    q = idynutils.iDyn3_model.getAng();
-    q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
-    q[idynutils.iDyn3_model.getDOFIndex("LShLat")] = 0.15;
+    octomap_msgs::OctomapWithPose octomapMsgWithPose;
+    octomapMsgWithPose.octomap = *octomapMsg;
+    octomapMsgWithPose.header = octomapMsg->header;
+    Eigen::Affine3d I; I.setIdentity(); I.makeAffine();
+    Eigen::Affine3d w_T_octomap = idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id);
+    tf::poseEigenToMsg(I
+                       .rotate( w_T_octomap.inverse().rotation() )
+                       .translate( Eigen::Vector3d(-2.0,0.0,0.0) ),
+                            octomapMsgWithPose.origin);
+    I.setIdentity();
+    idynutils.updateOccupancyMap(octomapMsgWithPose);
+
+    std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
+    std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
+
     begin = yarp::os::Time::now();
-    EXPECT_FALSE(idynutils.checkCollisionWithWorld());
-    std::cout << "Single self-collision (not in collision) detection took "
+    EXPECT_TRUE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should happen after updating octomap\n------\n";
+    std::cout << "Single world-robot collision (during collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+
+    tf::poseEigenToMsg(I
+                       .rotate( w_T_octomap.inverse().rotation() )
+                       .translate( Eigen::Vector3d(1.0,0.0,0.0) ),
+                            octomapMsgWithPose.origin);
+    I.setIdentity();
+    idynutils.updateOccupancyMap(octomapMsgWithPose);
+    std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
+    std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
+    begin = yarp::os::Time::now();
+    EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen after moving the robot\n------\n";
+    std::cout << "Single world-robot collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
 }
 
