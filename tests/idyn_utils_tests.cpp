@@ -10,8 +10,15 @@
 #include <rosbag/view.h>
 #include <eigen_conversions/eigen_msg.h>
 
+#include <ros/ros.h>
+#include <ros/time.h>
+#include <ros/master.h>
+
 #include <iostream>
 #include <cstdlib>
+
+int _argc;
+char** _argv;
 
 using namespace yarp::math;
 
@@ -649,6 +656,24 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
 
 TEST_F(testIDynUtils, testWorldCollision)
 {
+    ros::init(_argc, _argv, "planning_scene_publisher");
+    bool ros_is_running = ros::master::check();
+    boost::shared_ptr<ros::NodeHandle> node_handle;
+    if(ros_is_running)
+    {
+        node_handle.reset(new ros::NodeHandle());
+        std::cout << "--- ENABLING PLANNING SCENE PUBLISHING" << std::endl;
+    } else std::cout << "--- DISABLING PLANNING SCENE PUBLISHING" << std::endl;
+
+    ros::Publisher planning_scene_publisher;
+    unsigned int attempts = 0;
+    if(ros_is_running)
+    {
+        planning_scene_publisher = node_handle->advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
+        ros::WallDuration sleep_t(1);
+        sleep_t.sleep();
+    }
+
     std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.urdf";
     std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
     std::cout << "OPENING OCTOMAP BAG:\n" + std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag" + "\n..";
@@ -678,13 +703,14 @@ TEST_F(testIDynUtils, testWorldCollision)
     octomap_msgs::OctomapWithPose octomapMsgWithPose;
     octomapMsgWithPose.octomap = *octomapMsg;
     octomapMsgWithPose.header = octomapMsg->header;
-    Eigen::Affine3d I; I.setIdentity(); I.makeAffine();
+    Eigen::Affine3d camera_T_octomap; camera_T_octomap.setIdentity();
     Eigen::Affine3d w_T_octomap = idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id);
-    tf::poseEigenToMsg(I
-                       .rotate( w_T_octomap.inverse().rotation() )
-                       .translate( Eigen::Vector3d(-2.0,0.0,0.0) ),
-                            octomapMsgWithPose.origin);
-    I.setIdentity();
+    Eigen::Affine3d w_T_t; w_T_t.setIdentity(); w_T_t.translate( Eigen::Vector3d(-2.0,0.0,0.0) );
+    Eigen::Affine3d octomap_T_octomap2; octomap_T_octomap2.setIdentity();
+    octomap_T_octomap2.translate(w_T_octomap.inverse().rotation()*w_T_t.translation());
+    Eigen::Affine3d camera_T_octomap2 = camera_T_octomap * octomap_T_octomap2;
+    tf::poseEigenToMsg(camera_T_octomap2,
+                       octomapMsgWithPose.origin);
     idynutils.updateOccupancyMap(octomapMsgWithPose);
 
     std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
@@ -694,19 +720,49 @@ TEST_F(testIDynUtils, testWorldCollision)
     EXPECT_TRUE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should happen after updating octomap\n------\n";
     std::cout << "Single world-robot collision (during collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    if(ros_is_running)
+    {
+        while(node_handle->ok() && attempts < 20)
+        {
+            planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            ros::spinOnce();
+            ros::WallDuration sleep_t(0.5);
+            sleep_t.sleep();
+            attempts++;
+            std::cout << "\n...publishing planning scene";
+        }
+        std::cout << std::endl;
+        attempts = 0;
+    }
 
-    tf::poseEigenToMsg(I
-                       .rotate( w_T_octomap.inverse().rotation() )
-                       .translate( Eigen::Vector3d(1.0,0.0,0.0) ),
-                            octomapMsgWithPose.origin);
-    I.setIdentity();
+    w_T_t.setIdentity(); w_T_t.translate( Eigen::Vector3d(1.0,0.0,0.0) );
+    octomap_T_octomap2.setIdentity();
+    octomap_T_octomap2.translate(w_T_octomap.inverse().rotation()*w_T_t.translation());
+    camera_T_octomap2 = camera_T_octomap * octomap_T_octomap2;
+    tf::poseEigenToMsg(camera_T_octomap2,
+                       octomapMsgWithPose.origin);
     idynutils.updateOccupancyMap(octomapMsgWithPose);
+
     std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
     std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
     begin = yarp::os::Time::now();
     EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen after moving the robot\n------\n";
     std::cout << "Single world-robot collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    if(ros_is_running)
+    {
+        while(node_handle->ok() && attempts < 20)
+        {
+            planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            ros::spinOnce();
+            ros::WallDuration sleep_t(0.5);
+            sleep_t.sleep();
+            attempts++;
+            std::cout << "\n...publishing planning scene";
+        }
+        std::cout << std::endl;
+        attempts = 0;
+    }
 }
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
@@ -1377,5 +1433,7 @@ INSTANTIATE_TEST_CASE_P(CheckWorldConsistencyByWalking9Steps,
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  _argc = argc;
+  _argv = argv;
   return RUN_ALL_TESTS();
 }

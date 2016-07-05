@@ -443,6 +443,12 @@ public:
                                        collision_detection::AllowedCollisionMatrixPtr acm);
 
    /**
+    * @brief getPlanningScene returns a message depicting actual moveit state (robot state + octomap)
+    * @return a planning scene message
+    */
+   moveit_msgs::PlanningScene getPlanningSceneMsg();
+
+   /**
     * @brief getDisplayRobotStateMsgAt
     * @param q the joint positions to transform into a DisplayRobotState msg
     * @return a DisplayRobotState msg

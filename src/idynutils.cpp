@@ -709,7 +709,6 @@ bool iDynUtils::checkCollisionWithWorldAt(const yarp::sig::Vector& q)
 void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg)
 {
     this->updateRobotState(iDyn3_model.getAng());
-    Eigen::Affine3d T_empty;
     moveit_planning_scene->processOctomapMsg(octomapMsg);
     return;
 }
@@ -851,6 +850,19 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::
     moveit_msgs::DisplayRobotState msg;
     robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
     return msg;
+}
+
+moveit_msgs::PlanningScene iDynUtils::getPlanningSceneMsg()
+{
+    moveit_msgs::PlanningScene scene;
+    moveit_msgs::PlanningSceneComponents components;
+    components.components = components.OCTOMAP |
+                            components.ROBOT_STATE |
+                            components.TRANSFORMS |
+                            components.WORLD_OBJECT_GEOMETRY |
+                            components.WORLD_OBJECT_NAMES;
+    this->moveit_planning_scene->getPlanningSceneMsg(scene, components);
+    return scene;
 }
 
 void iDynUtils::updateRobotState()
