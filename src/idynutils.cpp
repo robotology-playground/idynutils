@@ -25,6 +25,8 @@
 #include <moveit/robot_model/joint_model.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_state/robot_state.h>
+#include <eigen_conversions/eigen_kdl.h>
+#include <kdl/frames_io.hpp>
 
 using namespace iCub::iDynTree;
 using namespace yarp::math;
@@ -267,18 +269,12 @@ bool iDynUtils::iDyn3Model()
         else
         {
             std::cout<<"SRDF LOADED"<<std::endl;
-            moveit_robot_model.reset(new robot_model::RobotModel(urdf_model, robot_srdf));
+
+            moveit_planning_scene.reset(new planning_scene::PlanningScene(urdf_model, robot_srdf));
+            moveit_robot_model = moveit_planning_scene->getRobotModel();
             std::ostringstream robot_info;
             moveit_robot_model->printModelInfo(robot_info);
-            moveit_robot_state.reset(new robot_state::RobotState(moveit_robot_model));
-            allowed_collision_matrix.reset(
-                new collision_detection::AllowedCollisionMatrix(
-                    moveit_robot_model->getLinkModelNamesWithCollisionGeometry(), false));
-
-            //this->disableConsecutiveLinksInACM(allowed_collision_matrix);
-            loadDisabledCollisionsFromSRDF(allowed_collision_matrix);
-
-            moveit_collision_robot.reset(new collision_detection::CollisionRobotFCL(moveit_robot_model));
+            moveit_collision_robot = moveit_planning_scene->getCollisionRobotNonConst();
             std::cout<<"ROBOT LOADED in MOVEIT!"<<std::endl;
         }
     }
@@ -701,6 +697,47 @@ void iDynUtils::setLinksInContact(const std::list<std::string>& list_links_in_co
 
 }
 
+bool iDynUtils::checkCollisionWithWorld()
+{
+    return this->checkCollisionWithWorldAt(iDyn3_model.getAng());
+}
+
+bool iDynUtils::checkCollisionWithWorldAt(const yarp::sig::Vector& q)
+{
+    this->updateRobotState(q);
+    return moveit_planning_scene->isStateColliding();
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg)
+{
+    this->updateRobotState(iDyn3_model.getAng());
+    moveit_planning_scene->processOctomapMsg(octomapMsg);
+    return;
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose)
+{
+    this->updateRobotState(iDyn3_model.getAng());
+    moveit_planning_scene->processOctomapMsg(octomapMsgWithPose);
+    return;
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg, const yarp::sig::Vector& q)
+{
+    this->updateRobotState(q);
+    moveit_planning_scene->processOctomapMsg(octomapMsg);
+    this->updateRobotState(iDyn3_model.getAng());
+    return;
+}
+
+void iDynUtils::updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose, const yarp::sig::Vector& q)
+{
+    this->updateRobotState(q);
+    moveit_planning_scene->processOctomapMsg(octomapMsgWithPose);
+    this->updateRobotState(iDyn3_model.getAng());
+    return;
+}
+
 bool iDynUtils::checkSelfCollision()
 {
     return checkSelfCollisionAt(iDyn3_model.getAng());
@@ -712,15 +749,15 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q,
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     this->updateRobotState(q);
-    moveit_robot_state->updateCollisionBodyTransforms();
+    moveit_planning_scene->getCurrentStateNonConst().updateCollisionBodyTransforms();
     if(collisionPairs != NULL)
     {
         req.contacts = true;
         req.max_contacts = 100;
     }
     moveit_collision_robot->checkSelfCollision(req, res,
-                                               *moveit_robot_state,
-                                               *allowed_collision_matrix);
+                                               moveit_planning_scene->getCurrentStateNonConst(),
+                                               moveit_planning_scene->getAllowedCollisionMatrixNonConst());
 
     if(collisionPairs != NULL)
     {
@@ -816,7 +853,7 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
 {
     this->updateRobotState();
     moveit_msgs::DisplayRobotState msg;
-    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
     return msg;
 }
 
@@ -829,8 +866,21 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsgAt(const yarp::
 {
     this->updateRobotState(q);
     moveit_msgs::DisplayRobotState msg;
-    robot_state::robotStateToRobotStateMsg(*moveit_robot_state, msg.state);
+    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
     return msg;
+}
+
+moveit_msgs::PlanningScene iDynUtils::getPlanningSceneMsg()
+{
+    moveit_msgs::PlanningScene scene;
+    moveit_msgs::PlanningSceneComponents components;
+    components.components = components.OCTOMAP |
+                            components.ROBOT_STATE |
+                            components.TRANSFORMS |
+                            components.WORLD_OBJECT_GEOMETRY |
+                            components.WORLD_OBJECT_NAMES;
+    this->moveit_planning_scene->getPlanningSceneMsg(scene, components);
+    return scene;
 }
 
 void iDynUtils::updateRobotState()
@@ -842,14 +892,31 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
 {
     for(unsigned int i = 0; i < joint_names.size(); ++i) {
         // TODO once we are sure joint_names are ALWAYS in joint order, this becomes faster
-        moveit_robot_state->setJointPositions(joint_names[i],
-                                              &q[iDyn3_model.getDOFIndex(joint_names[i])]);
+        moveit_planning_scene->
+            getCurrentStateNonConst().setJointPositions(joint_names[i],
+                                                        &q[iDyn3_model.getDOFIndex(joint_names[i])]);
     }
+    
+    moveit_planning_scene->getCurrentStateNonConst().updateLinkTransforms();
+    Eigen::Affine3d world_T_anchor;
+    tf::transformKDLToEigen(this->anchor_T_world.Inverse(), world_T_anchor);
+    Eigen::Affine3d map_T_base_link = 
+        moveit_planning_scene->getCurrentState()
+            .getFrameTransform(this->getBaseLink());
+    Eigen::Affine3d map_T_anchor = 
+        moveit_planning_scene->getCurrentState()
+            .getFrameTransform(anchor_name);
+    // computed so that map == world
+    Eigen::Affine3d map_T_base_link_desired =
+        world_T_anchor * map_T_anchor.inverse() * map_T_base_link;
+    moveit_planning_scene->getCurrentStateNonConst().
+            updateStateWithLinkAt(this->getBaseLink(),
+                                  map_T_base_link_desired);
 }
 
 bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_measurement)
 {
-    moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(
+    const moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(
                 force_torque_measurement.first);
 
     int ft_index = iDyn3_model.getFTSensorIndex(

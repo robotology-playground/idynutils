@@ -259,11 +259,10 @@ public:
 
     boost::shared_ptr<urdf::Model> urdf_model; // A URDF Model
     boost::shared_ptr<srdf::Model> robot_srdf; // A SRDF description
-    robot_model::RobotModelPtr moveit_robot_model; // A robot model
-    robot_state::RobotStatePtr moveit_robot_state;
+    robot_model::RobotModelConstPtr moveit_robot_model; // A robot model
+    planning_scene::PlanningScenePtr moveit_planning_scene; // the moveit scene
 
-    boost::shared_ptr<collision_detection::CollisionRobot> moveit_collision_robot;
-    collision_detection::AllowedCollisionMatrixPtr allowed_collision_matrix;
+    collision_detection::CollisionRobotPtr moveit_collision_robot;
 
     /**
      * @brief getJointNames return a vector with ALL the joint names
@@ -380,6 +379,47 @@ public:
    void setLinksInContact(const std::list<std::string>& list_links_in_contact);
 
    /**
+    * @brief checkCollisionWithWorld checks whether the robot is in collision with the environment
+    * @return true if the robot is in collision with the environment
+    */
+   bool checkCollisionWithWorld();
+
+   /**
+    * @brief checkCollisionWithWorldAt checks whether the robot is in collision with the environment at configuration q
+    * @param q the robot joint configuration vector
+    * @return
+    */
+   bool checkCollisionWithWorldAt(const yarp::sig::Vector &q);
+
+   /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsg a message containing the octomap data referred to the vision sensor frame of reference.
+    *                   Please notice how the current joint state will be used to compute the pose of the sensor frame
+    */
+   void updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg);
+
+   /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsgWithPose a message containing the octomap data referred to the vision sensor frame of referenece, plus a transform
+    *                           Please notice how the current joint state will be used to compute the pose of the sensor frame
+    */
+   void updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose);
+
+   /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsg a message containing the octomap data referred to the vision sensor frame of reference.
+    * @param q  the joint state vector which will be used to compute the pose of the sensor frame
+    */
+   void updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg, const yarp::sig::Vector& q);
+
+   /**
+    * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
+    * @param octomapMsgWithPose a message containing the octomap data referred to the vision sensor frame of referenece, plus a transform
+    * @param q  the joint state vector which will be used to compute the pose of the sensor frame
+    */
+   void updateOccupancyMap(const octomap_msgs::OctomapWithPose& octomapMsgWithPose, const yarp::sig::Vector& q);
+
+   /**
     * @brief checkSelfCollision checks whether the robot is in self collision - uses most accurate collision detection info (i.e., no capsules)
     * @return true if the robot is in self collision
     * @TODO we should move this in collision_utils together with loadDisabledCollisionsFromSRDF and checkSelfCollisionAt
@@ -419,6 +459,12 @@ public:
                                        collision_detection::AllowedCollisionMatrixPtr acm);
 
    /**
+    * @brief getPlanningScene returns a message depicting actual moveit state (robot state + octomap)
+    * @return a planning scene message
+    */
+   moveit_msgs::PlanningScene getPlanningSceneMsg();
+
+   /**
     * @brief getDisplayRobotStateMsgAt
     * @param q the joint positions to transform into a DisplayRobotState msg
     * @return a DisplayRobotState msg
@@ -446,6 +492,18 @@ public:
     * @return the robot base link as defined in the SRDF
     */
    std::string getBaseLink();
+
+
+   /**
+    * @brief updateRobotState updates the internal moveit model joints. Takes joint angles form the iDyn3 model.
+    * Collision checking functions (i.e. checkSelfCollition() and checkSelfCollisionAt())
+    * and conversion functions (i.e. getRobotStateMsg() , @getRobotStateMsgAt())
+    * automatically update the robot state, so that it is not necessary
+    * to call this function manually most of the times. Notice that for the general case,
+    * it is necessary to call the update() method on the underlying robot state in order to update
+    * link and collision transforms, i.e. by writing moveit_planning_scene->getCurrentStateNonConst().update()
+    */
+   void updateRobotState();
 
 protected:
     /**
@@ -562,15 +620,6 @@ protected:
      * @param q the joint angles of the robot state
      */
     void updateRobotState(const yarp::sig::Vector &q);
-
-    /**
-     * @brief updateRobotState updates the internal moveit model. Takes joint angles form the iDyn3 model.
-     * Collision checking functions (i.e. checkSelfCollition() and checkSelfCollisionAt())
-     * and conversion functions (i.e. getRobotStateMsg() , @getRobotStateMsgAt())
-     * automatically update the robot state, so that it is not necessary
-     * to call this function manually.
-     */
-    void updateRobotState();
 
     bool updateForceTorqueMeasurement(const ft_measure& force_torque_measurement);
 
