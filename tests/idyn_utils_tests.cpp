@@ -8,6 +8,7 @@
 #include <kdl/frames_io.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <eigen_conversions/eigen_kdl.h>
 #include <eigen_conversions/eigen_msg.h>
 
 #include <ros/ros.h>
@@ -1392,11 +1393,21 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
             J.removeCols(0,6);
             q_whole += pinv(J,1E-7)*0.1*b;
             normal_model.updateiDyn3Model(q_whole,true);
-
+            normal_model.updateRobotState();
             //std::cout << "e" << iterations << " = " << x_ref(0,3) - x(0,3) << std::endl;
 
             anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
             EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+            Eigen::Affine3d anchorAfterSwitch_eigen = normal_model.moveit_planning_scene->
+                    getCurrentStateNonConst().getFrameTransform(anchor_name);
+            KDL::Frame anchorAfterSwitch_kdl;
+            tf::transformEigenToKDL(anchorAfterSwitch_eigen,
+                                    anchorAfterSwitch_kdl);
+            EXPECT_TRUE(anchorAfterSwitch_kdl == anchorAfterSwitch) << "----- error:\n"
+                                                                    << anchorAfterSwitch_kdl
+                                                                    << "\nshould not differ from\n"
+                                                                    << anchorAfterSwitch
+                                                                    << "\n -----";
 
         } while (norm(b) > 1e-10 && iterations < 1000);
         ASSERT_TRUE (iterations < 1000) << "IK did not converge after 1000 iterations. Stopping";
