@@ -896,29 +896,21 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
             getCurrentStateNonConst().setJointPositions(joint_names[i],
                                                         &q[iDyn3_model.getDOFIndex(joint_names[i])]);
     }
-    Eigen::Affine3d anchor_T_world_eigen;
-    tf::transformKDLToEigen(this->anchor_T_world, anchor_T_world_eigen);
-    std::cout << "Moveit Robot State after setting link pose" << std::endl;
+    
+    Eigen::Affine3d world_T_anchor;
+    tf::transformKDLToEigen(this->anchor_T_world.Inverse(), world_T_anchor);
+    Eigen::Affine3d map_T_base_link = 
+        moveit_planning_scene->getCurrentState()
+            .getFrameTransform(this->getBaseLink());
+    Eigen::Affine3d map_T_anchor = 
+        moveit_planning_scene->getCurrentState()
+            .getFrameTransform(anchor_name);
+    // computed so that map == world
+    Eigen::Affine3d map_T_base_link_desired =
+        world_T_anchor * map_T_anchor.inverse() * map_T_base_link;
     moveit_planning_scene->getCurrentStateNonConst().
-            updateStateWithLinkAt(this->anchor_name,
-                                  anchor_T_world_eigen);
-    std::cout << moveit_planning_scene->getCurrentStateNonConst().getFrameTransform(anchor_name).affine() << std::endl;
-    std::cout << "Moveit Robot State after setting link pose and model update" << std::endl;
-    moveit_planning_scene->getCurrentStateNonConst().updateCollisionBodyTransforms();
-    std::cout << moveit_planning_scene->getCurrentStateNonConst().getFrameTransform(anchor_name).affine() << std::endl;
-
-    std::cout << "Moveit Robot State after joint update" << std::endl;
-    std::cout << moveit_planning_scene->getCurrentStateNonConst().getFrameTransform(anchor_name).affine() << std::endl;
-    std::cout << "Moveit Robot State after model update" << std::endl;
-    moveit_planning_scene->getCurrentStateNonConst().updateCollisionBodyTransforms();
-    std::cout << moveit_planning_scene->getCurrentStateNonConst().getFrameTransform(anchor_name).affine() << std::endl;
-
-    std::cout << "Anchor from idyn:" << std::endl;
-    std::cout << iDyn3_model.getPositionKDL(iDyn3_model.getLinkIndex(anchor_name), false) << std::endl;
-
-    std::cout << "Left Hand:" << std::endl
-              << "MoveIt!:\n" << moveit_planning_scene->getCurrentStateNonConst().getFrameTransform(left_arm.end_effector_name).affine() << std::endl
-              << "iDyn3:\n" << iDyn3_model.getPositionKDL(iDyn3_model.getLinkIndex(left_arm.end_effector_name)) << std::endl;
+            updateStateWithLinkAt(this->getBaseLink(),
+                                  map_T_base_link_desired);
 }
 
 bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_measurement)

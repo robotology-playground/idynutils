@@ -1081,6 +1081,40 @@ TEST_F(testIDynUtils, testAnchorSwitch)
 
 }
 
+TEST_F(testIDynUtils, testAnchorIsCoherentWithUpdates)
+{
+    setGoodInitialPosition();
+    // does the anchor really keeps steady when updating the state?
+    KDL::Frame anchor_before_switch = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    std::string new_anchor = right_leg.end_effector_name;
+    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
+    switchAnchor(new_anchor);
+    KDL::Frame anchor_after_switch = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    EXPECT_EQ(anchor_before_switch, anchor_after_switch);
+
+    //we check drifting
+    for(unsigned int i = 0; i < 10; ++i)
+    {
+      KDL::Frame anchor_before_update = anchor_after_switch;
+      q[right_leg.joint_numbers[right_leg.getNrOfDOFs()-1]] += 0.1;
+      this->updateiDyn3Model(q, true);
+      KDL::Frame anchor_after_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+      EXPECT_EQ(anchor_before_update, anchor_after_update);
+    }
+}
+
+TEST_F(testIDynUtils, testWhyAnchorIsCoherent)
+{
+    setGoodInitialPosition();
+
+    // we expect getPositionKDL not to be lazy - i.e., iDyn3 recomputes the transform is needed
+    KDL::Frame anchor_before_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    q[right_leg.joint_numbers[right_leg.getNrOfDOFs()-1]] += 0.1;
+    this->iDyn3_model.setAng(q);
+    KDL::Frame anchor_after_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    EXPECT_FALSE(anchor_before_update == anchor_after_update);
+}
+
 TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetPosition)
 {
     bool updateIDynAfterSwitch = GetParam().first;
@@ -1398,8 +1432,9 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
 
             anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
             EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
             Eigen::Affine3d anchorAfterSwitch_eigen = normal_model.moveit_planning_scene->
-                    getCurrentStateNonConst().getFrameTransform(anchor_name);
+                    getCurrentState().getFrameTransform(anchorName);
             KDL::Frame anchorAfterSwitch_kdl;
             tf::transformEigenToKDL(anchorAfterSwitch_eigen,
                                     anchorAfterSwitch_kdl);
