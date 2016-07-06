@@ -897,6 +897,7 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
                                                         &q[iDyn3_model.getDOFIndex(joint_names[i])]);
     }
     
+    moveit_planning_scene->getCurrentStateNonConst().updateLinkTransforms();
     Eigen::Affine3d world_T_anchor;
     tf::transformKDLToEigen(this->anchor_T_world.Inverse(), world_T_anchor);
     Eigen::Affine3d map_T_base_link = 

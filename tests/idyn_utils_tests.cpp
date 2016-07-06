@@ -1435,6 +1435,7 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
 
             Eigen::Affine3d anchorAfterSwitch_eigen = normal_model.moveit_planning_scene->
                     getCurrentState().getFrameTransform(anchorName);
+
             KDL::Frame anchorAfterSwitch_kdl;
             tf::transformEigenToKDL(anchorAfterSwitch_eigen,
                                     anchorAfterSwitch_kdl);
