@@ -124,6 +124,22 @@ public:
 
         return e;
     }
+
+    /**
+     * @brief normalize a given quaternion:
+     * Given q = (x, y, z, w)
+     * return q_n = (x/d, y/d, z/d, w/d)
+     * with d = sqrt(x**2 + y**2 + z**2 + w**2)
+     * @param q quaternion to normalize
+     */
+    static void normalize(quaternion& q)
+    {
+        double d = sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+        q.x = q.x/d;
+        q.y = q.y/d;
+        q.z = q.z/d;
+        q.w = q.w/d;
+    }
 };
 
 class cartesian_utils
