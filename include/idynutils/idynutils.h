@@ -392,6 +392,11 @@ public:
    bool checkCollisionWithWorldAt(const yarp::sig::Vector &q);
 
    /**
+    * @brief resetOccupancyMap resets the occupancy map
+    */
+   void resetOccupancyMap();
+
+   /**
     * @brief updateOccupancyMap updates the occupancy map that will be used for collision checking with the world
     * @param octomapMsg a message containing the octomap data referred to the vision sensor frame of reference.
     *                   Please notice how the current joint state will be used to compute the pose of the sensor frame
@@ -436,6 +441,18 @@ public:
     */
    bool checkSelfCollisionAt(const yarp::sig::Vector &q,
                              std::list< std::pair<std::string,std::string> > * collisionPairs = NULL);
+
+   /**
+    * @brief checkCollision call checkSelfCollision or checkCollisionWithWorld automatically depending on the presence of ocomap information
+    * @return true if the robot is in collision with the world or with the enviroment
+    */
+   bool checkCollision();
+
+   /**
+    * @brief hasOccupancyMap checks if an octomap has been loaded
+    * @return true if the model contains environment information (via an octomap)
+    */
+   bool hasOccupancyMap();
 
    /**
     * @brief loadDisabledCollisionsFromSRDF disabled collisions between links as specified in the robot srdf.

@@ -645,6 +645,7 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     EXPECT_TRUE(idynutils.checkSelfCollision());
     std::cout << "Single self-collision (during collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_TRUE(idynutils.checkCollision());
 
     q = idynutils.iDyn3_model.getAng();
     q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
@@ -653,6 +654,8 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     EXPECT_FALSE(idynutils.checkSelfCollisionAt(q));
     std::cout << "Single self-collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    idynutils.updateiDyn3Model(q, true);
+    EXPECT_FALSE(idynutils.checkCollision());
 }
 
 TEST_F(testIDynUtils, testWorldCollision)
@@ -700,6 +703,7 @@ TEST_F(testIDynUtils, testWorldCollision)
     EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen before updating octomap\n------\n";
     std::cout << "Single world-robot collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_FALSE(idynutils.checkCollision()) << "\n------\ncollision should not happen before updating octomap\n------\n";
 
     octomap_msgs::OctomapWithPose octomapMsgWithPose;
     octomapMsgWithPose.octomap = *octomapMsg;
@@ -712,7 +716,9 @@ TEST_F(testIDynUtils, testWorldCollision)
     Eigen::Affine3d camera_T_octomap2 = camera_T_octomap * octomap_T_octomap2;
     tf::poseEigenToMsg(camera_T_octomap2,
                        octomapMsgWithPose.origin);
+    EXPECT_FALSE(idynutils.hasOccupancyMap());
     idynutils.updateOccupancyMap(octomapMsgWithPose);
+    EXPECT_TRUE(idynutils.hasOccupancyMap());
 
     std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
     std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
@@ -721,6 +727,8 @@ TEST_F(testIDynUtils, testWorldCollision)
     EXPECT_TRUE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should happen after updating octomap\n------\n";
     std::cout << "Single world-robot collision (during collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_TRUE(idynutils.checkCollision()) << "\n------\ncollision should happen after updating octomap\n------\n";
+
     if(ros_is_running)
     {
         while(node_handle->ok() && attempts < 20)
@@ -750,6 +758,8 @@ TEST_F(testIDynUtils, testWorldCollision)
     EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen after moving the robot\n------\n";
     std::cout << "Single world-robot collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_FALSE(idynutils.checkCollision()) << "\n------\ncollision should not happen after moving the robot\n------\n";
+
     if(ros_is_running)
     {
         while(node_handle->ok() && attempts < 20)
@@ -764,6 +774,9 @@ TEST_F(testIDynUtils, testWorldCollision)
         std::cout << std::endl;
         attempts = 0;
     }
+
+    idynutils.resetOccupancyMap();
+    EXPECT_FALSE(idynutils.hasOccupancyMap());
 }
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)

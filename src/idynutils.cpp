@@ -708,6 +708,14 @@ bool iDynUtils::checkCollisionWithWorldAt(const yarp::sig::Vector& q)
     return moveit_planning_scene->isStateColliding();
 }
 
+void iDynUtils::resetOccupancyMap()
+{
+    this->moveit_planning_scene->
+        getWorldNonConst()->
+            removeObject(
+                planning_scene::PlanningScene::OCTOMAP_NS);
+}
+
 void iDynUtils::updateOccupancyMap(const octomap_msgs::Octomap& octomapMsg)
 {
     this->updateRobotState(iDyn3_model.getAng());
@@ -775,6 +783,22 @@ bool iDynUtils::checkSelfCollisionAt(const yarp::sig::Vector& q,
 
     return res.collision;
 
+}
+
+bool iDynUtils::checkCollision()
+{
+    if(hasOccupancyMap())
+        return checkCollisionWithWorld();
+    else
+        return checkSelfCollision();
+}
+
+bool iDynUtils::hasOccupancyMap()
+{
+    return (bool)moveit_planning_scene->
+                    getWorld()->
+                        getObject(
+                            planning_scene::PlanningScene::OCTOMAP_NS);
 }
 
 void iDynUtils::loadDisabledCollisionsFromSRDF(collision_detection::AllowedCollisionMatrixPtr acm)
