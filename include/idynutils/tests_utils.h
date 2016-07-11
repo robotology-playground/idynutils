@@ -209,6 +209,26 @@ public:
      * @return 1 if a key is pressed
      */
     static int _kbhit();
+
+    /**
+     * @brief KDLFramesAreEqual perform GTEST check in 2 frames
+     * @param a first frame
+     * @param b second frame
+     */
+    static inline void KDLFramesAreEqual(const KDL::Frame& a, const KDL::Frame& b)
+    {
+        EXPECT_DOUBLE_EQ(a.p.x(), b.p.x());
+        EXPECT_DOUBLE_EQ(a.p.y(), b.p.y());
+        EXPECT_DOUBLE_EQ(a.p.z(), b.p.z());
+
+        double x,y,z,w; a.M.GetQuaternion(x,y,z,w);
+        double xx,yy,zz,ww; b.M.GetQuaternion(xx,yy,zz,ww);
+
+        EXPECT_DOUBLE_EQ(x,xx);
+        EXPECT_DOUBLE_EQ(y,yy);
+        EXPECT_DOUBLE_EQ(z,zz);
+        EXPECT_DOUBLE_EQ(w,ww);
+    }
 };
 
 #endif
