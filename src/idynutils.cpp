@@ -877,9 +877,36 @@ void iDynUtils::updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateCo
 
 moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
 {
+    std::string VJOINT_NAME = "virtual_joint";
     this->updateRobotState();
     moveit_msgs::DisplayRobotState msg;
-    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentStateNonConst(), msg.state);
+
+    if(moveit_planning_scene->
+            getCurrentStateNonConst().
+                getRobotModel()->
+                    hasJointModel(VJOINT_NAME))
+    {
+        robot_state::RobotState robot_state(moveit_planning_scene->getCurrentState());
+        Eigen::Affine3d offset = moveit_planning_scene->
+                                    getCurrentState().
+                                        getFrameTransform(this->getBaseLink());
+
+        robot_state.setVariablePosition(VJOINT_NAME + "/trans_x", offset.translation().x());
+        robot_state.setVariablePosition(VJOINT_NAME + "/trans_y", offset.translation().y());
+        robot_state.setVariablePosition(VJOINT_NAME + "/trans_z", offset.translation().z());
+
+        // Apply rotation
+        Eigen::Quaterniond q(offset.rotation());
+        robot_state.setVariablePosition(VJOINT_NAME + "/rot_x", q.x());
+        robot_state.setVariablePosition(VJOINT_NAME + "/rot_y", q.y());
+        robot_state.setVariablePosition(VJOINT_NAME + "/rot_z", q.z());
+        robot_state.setVariablePosition(VJOINT_NAME + "/rot_w", q.w());
+        robot_state::robotStateToRobotStateMsg(robot_state, msg.state);
+
+    } else
+        robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentState(),
+                                               msg.state);
+
     return msg;
 }
 
