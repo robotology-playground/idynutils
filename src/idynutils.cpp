@@ -593,7 +593,8 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
 
     iDyn3_model.kinematicRNEA();
 
-    iDyn3_model.dynamicRNEA();
+    if(_computeDynamics)
+        iDyn3_model.dynamicRNEA();
 
     iDyn3_model.computePositions();
 }
@@ -910,6 +911,16 @@ moveit_msgs::PlanningScene iDynUtils::getPlanningSceneMsg()
 void iDynUtils::updateRobotState()
 {
     this->updateRobotState(iDyn3_model.getAng());
+}
+
+void iDynUtils::disableDynamicsUpdate()
+{
+    this->_computeDynamics = false;
+}
+
+void iDynUtils::enableDynamicsUpdate()
+{
+    this->_computeDynamics = true;
 }
 
 void iDynUtils::updateRobotState(const yarp::sig::Vector& q)

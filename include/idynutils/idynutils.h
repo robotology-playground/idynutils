@@ -522,7 +522,28 @@ public:
     */
    void updateRobotState();
 
+   /**
+    * @brief disableDynamicsUpdate disables the computation of dynamic quantities:
+    *                               -gravity torques g(q)
+    *                               - coriolis terms C(q,\dot{q})
+    *                               - joint space inertia matrix B(q)
+    */
+   void disableDynamicsUpdate();
+
+   /**
+    * @brief enableDynamicsUpdate enables the computation of dynamic quantities:
+    *                               -gravity torques g(q)
+    *                               - coriolis terms C(q,\dot{q})
+    *                               - joint space inertia matrix B(q)
+    */
+   void enableDynamicsUpdate();
+
 protected:
+   /**
+    * @brief _computeDynamics defines whether we should update dynamics quantities during the updateIdyn3Model call
+    */
+   bool _computeDynamics;
+
     /**
      * @brief joint_names this vector contains ALL the active joint names
      */
