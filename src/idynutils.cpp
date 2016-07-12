@@ -48,7 +48,8 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     robot_name(robot_name_),
     g(3,0.0),
     anchor_name(""),  // temporary value. Will get updated as soon as we load kinematic chains
-    world_is_inited(false)
+    world_is_inited(false),
+    _computeDynamics(true)
 {
     worldT.resize(4,4);
     worldT.eye();
