@@ -217,17 +217,17 @@ public:
      */
     static inline void KDLFramesAreEqual(const KDL::Frame& a, const KDL::Frame& b)
     {
-        EXPECT_DOUBLE_EQ(a.p.x(), b.p.x());
-        EXPECT_DOUBLE_EQ(a.p.y(), b.p.y());
-        EXPECT_DOUBLE_EQ(a.p.z(), b.p.z());
+        EXPECT_NEAR(a.p.x(), b.p.x(), 1e-10);
+        EXPECT_NEAR(a.p.y(), b.p.y(), 1e-10);
+        EXPECT_NEAR(a.p.z(), b.p.z(), 1e-10);
 
         double x,y,z,w; a.M.GetQuaternion(x,y,z,w);
         double xx,yy,zz,ww; b.M.GetQuaternion(xx,yy,zz,ww);
 
-        EXPECT_DOUBLE_EQ(x,xx);
-        EXPECT_DOUBLE_EQ(y,yy);
-        EXPECT_DOUBLE_EQ(z,zz);
-        EXPECT_DOUBLE_EQ(w,ww);
+        EXPECT_NEAR(x,xx, 1e-10);
+        EXPECT_NEAR(y,yy, 1e-10);
+        EXPECT_NEAR(z,zz, 1e-10);
+        EXPECT_NEAR(w,ww, 1e-10);
     }
 };
 
