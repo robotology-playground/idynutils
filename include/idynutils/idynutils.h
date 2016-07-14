@@ -20,6 +20,9 @@
 #ifndef IDYNUTILS_H
 #define IDYNUTILS_H
 
+// in old indigo rviz movit plugins, OctomapPose.origin does not get used when displaying octomaps
+#define RVIZ_DOES_NOT_TRANSFORM_OCTOMAP
+
 #include <urdf/model.h>
 #include <iCub/iDynTree/DynTree.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -29,6 +32,9 @@
 #include <moveit_msgs/DisplayRobotState.h>
 #include <yarp/math/Math.h>
 #include <yarp/sig/all.h>
+#ifdef RVIZ_DOES_NOT_TRANSFORM_OCTOMAP
+#include <idynutils/octomap_utils.h>
+#endif
 
 /**
  * @brief The kinematic_chain struct defines usefull objects related to a kinematic chain

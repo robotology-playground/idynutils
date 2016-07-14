@@ -59,6 +59,7 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/ComanUtils.cpp
                                 src/convex_hull.cpp
                                 src/idynutils.cpp
+                                src/octomap_utils.cpp
                                 src/RobotUtils.cpp
                                 src/tests_utils.cpp
                                 src/WalkmanUtils.cpp
