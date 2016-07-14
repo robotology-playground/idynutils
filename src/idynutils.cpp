@@ -877,11 +877,11 @@ void iDynUtils::updateiDyn3ModelFromJoinStateMsg(const sensor_msgs::JointStateCo
 
 moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
 {
-    std::string VJOINT_NAME = "virtual_joint";
+    //std::string VJOINT_NAME = "virtual_joint";
     this->updateRobotState();
     moveit_msgs::DisplayRobotState msg;
 
-    if(moveit_planning_scene->
+    /*if(moveit_planning_scene->
             getCurrentStateNonConst().
                 getRobotModel()->
                     hasJointModel(VJOINT_NAME))
@@ -903,9 +903,9 @@ moveit_msgs::DisplayRobotState iDynUtils::getDisplayRobotStateMsg()
         robot_state.setVariablePosition(VJOINT_NAME + "/rot_w", q.w());
         robot_state::robotStateToRobotStateMsg(robot_state, msg.state);
 
-    } else
-        robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentState(),
-                                               msg.state);
+    } else*/
+    robot_state::robotStateToRobotStateMsg(moveit_planning_scene->getCurrentState(),
+                                           msg.state);
 
     return msg;
 }
@@ -989,18 +989,34 @@ void iDynUtils::updateRobotState(const yarp::sig::Vector& q)
     moveit_planning_scene->getCurrentStateNonConst().updateLinkTransforms();
     Eigen::Affine3d world_T_anchor;
     tf::transformKDLToEigen(this->anchor_T_world.Inverse(), world_T_anchor);
-    Eigen::Affine3d map_T_base_link = 
+    Eigen::Affine3d scene_T_base_link =
         moveit_planning_scene->getCurrentState()
             .getFrameTransform(this->getBaseLink());
-    Eigen::Affine3d map_T_anchor = 
+    Eigen::Affine3d scene_T_anchor =
         moveit_planning_scene->getCurrentState()
             .getFrameTransform(anchor_name);
     // computed so that map == world
-    Eigen::Affine3d map_T_base_link_desired =
-        world_T_anchor * map_T_anchor.inverse() * map_T_base_link;
-    moveit_planning_scene->getCurrentStateNonConst().
-            updateStateWithLinkAt(this->getBaseLink(),
-                                  map_T_base_link_desired);
+    Eigen::Affine3d scene_T_base_link_desired =
+        world_T_anchor * scene_T_anchor.inverse() * scene_T_base_link;
+    if(moveit_robot_model->getRootJoint()->getType() == moveit::core::JointModel::FLOATING)
+    {
+        Eigen::Affine3d scene_T_root_link =
+            moveit_planning_scene->getCurrentState()
+                .getFrameTransform(moveit_robot_model->getRootLinkName());
+        Eigen::Affine3d base_link_T_root_link =
+                scene_T_base_link.inverse() * scene_T_root_link ;
+        moveit_planning_scene->
+            getCurrentStateNonConst().
+                setJointPositions(
+                    moveit_robot_model->getRootJoint(),
+                    scene_T_base_link_desired * base_link_T_root_link);
+        moveit_planning_scene->
+            getCurrentStateNonConst().update();
+    }
+    else
+        moveit_planning_scene->getCurrentStateNonConst().
+                updateStateWithLinkAt(this->getBaseLink(),
+                                      scene_T_base_link_desired);
 }
 
 bool iDynUtils::updateForceTorqueMeasurement(const ft_measure& force_torque_measurement)

@@ -146,11 +146,29 @@ TEST_F(testFoo, testInitialization)
     std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
 
     iDynUtils idynutils("bigman", urdf_file, srdf_file);
+    unsigned int moveit_has_virtual_joint = 0;
+    if(idynutils.moveit_robot_model->getRootJoint()->getType() == moveit::core::JointModel::FLOATING ||
+       idynutils.moveit_robot_model->getRootJointName() == "virtual_joint")
+    {
+        moveit_has_virtual_joint = 1;
+        std::cout << "moveit has virtual joint" << std::endl;
+        std::cout << "Root link is " << idynutils.moveit_robot_model->getRootLinkName() << std::endl;
+    }
 
     //Test ALL active joint list
-    for(unsigned int i = 0; i < idynutils.moveit_robot_model->getActiveJointModels().size(); ++i)
+    for(unsigned int i = 0; i < (idynutils.moveit_robot_model->getActiveJointModels().size() - moveit_has_virtual_joint); ++i)
         EXPECT_TRUE(idynutils.getJointNames()[i] ==
-                    idynutils.moveit_robot_model->getActiveJointModels()[i]->getName());
+                    idynutils.
+                        moveit_robot_model->
+                            getActiveJointModels()[i + moveit_has_virtual_joint]->
+                                getName())
+                <<  idynutils.getJointNames()[i]
+                <<  " vs "
+                <<  idynutils.
+                    moveit_robot_model->
+                        getActiveJointModels()[i + moveit_has_virtual_joint]->
+                            getName() << std::endl;
+                                                                                           ;
 
     for(unsigned int i = 0; i < idynutils.getJointNames().size(); ++i)
         ASSERT_EQ(  idynutils.iDyn3_model.getDOFIndex(idynutils.getJointNames()[i]),
