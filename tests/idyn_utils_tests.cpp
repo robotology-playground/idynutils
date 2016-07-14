@@ -688,10 +688,12 @@ TEST_F(testIDynUtils, testWorldCollision)
     } else std::cout << "--- DISABLING PLANNING SCENE PUBLISHING" << std::endl;
 
     ros::Publisher planning_scene_publisher;
+    ros::Publisher display_robot_state;
     unsigned int attempts = 0;
     if(ros_is_running)
     {
         planning_scene_publisher = node_handle->advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
+        display_robot_state = node_handle->advertise<moveit_msgs::DisplayRobotState>("display_robot_state", 1);
         ros::WallDuration sleep_t(1);
         sleep_t.sleep();
     }
@@ -752,6 +754,7 @@ TEST_F(testIDynUtils, testWorldCollision)
         while(node_handle->ok() && attempts < 20)
         {
             planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            display_robot_state.publish(idynutils.getDisplayRobotStateMsg());
             ros::spinOnce();
             ros::WallDuration sleep_t(0.5);
             sleep_t.sleep();
@@ -783,6 +786,7 @@ TEST_F(testIDynUtils, testWorldCollision)
         while(node_handle->ok() && attempts < 20)
         {
             planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            display_robot_state.publish(idynutils.getDisplayRobotStateMsg());
             ros::spinOnce();
             ros::WallDuration sleep_t(0.5);
             sleep_t.sleep();
