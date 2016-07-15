@@ -10,7 +10,7 @@ void octomap_utils::transformOctomap(octomap_msgs::Octomap &octomap_msg, Eigen::
 
     octomath::Pose6D t = tf::poseEigenToOctomap(transform);
 
-    std::cout << "starting octmap transform ...";
+    std::cout << "starting octomap transform ...";
     for(octomap::OcTree::leaf_iterator it = octree->begin_leafs(),
         end=octree->end_leafs(); it!= end; ++it)
     {
@@ -39,7 +39,7 @@ octomap_msgs::Octomap octomap_utils::transformAndFilterOctomap(const octomap_msg
 
     octomath::Pose6D t = tf::poseEigenToOctomap(transform);
 
-    std::cout << "starting octmap transform and filter...";
+    std::cout << "starting octomap transform and filter...";
     for(octomap::OcTree::leaf_iterator it = octree->begin_leafs(),
         end=octree->end_leafs(); it!= end; ++it)
     {
@@ -77,7 +77,7 @@ void octomap_utils::filterOctomap(octomap_msgs::Octomap &octomap_msg,
 
     octomath::Pose6D t = tf::poseEigenToOctomap(transform);
 
-    std::cout << "starting octmap filtering ...";
+    std::cout << "starting octomap filtering ...";
     for(octomap::OcTree::leaf_iterator it = octree->begin_leafs(),
         end=octree->end_leafs(); it!= end; ++it)
     {
