@@ -936,7 +936,9 @@ moveit_msgs::PlanningScene iDynUtils::getPlanningSceneMsg()
                             components.WORLD_OBJECT_NAMES;
     this->moveit_planning_scene->getPlanningSceneMsg(scene, components);
     #ifdef RVIZ_DOES_NOT_TRANSFORM_OCTOMAP
-    octomap_utils::octomapWithPoseToOctomap(scene.world.octomap);
+    if(this->moveit_planning_scene->getWorld()->getObject(planning_scene::PlanningScene::OCTOMAP_NS)) {
+        octomap_utils::octomapWithPoseToOctomap(scene.world.octomap);
+    }
     #endif
     return scene;
 }
