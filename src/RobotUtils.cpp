@@ -114,6 +114,24 @@ void RobotUtils::move(const yarp::sig::Vector &_q) {
     if(head.isAvailable) head.move(q_commanded_head);
 }
 
+void RobotUtils::moveNoHead(const yarp::sig::Vector& q)
+{
+    fromIdynToRobot(q,
+                    q_commanded_right_arm,
+                    q_commanded_left_arm,
+                    q_commanded_torso,
+                    q_commanded_right_leg,
+                    q_commanded_left_leg
+                    );
+
+    torso.move(q_commanded_torso);
+    left_arm.move(q_commanded_left_arm);
+    right_arm.move(q_commanded_right_arm);
+    left_leg.move(q_commanded_left_leg);
+    right_leg.move(q_commanded_right_leg);
+}
+
+
 bool RobotUtils::moveDone()
 {
     bool moveDone = torso.moveDone() &&

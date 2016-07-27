@@ -170,6 +170,12 @@ public:
     bool moveDone();
 
     /**
+     * @brief move send potision commands to all the robot joints except the hands and the head. Works only when the robot is in joint poisition control mode.
+     * @param q the desired joint position vector
+     */
+    void moveNoHead(const yarp::sig::Vector &q);
+
+    /**
      * @brief move send potision commands to the robot hands.
      * @param q_left_hand the desired joint position vector for the left hand
      * @param q_right_hand the desired joint position vector for the right hand
