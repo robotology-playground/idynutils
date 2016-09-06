@@ -54,7 +54,7 @@ void yarp_IMU_interface::_sense()
 {
 #ifndef      NDEBUG //loss of performance and lot of output, but in debug mode this is what you want
     if (!_ok) {
-        std::cout<<"IMU: you are reading output from a disconnected IMU, values are wrong!!"<<std::endl;
+//         std::cout<<"IMU: you are reading output from a disconnected IMU, values are wrong!!"<<std::endl;
         return;
     }
 #endif
