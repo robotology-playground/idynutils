@@ -59,8 +59,8 @@ public:
      */
     RobotUtils( const std::string moduleName,
                 const std::string robotName,
-	        const std::string urdf_path = "",
-	        const std::string srdf_path = "" );
+            const std::string urdf_path = "",
+            const std::string srdf_path = "" );
 
     walkman::yarp_single_chain_interface right_hand, left_hand;
     walkman::yarp_single_chain_interface right_arm, left_arm;
@@ -128,6 +128,12 @@ public:
      * @return
      */
     yarp::sig::Vector& senseTorque();
+    
+    /**
+     * @brief senseMotorPosition returns the motor position of the robot's joints
+     * @return
+     */
+    yarp::sig::Vector& senseMotorPosition();
     
     /**
      * @brief sensePositionRefFeedback returns the last position ref feedback sent to the firmware
@@ -445,6 +451,17 @@ private:
     yarp::sig::Vector tau_sensed_right_leg;
     yarp::sig::Vector tau_sensed_torso;
     yarp::sig::Vector tau_sensed_head;
+    
+    yarp::sig::Vector q_motor_sensed;
+
+    yarp::sig::Vector q_motor_sensed_left_hand;
+    yarp::sig::Vector q_motor_sensed_right_hand;
+    yarp::sig::Vector q_motor_sensed_left_arm;
+    yarp::sig::Vector q_motor_sensed_right_arm;
+    yarp::sig::Vector q_motor_sensed_left_leg;
+    yarp::sig::Vector q_motor_sensed_right_leg;
+    yarp::sig::Vector q_motor_sensed_torso;
+    yarp::sig::Vector q_motor_sensed_head;
     
     yarp::sig::Vector q_ref_feedback_sensed;
 
