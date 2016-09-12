@@ -77,8 +77,6 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     }
     if (!internal_isAvailable)
     {
-        //TODO
-	exit(123);
         return;
     }
     
