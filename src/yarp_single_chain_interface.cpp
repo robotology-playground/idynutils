@@ -644,6 +644,56 @@ yarp_single_chain_interface::~yarp_single_chain_interface()
         polyDriver.close();
 }
 
+void walkman::yarp_single_chain_interface::operator=(const walkman::yarp_single_chain_interface& k)
+{
+    kinematic_chain = k.kinematic_chain;
+    joints_number = k.joints_number;
+    module_prefix = k.module_prefix;
+    _useSI = k._useSI;
+    _controlType = k._controlType;
+    _robot_name = k._robot_name;
+
+    internal_isAvailable=false;
+    if(createPolyDriver(kinematic_chain.c_str(), _robot_name.c_str(), polyDriver))
+    {
+        bool temp=true;
+        temp=temp&&polyDriver.view(encodersMotor);
+        temp=temp&&polyDriver.view(controlMode);
+        temp=temp&&polyDriver.view(interactionMode);
+        temp=temp&&polyDriver.view(motorEncoders);
+        temp=temp&&polyDriver.view(positionControl);
+        temp=temp&&polyDriver.view(positionDirect);
+        temp=temp&&polyDriver.view(impedancePositionControl);
+        temp=temp&&polyDriver.view(torqueControl);
+        temp=temp&&polyDriver.view(velocityControl);
+        internal_isAvailable = temp;
+
+        // optional interfaces
+        if(polyDriver.view(pidControl))
+            std::cout << "Loaded PID control interface for "
+                      << _robot_name << "/"
+                      << kinematic_chain << std::endl;
+        if(polyDriver.view(controlLimits))
+            std::cout << "Loaded control limits interface for "
+                      << _robot_name << "/"
+                      << kinematic_chain << std::endl;
+    }
+    if (!internal_isAvailable)
+    {
+        return;
+    }
+
+    encodersMotor->getAxes(&(this->joints_number));
+    q_buffer.resize(joints_number);
+    qdot_buffer.resize(joints_number);
+    tau_buffer.resize(joints_number);
+    q_motor_buffer.resize(joints_number);
+    q_ref_feedback_buffer.resize(joints_number);
+
+    if(!setControlType(_controlType))
+        std::cout << "PROBLEM initializing " << kinematic_chain << " with " << _controlType << std::endl;
+}
+
 inline void yarp_single_chain_interface::convertEncoderToSI(yarp::sig::Vector &vector)
 {
     for(unsigned int i = 0; i < vector.size(); ++i) {
