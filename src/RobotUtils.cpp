@@ -50,6 +50,14 @@ RobotUtils::RobotUtils(const std::string moduleName,
     q_commanded_right_leg( right_leg.getNumberOfJoints() ),
     q_commanded_left_leg( left_leg.getNumberOfJoints() ),
     q_commanded_head(head.getNumberOfJoints()),
+    q_motor_sensed_right_hand( 1 ),
+    q_motor_sensed_left_hand( 1 ),
+    q_motor_sensed_right_arm( right_arm.getNumberOfJoints() ),
+    q_motor_sensed_left_arm( left_arm.getNumberOfJoints() ),
+    q_motor_sensed_torso( torso.getNumberOfJoints() ),
+    q_motor_sensed_right_leg( right_leg.getNumberOfJoints() ),
+    q_motor_sensed_left_leg( left_leg.getNumberOfJoints() ),
+    q_motor_sensed_head(head.getNumberOfJoints()),
     q_ref_feedback_sensed_right_hand( 1 ),
     q_ref_feedback_sensed_left_hand( 1 ),
     q_ref_feedback_sensed_right_arm( right_arm.getNumberOfJoints() ),
@@ -65,6 +73,7 @@ RobotUtils::RobotUtils(const std::string moduleName,
     q_sensed.resize(this->number_of_joints,0.0);
     qdot_sensed.resize(this->number_of_joints,0.0);
     tau_sensed.resize(this->number_of_joints,0.0);
+    q_motor_sensed.resize(this->number_of_joints,0.0);
     q_ref_feedback_sensed.resize(this->number_of_joints,0.0);
 
     loadIMUSensors();
@@ -113,6 +122,24 @@ void RobotUtils::move(const yarp::sig::Vector &_q) {
     right_leg.move(q_commanded_right_leg);
     if(head.isAvailable) head.move(q_commanded_head);
 }
+
+void RobotUtils::moveNoHead(const yarp::sig::Vector& q)
+{
+    fromIdynToRobot(q,
+                    q_commanded_right_arm,
+                    q_commanded_left_arm,
+                    q_commanded_torso,
+                    q_commanded_right_leg,
+                    q_commanded_left_leg
+                    );
+
+    torso.move(q_commanded_torso);
+    left_arm.move(q_commanded_left_arm);
+    right_arm.move(q_commanded_right_arm);
+    left_leg.move(q_commanded_left_leg);
+    right_leg.move(q_commanded_right_leg);
+}
+
 
 bool RobotUtils::moveDone()
 {
@@ -395,6 +422,27 @@ yarp::sig::Vector &RobotUtils::senseTorque()
 
     return tau_sensed;
 }
+
+yarp::sig::Vector& RobotUtils::senseMotorPosition()
+{
+    right_arm.senseMotorPosition(q_motor_sensed_right_arm);
+    left_arm.senseMotorPosition(q_motor_sensed_left_arm);
+    torso.senseMotorPosition(q_motor_sensed_torso);
+    right_leg.senseMotorPosition(q_motor_sensed_right_leg);
+    left_leg.senseMotorPosition(q_motor_sensed_left_leg);
+    if(head.isAvailable) head.senseMotorPosition(q_motor_sensed_head);
+
+    fromRobotToIdyn(q_motor_sensed_right_arm,
+                    q_motor_sensed_left_arm,
+                    q_motor_sensed_torso,
+                    q_motor_sensed_right_leg,
+                    q_motor_sensed_left_leg,
+                    q_motor_sensed_head,
+                    q_motor_sensed);
+
+    return q_motor_sensed;
+}
+
 
 yarp::sig::Vector& RobotUtils::sensePositionRefFeedback()
 {

@@ -124,11 +124,49 @@ public:
 
         return e;
     }
+
+    /**
+     * @brief normalize a given quaternion:
+     * Given q = (x, y, z, w)
+     * return q_n = (x/d, y/d, z/d, w/d)
+     * with d = sqrt(x**2 + y**2 + z**2 + w**2)
+     * @param q quaternion to normalize
+     */
+    static void normalize(quaternion& q)
+    {
+        double d = sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+        q.x = q.x/d;
+        q.y = q.y/d;
+        q.z = q.z/d;
+        q.w = q.w/d;
+    }
 };
 
 class cartesian_utils
 {
 public:
+
+    /**
+     * @brief pnpoly this code is EXACTLY the code of the PNPOLY - Point Inclusion in Polygon Test
+        W. Randolph Franklin (WRF) to test if a point is inside a plygon
+        (https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html)
+     * @param nvert Number of vertices in the polygon
+     * @param vertx Arrays containing the x-coordinates of the polygon's vertices
+     * @param verty Arrays containing the y-coordinates of the polygon's vertices
+     * @param testx X-coordinate of the test point
+     * @param testy Y-coordinate of the test point
+     * @return 0 if false
+     */
+    static int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
+    {
+        int i, j, c = 0;
+          for (i = 0, j = nvert-1; i < nvert; j = i++) {
+            if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+             (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+               c = !c;
+          }
+          return c;
+    }
 
     /**
      * @brief computeCapturePoint computes the capture point position in world frame

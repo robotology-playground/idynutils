@@ -6,9 +6,20 @@
 #include <yarp/math/SVD.h>
 #include <yarp/os/Time.h>
 #include <kdl/frames_io.hpp>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
+#include <eigen_conversions/eigen_kdl.h>
+#include <eigen_conversions/eigen_msg.h>
+
+#include <ros/ros.h>
+#include <ros/time.h>
+#include <ros/master.h>
 
 #include <iostream>
 #include <cstdlib>
+
+int _argc;
+char** _argv;
 
 using namespace yarp::math;
 
@@ -88,6 +99,29 @@ protected:
         updateiDyn3Model(q,true);
     }
 
+    yarp::sig::Vector getGoodInitialPositionBigman(iDynUtils& idynutils) {
+        yarp::sig::Vector q(idynutils.iDyn3_model.getNrOfDOFs(), 0.0);
+        yarp::sig::Vector leg(idynutils.left_leg.getNrOfDOFs(), 0.0);
+        leg[2] = -25.0 * M_PI/180.0;
+        leg[3] =  50.0 * M_PI/180.0;
+        leg[4] = -25.0 * M_PI/180.0;
+        idynutils.fromRobotToIDyn(leg, q, idynutils.left_leg);
+        idynutils.fromRobotToIDyn(leg, q, idynutils.right_leg);
+        yarp::sig::Vector arm(idynutils.left_arm.getNrOfDOFs(), 0.0);
+        arm[0] = 20.0 * M_PI/180.0;
+        arm[1] = 10.0 * M_PI/180.0;
+        arm[2] = -15.0 * M_PI/180.0;
+        arm[3] = -80.0 * M_PI/180.0;
+        idynutils.fromRobotToIDyn(arm, q, idynutils.left_arm);
+        arm[1] = -arm[1];
+        arm[2] = -arm[2];
+        idynutils.fromRobotToIDyn(arm, q, idynutils.right_arm);
+
+        std::cout << "Q_initial: " << q.toString() << std::endl;
+        return q;
+    }
+
+
     yarp::sig::Vector q;
 };
 
@@ -112,11 +146,29 @@ TEST_F(testFoo, testInitialization)
     std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
 
     iDynUtils idynutils("bigman", urdf_file, srdf_file);
+    unsigned int moveit_has_virtual_joint = 0;
+    if(idynutils.moveit_robot_model->getRootJoint()->getType() == moveit::core::JointModel::FLOATING ||
+       idynutils.moveit_robot_model->getRootJointName() == "virtual_joint")
+    {
+        moveit_has_virtual_joint = 1;
+        std::cout << "moveit has virtual joint" << std::endl;
+        std::cout << "Root link is " << idynutils.moveit_robot_model->getRootLinkName() << std::endl;
+    }
 
     //Test ALL active joint list
-    for(unsigned int i = 0; i < idynutils.moveit_robot_model->getActiveJointModels().size(); ++i)
+    for(unsigned int i = 0; i < (idynutils.moveit_robot_model->getActiveJointModels().size() - moveit_has_virtual_joint); ++i)
         EXPECT_TRUE(idynutils.getJointNames()[i] ==
-                    idynutils.moveit_robot_model->getActiveJointModels()[i]->getName());
+                    idynutils.
+                        moveit_robot_model->
+                            getActiveJointModels()[i + moveit_has_virtual_joint]->
+                                getName())
+                <<  idynutils.getJointNames()[i]
+                <<  " vs "
+                <<  idynutils.
+                    moveit_robot_model->
+                        getActiveJointModels()[i + moveit_has_virtual_joint]->
+                            getName() << std::endl;
+                                                                                           ;
 
     for(unsigned int i = 0; i < idynutils.getJointNames().size(); ++i)
         ASSERT_EQ(  idynutils.iDyn3_model.getDOFIndex(idynutils.getJointNames()[i]),
@@ -577,7 +629,7 @@ TEST_F(testIDynUtils, testUpdateIdyn3ModelFT)
 
     for(unsigned int i = 0; i < 4; ++i)
     {
-        moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(ft_reference_frames[i]);
+        const moveit::core::LinkModel* ft_link = moveit_robot_model->getLinkModel(ft_reference_frames[i]);
         int ft_index = iDyn3_model.getFTSensorIndex(ft_link->getParentJointModel()->getName());
 
         yarp::sig::Vector ft(6, 0.0);
@@ -611,6 +663,7 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     EXPECT_TRUE(idynutils.checkSelfCollision());
     std::cout << "Single self-collision (during collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_TRUE(idynutils.checkCollision());
 
     q = idynutils.iDyn3_model.getAng();
     q[idynutils.iDyn3_model.getDOFIndex("RShLat")] = -0.15;
@@ -619,6 +672,133 @@ TEST_F(testIDynUtils, testCheckSelfCollision)
     EXPECT_FALSE(idynutils.checkSelfCollisionAt(q));
     std::cout << "Single self-collision (not in collision) detection took "
               << yarp::os::Time::now() - begin << std::endl;
+    idynutils.updateiDyn3Model(q, true);
+    EXPECT_FALSE(idynutils.checkCollision());
+}
+
+TEST_F(testIDynUtils, testWorldCollision)
+{
+    ros::init(_argc, _argv, "planning_scene_publisher");
+    bool ros_is_running = ros::master::check();
+    boost::shared_ptr<ros::NodeHandle> node_handle;
+    if(ros_is_running)
+    {
+        node_handle.reset(new ros::NodeHandle());
+        std::cout << "--- ENABLING PLANNING SCENE PUBLISHING" << std::endl;
+    } else std::cout << "--- DISABLING PLANNING SCENE PUBLISHING" << std::endl;
+
+    ros::Publisher planning_scene_publisher;
+    ros::Publisher display_robot_state;
+    unsigned int attempts = 0;
+    if(ros_is_running)
+    {
+        planning_scene_publisher = node_handle->advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
+        display_robot_state = node_handle->advertise<moveit_msgs::DisplayRobotState>("display_robot_state", 1);
+        ros::WallDuration sleep_t(1);
+        sleep_t.sleep();
+    }
+
+    std::string urdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.urdf";
+    std::string srdf_file = std::string(IDYNUTILS_TESTS_ROBOTS_DIR) + "bigman/bigman.srdf";
+    std::cout << "OPENING OCTOMAP BAG:\n" + std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag" + "\n..";
+    rosbag::Bag bag;
+    bag.open(std::string(IDYNUTILS_TESTS_DATA_DIR) + "octomap.bag", rosbag::bagmode::Read);
+    octomap_msgs::Octomap msg;
+    std::vector<std::string> topics;
+    topics.push_back(std::string("/octomap_binary"));
+    rosbag::View view(bag, rosbag::TopicQuery(topics));
+    rosbag::View::const_iterator i_m = view.begin();
+    rosbag::MessageInstance m = *i_m;
+    octomap_msgs::Octomap::ConstPtr octomapMsg = m.instantiate<octomap_msgs::Octomap>();
+    EXPECT_EQ(octomapMsg->header.seq, 23);
+    bag.close();
+    std::cout << " DONE" << std::endl;
+    std::cout.flush();
+
+    iDynUtils idynutils("bigman", urdf_file, srdf_file);
+    q = this->getGoodInitialPositionBigman(idynutils);
+    idynutils.updateiDyn3Model(q, true);
+
+    double begin = yarp::os::Time::now();
+    EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen before updating octomap\n------\n";
+    std::cout << "Single world-robot collision (not in collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_FALSE(idynutils.checkCollision()) << "\n------\ncollision should not happen before updating octomap\n------\n";
+
+    octomap_msgs::OctomapWithPose octomapMsgWithPose;
+    octomapMsgWithPose.octomap = *octomapMsg;
+    octomapMsgWithPose.header = octomapMsg->header;
+    Eigen::Affine3d camera_T_octomap; camera_T_octomap.setIdentity();
+    Eigen::Affine3d w_T_octomap = idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id);
+    Eigen::Affine3d w_T_t; w_T_t.setIdentity(); w_T_t.translate( Eigen::Vector3d(-2.0,0.0,0.0) );
+    Eigen::Affine3d octomap_T_octomap2; octomap_T_octomap2.setIdentity();
+    octomap_T_octomap2.translate(w_T_octomap.inverse().rotation()*w_T_t.translation());
+    Eigen::Affine3d camera_T_octomap2 = camera_T_octomap * octomap_T_octomap2;
+    tf::poseEigenToMsg(camera_T_octomap2,
+                       octomapMsgWithPose.origin);
+    EXPECT_FALSE(idynutils.hasOccupancyMap());
+    idynutils.updateOccupancyMap(octomapMsgWithPose);
+    EXPECT_TRUE(idynutils.hasOccupancyMap());
+
+    std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
+    std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
+
+    begin = yarp::os::Time::now();
+    EXPECT_TRUE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should happen after updating octomap\n------\n";
+    std::cout << "Single world-robot collision (during collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_TRUE(idynutils.checkCollision()) << "\n------\ncollision should happen after updating octomap\n------\n";
+
+    if(ros_is_running)
+    {
+        while(node_handle->ok() && attempts < 20)
+        {
+            planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            display_robot_state.publish(idynutils.getDisplayRobotStateMsg());
+            ros::spinOnce();
+            ros::WallDuration sleep_t(0.5);
+            sleep_t.sleep();
+            attempts++;
+            std::cout << "\n...publishing planning scene";
+        }
+        std::cout << std::endl;
+        attempts = 0;
+    }
+
+    w_T_t.setIdentity(); w_T_t.translate( Eigen::Vector3d(1.0,0.0,0.0) );
+    octomap_T_octomap2.setIdentity();
+    octomap_T_octomap2.translate(w_T_octomap.inverse().rotation()*w_T_t.translation());
+    camera_T_octomap2 = camera_T_octomap * octomap_T_octomap2;
+    tf::poseEigenToMsg(camera_T_octomap2,
+                       octomapMsgWithPose.origin);
+    idynutils.updateOccupancyMap(octomapMsgWithPose);
+
+    std::cout << "\n----\nhead tf:\n"      << idynutils.moveit_planning_scene->getFrameTransform(octomapMsg->header.frame_id).translation() << std::endl;
+    std::cout << "\n----\noctomap tf;\n"   << idynutils.moveit_planning_scene->getFrameTransform("<octomap>").translation() << std::endl;
+    begin = yarp::os::Time::now();
+    EXPECT_FALSE(idynutils.checkCollisionWithWorld()) << "\n------\ncollision should not happen after moving the robot\n------\n";
+    std::cout << "Single world-robot collision (not in collision) detection took "
+              << yarp::os::Time::now() - begin << std::endl;
+    EXPECT_FALSE(idynutils.checkCollision()) << "\n------\ncollision should not happen after moving the robot\n------\n";
+
+    if(ros_is_running)
+    {
+        while(node_handle->ok() && attempts < 20)
+        {
+            planning_scene_publisher.publish(idynutils.getPlanningSceneMsg());
+            display_robot_state.publish(idynutils.getDisplayRobotStateMsg());
+            ros::spinOnce();
+            ros::WallDuration sleep_t(0.5);
+            sleep_t.sleep();
+            attempts++;
+            std::cout << "\n...publishing planning scene";
+        }
+        std::cout << std::endl;
+        attempts = 0;
+    }
+
+    idynutils.resetOccupancyMap();
+    EXPECT_FALSE(idynutils.hasOccupancyMap());
 }
 
 TEST_F(testIDynUtils, testGerenicRotationUpdateIdyn3Model)
@@ -936,6 +1116,40 @@ TEST_F(testIDynUtils, testAnchorSwitch)
 
 }
 
+TEST_F(testIDynUtils, testAnchorIsCoherentWithUpdates)
+{
+    setGoodInitialPosition();
+    // does the anchor really keeps steady when updating the state?
+    KDL::Frame anchor_before_switch = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    std::string new_anchor = right_leg.end_effector_name;
+    std::cout<<"Setting new anchor in "<<new_anchor<<std::endl;
+    switchAnchor(new_anchor);
+    KDL::Frame anchor_after_switch = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    EXPECT_EQ(anchor_before_switch, anchor_after_switch);
+
+    //we check drifting
+    for(unsigned int i = 0; i < 10; ++i)
+    {
+      KDL::Frame anchor_before_update = anchor_after_switch;
+      q[right_leg.joint_numbers[right_leg.getNrOfDOFs()-1]] += 0.1;
+      this->updateiDyn3Model(q, true);
+      KDL::Frame anchor_after_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+      EXPECT_EQ(anchor_before_update, anchor_after_update);
+    }
+}
+
+TEST_F(testIDynUtils, testWhyAnchorIsCoherent)
+{
+    setGoodInitialPosition();
+
+    // we expect getPositionKDL not to be lazy - i.e., iDyn3 recomputes the transform is needed
+    KDL::Frame anchor_before_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    q[right_leg.joint_numbers[right_leg.getNrOfDOFs()-1]] += 0.1;
+    this->iDyn3_model.setAng(q);
+    KDL::Frame anchor_after_update = iDyn3_model.getPositionKDL(right_leg.end_effector_index);
+    EXPECT_FALSE(anchor_before_update == anchor_after_update);
+}
+
 TEST_P(testIDynUtilsWithAndWithoutUpdateAndDifferentSwitchTypes, testAnchorSwitchWGetPosition)
 {
     bool updateIDynAfterSwitch = GetParam().first;
@@ -1248,11 +1462,23 @@ TEST_P(testIDynUtilsWithAndWithoutUpdateAndWithFootSwitching, testWalking)
             J.removeCols(0,6);
             q_whole += pinv(J,1E-7)*0.1*b;
             normal_model.updateiDyn3Model(q_whole,true);
-
+            normal_model.updateRobotState();
             //std::cout << "e" << iterations << " = " << x_ref(0,3) - x(0,3) << std::endl;
 
             anchorAfterSwitch = normal_model.iDyn3_model.getPositionKDL(anchor);
             EXPECT_TRUE(anchorAfterSwitch == anchorBeforeSwitch);
+
+            Eigen::Affine3d anchorAfterSwitch_eigen = normal_model.moveit_planning_scene->
+                    getCurrentState().getFrameTransform(anchorName);
+
+            KDL::Frame anchorAfterSwitch_kdl;
+            tf::transformEigenToKDL(anchorAfterSwitch_eigen,
+                                    anchorAfterSwitch_kdl);
+            EXPECT_TRUE(anchorAfterSwitch_kdl == anchorAfterSwitch) << "----- error:\n"
+                                                                    << anchorAfterSwitch_kdl
+                                                                    << "\nshould not differ from\n"
+                                                                    << anchorAfterSwitch
+                                                                    << "\n -----";
 
         } while (norm(b) > 1e-10 && iterations < 1000);
         ASSERT_TRUE (iterations < 1000) << "IK did not converge after 1000 iterations. Stopping";
@@ -1289,5 +1515,7 @@ INSTANTIATE_TEST_CASE_P(CheckWorldConsistencyByWalking9Steps,
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  _argc = argc;
+  _argv = argv;
   return RUN_ALL_TESTS();
 }

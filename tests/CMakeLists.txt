@@ -13,6 +13,7 @@ FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
+FIND_PACKAGE(rosbag REQUIRED)
 FIND_PACKAGE(tf REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(YARP REQUIRED)
@@ -69,7 +70,7 @@ TARGET_LINK_LIBRARIES(CollisionUtilsTest ${TestLibs} ${fcl_LIBRARIES})
 add_dependencies(CollisionUtilsTest GTest-ext idynutils)
 
 ADD_EXECUTABLE(iDynUtilsTest    idyn_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(iDynUtilsTest ${TestLibs})
+TARGET_LINK_LIBRARIES(iDynUtilsTest ${TestLibs} ${rosbag_LIBRARIES})
 add_dependencies(iDynUtilsTest GTest-ext idynutils)
 
 ADD_EXECUTABLE(RobotUtilsTest    robot_utils_tests.cpp)
@@ -85,6 +86,7 @@ TARGET_LINK_LIBRARIES(testUtilsTest ${TestLibs})
 add_dependencies(testUtilsTest GTest-ext idynutils)
 
 add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
+add_definitions(-DIDYNUTILS_TESTS_DATA_DIR="${CMAKE_CURRENT_BINARY_DIR}/data/")
 
 add_test(NAME cartesian_utils_tests COMMAND CartesianUtilsTest)
 add_test(NAME collision_utils_tests COMMAND CollisionUtilsTest)
@@ -95,3 +97,6 @@ add_test(NAME yarp_single_chain_interface_tests COMMAND YSCITest)
 
 add_custom_target(copy_robot_model_files ALL
                   ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/robots" "${CMAKE_CURRENT_BINARY_DIR}/robots")
+
+add_custom_target(copy_robot_data_files ALL
+                  ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/data")

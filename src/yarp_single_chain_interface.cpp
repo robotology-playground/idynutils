@@ -38,6 +38,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     q_buffer(1,0.0),
     qdot_buffer(1,0.0),
     tau_buffer(1,0.0),
+    q_motor_buffer(1,0.0),
     // init list for control interfaces
     encodersMotor(NULL), controlLimits(NULL), controlMode(NULL),
     interactionMode(NULL), pidControl(NULL), positionControl(NULL),
@@ -56,6 +57,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
         temp=temp&&polyDriver.view(encodersMotor);
         temp=temp&&polyDriver.view(controlMode);
         temp=temp&&polyDriver.view(interactionMode);
+        temp=temp&&polyDriver.view(motorEncoders);
         temp=temp&&polyDriver.view(positionControl);
         temp=temp&&polyDriver.view(positionDirect);
         temp=temp&&polyDriver.view(impedancePositionControl);
@@ -75,7 +77,6 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     }
     if (!internal_isAvailable)
     {
-        //TODO
         return;
     }
     
@@ -83,6 +84,7 @@ yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_c
     q_buffer.resize(joints_number);
     qdot_buffer.resize(joints_number);
     tau_buffer.resize(joints_number);
+    q_motor_buffer.resize(joints_number);
     q_ref_feedback_buffer.resize(joints_number);
     
     if(!setControlType(controlType))
@@ -360,6 +362,19 @@ void yarp_single_chain_interface::sensePosition(yarp::sig::Vector& q_sensed) {
     sense(q_sensed);
 }
 
+yarp::sig::Vector yarp_single_chain_interface::senseMotorPosition() {
+    motorEncoders->getMotorEncoders(q_motor_buffer.data());
+    if(_useSI) convertEncoderToSI(q_motor_buffer);
+    return q_motor_buffer;
+}
+
+void yarp_single_chain_interface::senseMotorPosition(yarp::sig::Vector& q_sensed) {
+    if(q_sensed.size() != this->joints_number)
+        q_sensed.resize(this->joints_number);
+     motorEncoders->getMotorEncoders(q_sensed.data());
+    if(_useSI) convertEncoderToSI(q_sensed);
+}
+
 yarp::sig::Vector yarp_single_chain_interface::sense() {
     encodersMotor->getEncoders(q_buffer.data());
     if(_useSI) convertEncoderToSI(q_buffer);
@@ -369,12 +384,12 @@ yarp::sig::Vector yarp_single_chain_interface::sense() {
 void yarp_single_chain_interface::sensePositionRefFeedback(yarp::sig::Vector& q_position_ref_feedback) {
     if(q_position_ref_feedback.size() != this->joints_number)
         q_position_ref_feedback.resize(this->joints_number);
-    pidControl->getReferences(q_position_ref_feedback.data());
+    positionDirect->getRefPositions(q_position_ref_feedback.data());
     if(_useSI) convertEncoderToSI(q_position_ref_feedback);
 }
 
 yarp::sig::Vector yarp_single_chain_interface::sensePositionRefFeedback() {
-    pidControl->getReferences(q_ref_feedback_buffer.data());
+    positionDirect->getRefPositions(q_ref_feedback_buffer.data());
     if(_useSI) convertEncoderToSI(q_ref_feedback_buffer);
     return q_ref_feedback_buffer;
 }

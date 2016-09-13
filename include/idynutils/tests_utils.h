@@ -201,6 +201,34 @@ public:
      * @return false if not possible or not existing
      */
     static bool stopGZServer();
+
+    /**
+     * @brief _kbhit capture any input in a asynchrounous way.
+     * Based on the implementation in:
+     *      http://www.flipcode.com/archives/_kbhit_for_Linux.shtml
+     * @return 1 if a key is pressed
+     */
+    static int _kbhit();
+
+    /**
+     * @brief KDLFramesAreEqual perform GTEST check in 2 frames
+     * @param a first frame
+     * @param b second frame
+     */
+    static inline void KDLFramesAreEqual(const KDL::Frame& a, const KDL::Frame& b)
+    {
+        EXPECT_NEAR(a.p.x(), b.p.x(), 1e-10);
+        EXPECT_NEAR(a.p.y(), b.p.y(), 1e-10);
+        EXPECT_NEAR(a.p.z(), b.p.z(), 1e-10);
+
+        double x,y,z,w; a.M.GetQuaternion(x,y,z,w);
+        double xx,yy,zz,ww; b.M.GetQuaternion(xx,yy,zz,ww);
+
+        EXPECT_NEAR(x,xx, 1e-10);
+        EXPECT_NEAR(y,yy, 1e-10);
+        EXPECT_NEAR(z,zz, 1e-10);
+        EXPECT_NEAR(w,ww, 1e-10);
+    }
 };
 
 #endif

@@ -124,6 +124,22 @@ public:
      * \f$[deg]\f$ is useSI is false
      */
     void sensePosition(yarp::sig::Vector &q_sensed);
+    
+    /**
+     * @brief sensePosition returns joint positions
+     * @return a \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    yarp::sig::Vector senseMotorPosition();
+
+    /**
+     * @brief sensePosition returns joint positions
+     * @param q_sensed \f$R^{n_\text{chain\_joints}}\f$ vector which is in
+     * \f$[rad]\f$ if useSI is true
+     * \f$[deg]\f$ is useSI is false
+     */
+    void senseMotorPosition(yarp::sig::Vector &q_sensed);
 
     /**
      * @brief senseVelocity returns joint velocities
@@ -346,6 +362,7 @@ private:
     yarp::sig::Vector q_buffer;
     yarp::sig::Vector qdot_buffer;
     yarp::sig::Vector tau_buffer;
+    yarp::sig::Vector q_motor_buffer;
     yarp::sig::Vector q_ref_feedback_buffer;
     bool internal_isAvailable;
     yarp::dev::PolyDriver polyDriver;
@@ -364,6 +381,7 @@ private:
     yarp::dev::IControlLimits2 *controlLimits;
     yarp::dev::IControlMode2 *controlMode;
     yarp::dev::IInteractionMode *interactionMode;
+    yarp::dev::IMotorEncoders *motorEncoders;
     yarp::dev::IPidControl *pidControl;
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::IPositionDirect *positionDirect;
