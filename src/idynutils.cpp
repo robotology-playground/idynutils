@@ -1095,3 +1095,47 @@ void iDynUtils::updateWorldOrientationWithIMU()
 
     this->setWorldPose(anchor_T_world, anchor_name);
 }
+
+KDL::Frame iDynUtils::getPose(const std::string& first_link, const std::string& second_link)
+{
+    int first_link_id = iDyn3_model.getLinkIndex(first_link);
+    if(first_link_id == -1){
+        yarp::sig::Vector zeros(16, 0.0);
+        KDL::Frame T;
+        T.Make4x4(zeros.data());
+        return T;}
+
+    int second_link_id = iDyn3_model.getLinkIndex(second_link);
+    if(second_link_id == -1){
+        yarp::sig::Vector zeros(16, 0.0);
+        KDL::Frame T;
+        T.Make4x4(zeros.data());
+        return T;}
+
+    return iDyn3_model.getPositionKDL(first_link_id, second_link_id);
+}
+
+KDL::Frame iDynUtils::getPose(const std::string& link)
+{
+    int link_id = iDyn3_model.getLinkIndex(link);
+    if(link_id == -1){
+        yarp::sig::Vector zeros(16, 0.0);
+        KDL::Frame T;
+        T.Make4x4(zeros.data());
+        return T;}
+
+    return iDyn3_model.getPositionKDL(link_id);
+}
+
+KDL::Vector iDynUtils::getCoM(const std::string& link)
+{
+    if(link.compare("world") == 0)
+        return iDyn3_model.getCOMKDL();
+
+    int link_id = iDyn3_model.getLinkIndex(link);
+    if(link_id == -1){
+        KDL::Vector v;
+        v.Zero();
+        return v;}
+    return iDyn3_model.getCOMKDL(link_id);
+}

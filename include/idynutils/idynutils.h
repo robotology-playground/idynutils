@@ -143,6 +143,29 @@ public:
     iCub::iDynTree::DynTree iDyn3_model;
 
     /**
+     * @brief getPose return the pose of second_link expressed in first_link
+     * @param first_link
+     * @param second_link
+     * @return a matrix of zeros if one of the two frames does not exists in the model
+     */
+    KDL::Frame getPose(const std::string& first_link, const std::string& second_link);
+
+    /**
+     * @brief getPose return the pose of link expressed in world frame
+     * @param link
+     * @return a matrix of zeros if the frame link does not exists in the model
+     */
+    KDL::Frame getPose(const std::string& link);
+
+    /**
+     * @brief getCoM return the pose of the CoM expressed in world frame or link frame if
+     * specified
+     * @param link
+     * @return a matrix of zeros if the frame link does not exists in the model
+     */
+    KDL::Vector getCoM(const std::string& link = "world");
+
+    /**
      * @brief getNrOfFTSensors return # of FT sensors in the model
      * @return # of FT sensors in the model
      */
