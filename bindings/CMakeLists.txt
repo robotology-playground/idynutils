@@ -19,11 +19,12 @@ include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem)
-FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(iDynTree REQUIRED)
+FIND_PACKAGE(orocos_kdl REQUIRED)
 
 # add include directories
-INCLUDE_DIRECTORIES(. include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(. include ${YARP_INCLUDE_DIRS} ${iDynTree_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS})
 
 
 find_package(SWIG)
@@ -33,7 +34,7 @@ if(SWIG_FOUND)
     set_source_files_properties(pydynutils.i PROPERTIES CPLUSPLUS ON)
 
     include_directories(.)
-    link_libraries(idynutils)
+    link_libraries(idynutils ${YARP_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
     set(CMAKE_SWIG_FLAGS "-Wall;-module;pydynutils;-threads")
 
