@@ -14,6 +14,7 @@
 #include "idynutils/yarp_single_chain_interface.h"
 #include "idynutils/ControlType.hpp"
 #include "idynutils/RobotUtils.h"
+#include <kdl/frames.hpp>
 %}
 
 /* Note : always include headers following the inheritance order */
