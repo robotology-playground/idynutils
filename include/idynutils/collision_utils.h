@@ -26,6 +26,17 @@
 #include <list>
 #include <string>
 #include <utility>
+#include <fcl/config.h>
+
+#if FCL_MINOR_VERSION < 5
+namespace fcl {
+    typedef boost::shared_ptr<fcl::CollisionGeometry> CollisionGeometryPtr;
+}
+#else
+namespace fcl {
+    typedef std::shared_ptr<fcl::CollisionGeometry> CollisionGeometryPtr;
+}
+#endif
 
 /**
  * @brief The LinkPairDistance class represents the minimum distance information between two links.
@@ -174,7 +185,7 @@ private:
     /**
      * @brief shapes_ is a map of collision geometries
      */
-    std::map<std::string,boost::shared_ptr<fcl::CollisionGeometry> > shapes_;
+    std::map<std::string,fcl::CollisionGeometryPtr > shapes_;
 
     /**
      * @brief custom_capsules_ is a map of custom capsules specified as endpoints + radius

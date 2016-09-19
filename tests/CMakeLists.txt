@@ -18,6 +18,36 @@ FIND_PACKAGE(tf REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(YARP REQUIRED)
 
+# Detect Linux Distribution
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+     if(EXISTS "/etc/lsb-release")
+         execute_process(COMMAND cat /etc/lsb-release
+                         COMMAND grep DISTRIB_CODENAME
+                         COMMAND awk -F= "{ print $2 }"
+                         COMMAND tr "\n" " "
+                         COMMAND sed "s/ //"
+                         OUTPUT_VARIABLE UBUNTU_VERSION
+                         RESULT_VARIABLE UBUNTU_VERSION_RESULT
+         )
+     endif(EXISTS "/etc/lsb-release")
+
+     message(STATUS "Configuring idynutils to be built on Ubuntu ${UBUNTU_VERSION}")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+if(${UBUNTU_VERSION} MATCHES "xenial")
+     message(STATUS "Adding CXX support")
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
+    check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+    if(COMPILER_SUPPORTS_CXX11)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    elseif(COMPILER_SUPPORTS_CXX0X)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    else()
+        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+    endif()
+endif(${UBUNTU_VERSION} MATCHES "xenial")
+
 # compite GTest
 find_package(GTest)
 if (NOT GTEST_FOUND)
