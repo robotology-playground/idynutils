@@ -303,6 +303,8 @@ public:
 
     const bool& isAvailable;
 
+    void operator=(const yarp_single_chain_interface& k);
+
 protected:
 
 
@@ -352,7 +354,6 @@ protected:
      * @return true if able to successfully write control mode and interaction mode for each joint
      */
     bool setControlTypes(const ControlTypes& controlTypes);
-
 private:
 
     bool createPolyDriver ( const std::string &kinematic_chain, const std::string &robot_name, yarp::dev::PolyDriver &polyDriver );
