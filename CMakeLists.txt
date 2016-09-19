@@ -41,7 +41,12 @@ FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    common
                                             filters
                                             surface
                                             search
-					    io)
+                                            io)
+                                            
+# on xenial there is a bug ATM wo that fcl is found but fcl_LIBRARIES is not
+if(NOT DEFINED fcl_LIBRARIES)
+  set(fcl_LIBRARIES "fcl")
+endif(NOT DEFINED flc_LIBRARIES)
 
 #if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wmissing-field-initializers -W -Wunused -Wuninitialized -Wformat=2 -Wctor-dtor-privacy -Wnon-virtual-dtor -Wwrite-strings -Wno-char-subscripts -Wreturn-type -Wcast-qual -Wcast-align -Wsign-promo -Woverloaded-virtual -fno-strict-aliasing  -Werror=address -Werror=parentheses " )

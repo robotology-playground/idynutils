@@ -18,6 +18,11 @@ FIND_PACKAGE(tf REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(YARP REQUIRED)
 
+# on xenial there is a bug ATM wo that fcl is found but fcl_LIBRARIES is not
+if(NOT DEFINED fcl_LIBRARIES)
+  set(fcl_LIBRARIES "fcl")
+endif(NOT DEFINED flc_LIBRARIES)
+
 # Detect Linux Distribution
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      if(EXISTS "/etc/lsb-release")
