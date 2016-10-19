@@ -25,6 +25,7 @@
 #include <vector>
 #include <list>
 #include <urdf/model.h>
+#include <Eigen/Dense>
 
 /**
   This class implements quaternion error as in the paper:
@@ -349,6 +350,40 @@ public:
      * @param wo KDL::Wrench
      */
     static void fromKDLWrenchtoYarpVector(const KDL::Wrench& wi, yarp::sig::Vector& wo);
+
+    static yarp::sig::Matrix fromEigentoYarp(const Eigen::MatrixXd& M);
+    static yarp::sig::Vector fromEigentoYarp(const Eigen::VectorXd& v);
+
+    /*
+    * Copied from Silvio Traversaro's iDynTree
+    *
+    * Copyright (C) 2013 RobotCub Consortium
+    * Author: Silvio Traversaro
+    * CopyPolicy: Released under the terms of the GNU LGPL v2.0 (or any later version)
+    *
+    */
+
+    static inline Eigen::Map<Eigen::VectorXd> toEigen(yarp::sig::Vector & yarpVector)
+    {
+        return Eigen::Map<Eigen::VectorXd>(yarpVector.data(),yarpVector.size());
+    }
+
+    static inline Eigen::Map< Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > toEigen(yarp::sig::Matrix & yarpMatrix)
+    {
+        return Eigen::Map< Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> >(yarpMatrix.data(),yarpMatrix.rows(),yarpMatrix.cols());
+    }
+
+    static inline Eigen::Map<const Eigen::VectorXd> toEigen(const yarp::sig::Vector & yarpVector)
+    {
+        return Eigen::Map<const Eigen::VectorXd>(yarpVector.data(),yarpVector.size());
+    }
+
+    static inline Eigen::Map<const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > toEigen(const yarp::sig::Matrix & yarpMatrix)
+    {
+        return Eigen::Map<const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> >(yarpMatrix.data(),yarpMatrix.rows(),yarpMatrix.cols());
+    }
+
+
 
     /**
      * @brief printKDLFrame print a KDL::Frame

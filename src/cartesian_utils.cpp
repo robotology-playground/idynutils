@@ -351,3 +351,20 @@ void cartesian_utils::computeRealLinksFromFakeLinks(const std::list<std::string>
         }
     }
 }
+
+yarp::sig::Matrix cartesian_utils::fromEigentoYarp(const Eigen::MatrixXd& M)
+{
+    yarp::sig::Matrix tmp(M.rows(), M.cols());
+    for(unsigned int i = 0; i < M.rows(); ++i)
+        for(unsigned int j = 0; j < M.cols(); ++j)
+            tmp(i,j) = M(i,j);
+    return tmp;
+}
+
+yarp::sig::Vector cartesian_utils::fromEigentoYarp(const Eigen::VectorXd& v)
+{
+    yarp::sig::Vector tmp(v.rows(), 0.0);
+    for(unsigned int i = 0; i < v.rows(); ++i)
+        tmp(i) = v(i);
+    return tmp;
+}
