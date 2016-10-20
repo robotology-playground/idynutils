@@ -35,6 +35,7 @@ FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
+FIND_PACKAGE(kdl_conversions REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(fcl REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    common
@@ -68,7 +69,7 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/yarp_single_chain_interface.cpp
                                 ${idynutils_INCLUDES})
 
-TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES}
+TARGET_LINK_LIBRARIES(idynutils PRIVATE ${iDynTree_LIBRARIES} ${kdl_conversions_LIBRARIES}
                                         ${kdl_parser_LIBRARIES} ${moveit_core_LIBRARIES} 
                                         ${orocos_kdl_LIBRARIES} ${srdfdom_LIBRARIES} 
                                         ${urdf_LIBRARIES} ${YARP_LIBRARIES}

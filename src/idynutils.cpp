@@ -1139,3 +1139,46 @@ KDL::Vector iDynUtils::getCoM(const std::string& link)
         return v;}
     return iDyn3_model.getCOMKDL(link_id);
 }
+
+bool iDynUtils::getJacobian(const int distal_link_index, Eigen::MatrixXd& J)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getJacobian(distal_link_index, tmp);
+    if(a)
+        J = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
+bool iDynUtils::getRelativeJacobian(const int distal_link_index,
+                         const int base_link_index,
+                         Eigen::MatrixXd& J,
+                         bool global)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getRelativeJacobian(distal_link_index, base_link_index,
+                                             tmp, global);
+    if(a)
+        J = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
+Eigen::MatrixXd iDynUtils::getPosition(const int link_index, bool inverse)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getPosition(link_index, inverse));
+}
+
+Eigen::MatrixXd iDynUtils::getPosition(const int first_link, const int second_link)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getPosition(first_link, second_link));
+}
+
+Eigen::MatrixXd iDynUtils::getJointBoundMin()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointBoundMin());
+}
+
+Eigen::MatrixXd iDynUtils::getJointBoundMax()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointBoundMax());
+}
+

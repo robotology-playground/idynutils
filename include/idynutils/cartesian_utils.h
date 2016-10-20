@@ -259,6 +259,10 @@ public:
                                       const yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
                                       yarp::sig::Vector& orientation_error);
+    static void computeCartesianError(const Eigen::MatrixXd &T,
+                                      const Eigen::MatrixXd &Td,
+                                      Eigen::VectorXd& position_error,
+                                      Eigen::VectorXd& orientation_error);
 
     /**
      * @brief homogeneousMatrixFromRPY compute Homogeneous Matrix from position [x, y, z] and orientation [Roll, Pitch, Yaw]

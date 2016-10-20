@@ -568,6 +568,18 @@ public:
     */
    void disableDynamicsUpdate();
 
+   bool getJacobian(const int distal_link_index, Eigen::MatrixXd& J);
+   bool getRelativeJacobian(const int distal_link_index,
+                            const int base_link_index,
+                            Eigen::MatrixXd& J,
+                            bool global=false);
+
+   Eigen::MatrixXd getPosition(const int link_index, bool inverse = false);
+   Eigen::MatrixXd getPosition(const int first_link, const int second_link);
+
+   Eigen::MatrixXd getJointBoundMin();
+   Eigen::MatrixXd getJointBoundMax();
+
    /**
     * @brief enableDynamicsUpdate enables the computation of dynamic quantities:
     *                               -gravity torques g(q)
