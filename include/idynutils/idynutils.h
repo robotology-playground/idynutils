@@ -580,6 +580,8 @@ public:
    Eigen::MatrixXd getJointBoundMin();
    Eigen::MatrixXd getJointBoundMax();
 
+   bool getCOMJacobian(Eigen::MatrixXd& JCoM);
+
    /**
     * @brief enableDynamicsUpdate enables the computation of dynamic quantities:
     *                               -gravity torques g(q)

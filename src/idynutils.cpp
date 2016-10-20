@@ -1149,6 +1149,15 @@ bool iDynUtils::getJacobian(const int distal_link_index, Eigen::MatrixXd& J)
     return a;
 }
 
+bool iDynUtils::getCOMJacobian(Eigen::MatrixXd& JCoM)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getCOMJacobian(tmp);
+    if(a)
+        JCoM = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
 bool iDynUtils::getRelativeJacobian(const int distal_link_index,
                          const int base_link_index,
                          Eigen::MatrixXd& J,
