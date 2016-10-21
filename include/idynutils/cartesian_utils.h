@@ -418,7 +418,8 @@ public:
          * @param x
          * @return scalar
          */
-        virtual double compute(const yarp::sig::Vector &x) = 0;
+
+        virtual double compute(const Eigen::VectorXd &x) = 0;
     };
 
     /**
@@ -433,9 +434,11 @@ public:
          * @param x
          * @return scalar
          */
-        virtual yarp::sig::Vector compute(const yarp::sig::Vector &x) = 0;
+
+        virtual Eigen::VectorXd compute(const Eigen::VectorXd &x) = 0;
         double size() { return _size; }
     };
+
 
     /**
      * @brief computeGradient compute numerical gradient of a function using 2 points formula:
@@ -448,7 +451,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
+    static Eigen::VectorXd computeGradient(const Eigen::VectorXd &x,
                                               CostFunction &fun,
                                               const double &step = 1E-3);
 
@@ -464,7 +467,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
+    static Eigen::VectorXd computeGradient(const Eigen::VectorXd &x,
                                               CostFunction &fun,
                                               const std::vector<bool>& jointMask,
                                               const double &step = 1E-3);
@@ -481,7 +484,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Matrix computeHessian( const yarp::sig::Vector &x,
+    static Eigen::MatrixXd computeHessian( const Eigen::VectorXd &x,
                                               GradientVector &vec,
                                               const double &step = 1E-3);
 

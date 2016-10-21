@@ -576,9 +576,13 @@ public:
 
    Eigen::MatrixXd getPosition(const int link_index, bool inverse = false);
    Eigen::MatrixXd getPosition(const int first_link, const int second_link);
+   Eigen::VectorXd getCOM(const int link_index = -1);
 
-   Eigen::MatrixXd getJointBoundMin();
-   Eigen::MatrixXd getJointBoundMax();
+   Eigen::VectorXd getJointBoundMin();
+   Eigen::VectorXd getJointBoundMax();
+
+   Eigen::VectorXd getJointTorqueMax();
+   Eigen::VectorXd getTorques();
 
    bool getCOMJacobian(Eigen::MatrixXd& JCoM);
 

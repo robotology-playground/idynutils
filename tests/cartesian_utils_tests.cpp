@@ -37,7 +37,7 @@ class testCartesianUtils: public ::testing::Test
 
     class sin: public cartesian_utils::CostFunction
     {
-        double compute(const yarp::sig::Vector &x)
+        double compute(const Eigen::VectorXd &x)
         {
             return std::sin(x[0]);
         }
@@ -200,9 +200,10 @@ TEST_F(testCartesianUtils, testComputeGradient)
     {
         double df = cos(i * dT);
 
-        yarp::sig::Vector x(1, 0.0);
+        Eigen::VectorXd x(1);
+        x.setZero(1);
         x[0] = i*dT;
-        yarp::sig::Vector df_numerical = cartesian_utils::computeGradient(x, this->sin_function, 1E-6);
+        Eigen::VectorXd df_numerical = cartesian_utils::computeGradient(x, this->sin_function, 1E-6);
 
         EXPECT_NEAR(df, df_numerical[0], 1E-6);
     }

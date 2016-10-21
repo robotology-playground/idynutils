@@ -1171,6 +1171,11 @@ bool iDynUtils::getRelativeJacobian(const int distal_link_index,
     return a;
 }
 
+Eigen::VectorXd iDynUtils::getCOM(const int link_index)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getCOM(link_index));
+}
+
 Eigen::MatrixXd iDynUtils::getPosition(const int link_index, bool inverse)
 {
     return cartesian_utils::toEigen(iDyn3_model.getPosition(link_index, inverse));
@@ -1181,13 +1186,23 @@ Eigen::MatrixXd iDynUtils::getPosition(const int first_link, const int second_li
     return cartesian_utils::toEigen(iDyn3_model.getPosition(first_link, second_link));
 }
 
-Eigen::MatrixXd iDynUtils::getJointBoundMin()
+Eigen::VectorXd iDynUtils::getJointBoundMin()
 {
     return cartesian_utils::toEigen(iDyn3_model.getJointBoundMin());
 }
 
-Eigen::MatrixXd iDynUtils::getJointBoundMax()
+Eigen::VectorXd iDynUtils::getJointBoundMax()
 {
     return cartesian_utils::toEigen(iDyn3_model.getJointBoundMax());
+}
+
+Eigen::VectorXd iDynUtils::getJointTorqueMax()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointTorqueMax());
+}
+
+Eigen::VectorXd iDynUtils::getTorques()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getTorques());
 }
 
