@@ -247,6 +247,7 @@ public:
      * @param pan_tilt_matrix Homogeneous Matrix [4x4] in the same reference frame of the gaze vector
      */
     static void computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix);
+    static void computePanTiltMatrix(const Eigen::VectorXd& gaze, KDL::Frame& pan_tilt_matrix);
 
     /**
      * @brief computeCartesianError orientation and position error
@@ -358,7 +359,7 @@ public:
     static yarp::sig::Matrix fromEigentoYarp(const Eigen::MatrixXd& M);
     static yarp::sig::Vector fromEigentoYarp(const Eigen::VectorXd& v);
 
-    /*
+    /**
     * Copied from Silvio Traversaro's iDynTree
     *
     * Copyright (C) 2013 RobotCub Consortium

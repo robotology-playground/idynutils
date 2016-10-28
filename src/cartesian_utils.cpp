@@ -70,15 +70,20 @@ yarp::sig::Vector cartesian_utils::computeZMP(const double Lforce_z, const doubl
     return ZMP;
 }
 
-void cartesian_utils::computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix)
+void  cartesian_utils::computePanTiltMatrix(const Eigen::VectorXd &gaze, KDL::Frame &pan_tilt_matrix)
 {
     double pan = std::atan2(gaze[1], gaze[0]);
     double tilt = std::atan2(gaze[2],sqrt(gaze[1]*gaze[1] + gaze[0]*gaze[0]));
 
-    KDL::Frame T; T.Identity();
-    T.M.DoRotZ(pan);
-    T.M.DoRotY(-tilt);
+    pan_tilt_matrix.Identity();
+    pan_tilt_matrix.M.DoRotZ(pan);
+    pan_tilt_matrix.M.DoRotY(-tilt);
+}
 
+void cartesian_utils::computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix)
+{
+    KDL::Frame T;
+    computePanTiltMatrix(cartesian_utils::toEigen(gaze), T);
     pan_tilt_matrix.resize(4,4);
     cartesian_utils::fromKDLFrameToYARPMatrix(T, pan_tilt_matrix);
 }

@@ -1206,3 +1206,8 @@ Eigen::VectorXd iDynUtils::getTorques()
     return cartesian_utils::toEigen(iDyn3_model.getTorques());
 }
 
+Eigen::VectorXd iDynUtils::getAng()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getAng());
+}
+

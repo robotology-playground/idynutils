@@ -583,6 +583,7 @@ public:
 
    Eigen::VectorXd getJointTorqueMax();
    Eigen::VectorXd getTorques();
+   Eigen::VectorXd getAng();
 
    bool getCOMJacobian(Eigen::MatrixXd& JCoM);
 
