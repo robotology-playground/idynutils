@@ -1211,3 +1211,9 @@ Eigen::VectorXd iDynUtils::getAng()
     return cartesian_utils::toEigen(iDyn3_model.getAng());
 }
 
+Eigen::VectorXd iDynUtils::setAng(const Eigen::VectorXd& q)
+{
+    return cartesian_utils::toEigen(iDyn3_model.setAng(
+                                        cartesian_utils::fromEigentoYarp(q)));
+}
+

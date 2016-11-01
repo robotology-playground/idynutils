@@ -585,6 +585,8 @@ public:
    Eigen::VectorXd getTorques();
    Eigen::VectorXd getAng();
 
+   Eigen::VectorXd setAng(const Eigen::VectorXd& q);
+
    bool getCOMJacobian(Eigen::MatrixXd& JCoM);
 
    /**
