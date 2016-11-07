@@ -578,6 +578,9 @@ public:
    Eigen::MatrixXd getPosition(const int first_link, const int second_link);
    Eigen::VectorXd getCOM(const int link_index = -1);
 
+   Eigen::VectorXd getVelCOM();
+   Eigen::VectorXd getCentroidalMomentum();
+
    Eigen::VectorXd getJointBoundMin();
    Eigen::VectorXd getJointBoundMax();
 
@@ -586,6 +589,8 @@ public:
    Eigen::VectorXd getAng();
 
    Eigen::VectorXd setAng(const Eigen::VectorXd& q);
+
+   bool getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix);
 
    bool getCOMJacobian(Eigen::MatrixXd& JCoM);
 
@@ -752,6 +757,8 @@ protected:
     imu_orientation_measure _w_R_imu;
 
     void updateWorldOrientationWithIMU();
+
+
 };
 
 #endif // IDYNUTILS_H

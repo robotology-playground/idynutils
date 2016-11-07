@@ -1217,3 +1217,21 @@ Eigen::VectorXd iDynUtils::setAng(const Eigen::VectorXd& q)
                                         cartesian_utils::fromEigentoYarp(q)));
 }
 
+Eigen::VectorXd iDynUtils::getVelCOM()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getVelCOM());
+}
+
+bool iDynUtils::getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix)
+{
+    yarp::sig::Matrix M(iDyn3_model.getNrOfDOFs()+6, iDyn3_model.getNrOfDOFs()+6);
+    bool a = iDyn3_model.getFloatingBaseMassMatrix(M);
+    if(a)
+        fb_mass_matrix = cartesian_utils::toEigen(M);
+    return a;
+}
+
+Eigen::VectorXd iDynUtils::getCentroidalMomentum()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getCentroidalMomentum());
+}
