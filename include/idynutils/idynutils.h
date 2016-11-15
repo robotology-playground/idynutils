@@ -587,12 +587,16 @@ public:
    Eigen::VectorXd getJointTorqueMax();
    Eigen::VectorXd getTorques();
    Eigen::VectorXd getAng();
+   Eigen::VectorXd getDAng();
 
    Eigen::VectorXd setAng(const Eigen::VectorXd& q);
 
    bool getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix);
 
    bool getCOMJacobian(Eigen::MatrixXd& JCoM);
+
+   bool getSensorMeasurement(const int sensor_index, Eigen::VectorXd &ftm);
+
 
    /**
     * @brief enableDynamicsUpdate enables the computation of dynamic quantities:

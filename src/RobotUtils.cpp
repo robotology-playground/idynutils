@@ -383,6 +383,11 @@ yarp::sig::Vector &RobotUtils::sensePosition()
     return q_sensed;
 }
 
+void RobotUtils::sensePosition(Eigen::VectorXd& q)
+{
+    q = cartesian_utils::toEigen(sensePosition());
+}
+
 yarp::sig::Vector &RobotUtils::senseVelocity()
 {
     right_arm.senseVelocity(qdot_sensed_right_arm);
@@ -403,6 +408,11 @@ yarp::sig::Vector &RobotUtils::senseVelocity()
     return qdot_sensed;
 }
 
+void RobotUtils::senseVelocity(Eigen::VectorXd& dq)
+{
+    dq = cartesian_utils::toEigen(senseVelocity());
+}
+
 yarp::sig::Vector &RobotUtils::senseTorque()
 {
     right_arm.senseTorque(tau_sensed_right_arm);
@@ -421,6 +431,11 @@ yarp::sig::Vector &RobotUtils::senseTorque()
                     tau_sensed);
 
     return tau_sensed;
+}
+
+void RobotUtils::senseTorque(Eigen::VectorXd& tau)
+{
+    tau = cartesian_utils::toEigen(senseTorque());
 }
 
 yarp::sig::Vector& RobotUtils::senseMotorPosition()

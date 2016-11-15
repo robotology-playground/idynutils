@@ -1211,6 +1211,11 @@ Eigen::VectorXd iDynUtils::getAng()
     return cartesian_utils::toEigen(iDyn3_model.getAng());
 }
 
+Eigen::VectorXd iDynUtils::getDAng()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getDAng());
+}
+
 Eigen::VectorXd iDynUtils::setAng(const Eigen::VectorXd& q)
 {
     return cartesian_utils::toEigen(iDyn3_model.setAng(
@@ -1234,4 +1239,13 @@ bool iDynUtils::getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix)
 Eigen::VectorXd iDynUtils::getCentroidalMomentum()
 {
     return cartesian_utils::toEigen(iDyn3_model.getCentroidalMomentum());
+}
+
+bool iDynUtils::getSensorMeasurement(const int sensor_index, Eigen::VectorXd &ftm)
+{
+    yarp::sig::Vector tmp;
+    bool a = iDyn3_model.getSensorMeasurement(sensor_index, tmp);
+    if(a)
+        ftm = cartesian_utils::toEigen(tmp);
+    return a;
 }
