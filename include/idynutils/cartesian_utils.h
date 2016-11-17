@@ -427,9 +427,9 @@ public:
      * @brief The GradientVector class pure virtual function used to describe functions for computeHessian method.
      */
     class GradientVector {
-        double _size;
+        int _size;
     public:
-        GradientVector(const double x_size) : _size(x_size) {}
+        GradientVector(const int x_size) : _size(x_size) {}
         /**
          * @brief compute value of function in x
          * @param x
@@ -437,7 +437,7 @@ public:
          */
 
         virtual Eigen::VectorXd compute(const Eigen::VectorXd &x) = 0;
-        double size() { return _size; }
+        int size() { return _size; }
     };
 
 
