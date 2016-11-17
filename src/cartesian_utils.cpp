@@ -20,6 +20,7 @@
 #include <idynutils/cartesian_utils.h>
 #include <yarp/math/Math.h>
 #include <boost/shared_ptr.hpp>
+#include <eigen_conversions/eigen_kdl.h>
 
 using namespace yarp::math;
 
@@ -69,15 +70,20 @@ yarp::sig::Vector cartesian_utils::computeZMP(const double Lforce_z, const doubl
     return ZMP;
 }
 
-void cartesian_utils::computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix)
+void  cartesian_utils::computePanTiltMatrix(const Eigen::VectorXd &gaze, KDL::Frame &pan_tilt_matrix)
 {
     double pan = std::atan2(gaze[1], gaze[0]);
     double tilt = std::atan2(gaze[2],sqrt(gaze[1]*gaze[1] + gaze[0]*gaze[0]));
 
-    KDL::Frame T; T.Identity();
-    T.M.DoRotZ(pan);
-    T.M.DoRotY(-tilt);
+    pan_tilt_matrix.Identity();
+    pan_tilt_matrix.M.DoRotZ(pan);
+    pan_tilt_matrix.M.DoRotY(-tilt);
+}
 
+void cartesian_utils::computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix)
+{
+    KDL::Frame T;
+    computePanTiltMatrix(cartesian_utils::toEigen(gaze), T);
     pan_tilt_matrix.resize(4,4);
     cartesian_utils::fromKDLFrameToYARPMatrix(T, pan_tilt_matrix);
 }
@@ -98,6 +104,48 @@ void cartesian_utils::homogeneousMatrixFromQuaternion(yarp::sig::Matrix &T,
     KDL::Frame tmp(KDL::Rotation::Quaternion(quaternion_x, quaternion_y, quaternion_z, quaternion_w), KDL::Vector(x, y, z));
 
     fromKDLFrameToYARPMatrix(tmp, T);
+}
+
+void cartesian_utils::computeCartesianError(const Eigen::MatrixXd &T,
+                                  const Eigen::MatrixXd &Td,
+                                  Eigen::VectorXd& position_error,
+                                  Eigen::VectorXd& orientation_error)
+{
+    position_error.setZero(3);
+    orientation_error.setZero(3);
+
+    KDL::Frame x; // ee pose
+    x.Identity();
+    Eigen::Matrix4d tmp = T;
+    tf::transformEigenToKDL(Eigen::Affine3d(tmp),x);
+    quaternion q;
+    x.M.GetQuaternion(q.x, q.y, q.z, q.w);
+
+    KDL::Frame xd; // ee desired pose
+    xd.Identity();
+    tmp = Td;
+    tf::transformEigenToKDL(Eigen::Affine3d(tmp),xd);
+    quaternion qd;
+    xd.M.GetQuaternion(qd.x, qd.y, qd.z, qd.w);
+
+    //This is needed to move along the short path in the quaternion error
+    if(quaternion::dot(q, qd) < 0.0)
+        q = q.operator *(-1.0); //che cagata...
+
+    KDL::Vector xerr_p; // Cartesian position error
+    KDL::Vector xerr_o; // Cartesian orientation error
+
+    xerr_p = xd.p - x.p;
+    xerr_o = quaternion::error(q, qd);
+
+
+    position_error(0) = xerr_p.x();
+    position_error(1) = xerr_p.y();
+    position_error(2) = xerr_p.z();
+
+    orientation_error(0) = xerr_o.x();
+    orientation_error(1) = xerr_o.y();
+    orientation_error(2) = xerr_o.z();
 }
 
 void cartesian_utils::computeCartesianError(const yarp::sig::Matrix &T,
@@ -264,19 +312,22 @@ void cartesian_utils::printVelocityVector(const yarp::sig::Vector& v)
     std::cout<<"Angular Velocity: ["<<v[3]<<" "<<v[4]<<" "<<v[5]<<" ] [rad/sec]"<<std::endl;
 }
 
-yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
                                                     CostFunction& fun,
                                                     const double& step) {
     std::vector<bool> jointMask(x.size(), true);
     return computeGradient(x, fun, jointMask, step);
 }
 
-yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+
+Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
                                                     CostFunction& fun,
                                                     const std::vector<bool>& jointMask,
                                                     const double& step) {
-    yarp::sig::Vector gradient(x.size(),0.0);
-    yarp::sig::Vector deltas(x.size(),0.0);
+    Eigen::VectorXd gradient(x.rows());
+    gradient.setZero(x.rows());
+    Eigen::VectorXd deltas(x.rows());
+    deltas.setZero(x.rows());
     assert(jointMask.size() == x.size() &&
            "jointMask must have the same size as x");
     const double h = step;
@@ -297,21 +348,25 @@ yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
     return gradient;
 }
 
-yarp::sig::Matrix cartesian_utils::computeHessian(const yarp::sig::Vector &x,
+Eigen::MatrixXd cartesian_utils::computeHessian(const Eigen::VectorXd &x,
                                                    GradientVector& vec,
                                                    const double& step) {
-    yarp::sig::Matrix hessian(vec.size(),x.size());
-    yarp::sig::Vector deltas(x.size(),0.0);
+    Eigen::MatrixXd hessian(int(vec.size()),x.size());
+    Eigen::VectorXd deltas(x.rows());
+    deltas.setZero(x.rows());
     const double h = step;
     for(unsigned int i = 0; i < vec.size(); ++i)
     {
         deltas[i] = h;
-        yarp::sig::Vector gradient_a = vec.compute(x+deltas);
-        yarp::sig::Vector gradient_b = vec.compute(x-deltas);
-        yarp::sig::Vector gradient(vec.size());
+        Eigen::VectorXd gradient_a = vec.compute(x+deltas);
+        Eigen::VectorXd gradient_b = vec.compute(x-deltas);
+        Eigen::VectorXd gradient(vec.size());
         for(unsigned int j = 0; j < vec.size(); ++j)
             gradient[j] = (gradient_a[j] - gradient_b[j])/(2.0*h);
-        hessian.setCol(i,gradient);
+
+        hessian.block(0,i,hessian.rows(),1) = gradient;
+
+        //hessian.setCol(i,gradient);
         deltas[i] = 0.0;
     }
 
@@ -351,3 +406,21 @@ void cartesian_utils::computeRealLinksFromFakeLinks(const std::list<std::string>
         }
     }
 }
+
+yarp::sig::Matrix cartesian_utils::fromEigentoYarp(const Eigen::MatrixXd& M)
+{
+    yarp::sig::Matrix tmp(M.rows(), M.cols());
+    for(unsigned int i = 0; i < M.rows(); ++i)
+        for(unsigned int j = 0; j < M.cols(); ++j)
+            tmp(i,j) = M(i,j);
+    return tmp;
+}
+
+yarp::sig::Vector cartesian_utils::fromEigentoYarp(const Eigen::VectorXd& v)
+{
+    yarp::sig::Vector tmp(v.rows(), 0.0);
+    for(unsigned int i = 0; i < v.rows(); ++i)
+        tmp(i) = v(i);
+    return tmp;
+}
+

@@ -568,6 +568,36 @@ public:
     */
    void disableDynamicsUpdate();
 
+   bool getJacobian(const int distal_link_index, Eigen::MatrixXd& J);
+   bool getRelativeJacobian(const int distal_link_index,
+                            const int base_link_index,
+                            Eigen::MatrixXd& J,
+                            bool global=false);
+
+   Eigen::MatrixXd getPosition(const int link_index, bool inverse = false);
+   Eigen::MatrixXd getPosition(const int first_link, const int second_link);
+   Eigen::VectorXd getCOM(const int link_index = -1);
+
+   Eigen::VectorXd getVelCOM();
+   Eigen::VectorXd getCentroidalMomentum();
+
+   Eigen::VectorXd getJointBoundMin();
+   Eigen::VectorXd getJointBoundMax();
+
+   Eigen::VectorXd getJointTorqueMax();
+   Eigen::VectorXd getTorques();
+   Eigen::VectorXd getAng();
+   Eigen::VectorXd getDAng();
+
+   Eigen::VectorXd setAng(const Eigen::VectorXd& q);
+
+   bool getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix);
+
+   bool getCOMJacobian(Eigen::MatrixXd& JCoM);
+
+   bool getSensorMeasurement(const int sensor_index, Eigen::VectorXd &ftm);
+
+
    /**
     * @brief enableDynamicsUpdate enables the computation of dynamic quantities:
     *                               -gravity torques g(q)
@@ -731,6 +761,8 @@ protected:
     imu_orientation_measure _w_R_imu;
 
     void updateWorldOrientationWithIMU();
+
+
 };
 
 #endif // IDYNUTILS_H

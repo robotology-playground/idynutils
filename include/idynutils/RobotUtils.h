@@ -116,18 +116,21 @@ public:
      * @return
      */
     yarp::sig::Vector& sensePosition();
+    void sensePosition(Eigen::VectorXd& q);
 
     /**
      * @brief senseVelocity returns the velocities of the robot's joints
      * @return
      */
     yarp::sig::Vector& senseVelocity();
+    void senseVelocity(Eigen::VectorXd& dq);
 
     /**
      * @brief senseTorque returns the torques of the robot's joints
      * @return
      */
     yarp::sig::Vector& senseTorque();
+    void senseTorque(Eigen::VectorXd& tau);
     
     /**
      * @brief senseMotorPosition returns the motor position of the robot's joints

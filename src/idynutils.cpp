@@ -1139,3 +1139,113 @@ KDL::Vector iDynUtils::getCoM(const std::string& link)
         return v;}
     return iDyn3_model.getCOMKDL(link_id);
 }
+
+bool iDynUtils::getJacobian(const int distal_link_index, Eigen::MatrixXd& J)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getJacobian(distal_link_index, tmp);
+    if(a)
+        J = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
+bool iDynUtils::getCOMJacobian(Eigen::MatrixXd& JCoM)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getCOMJacobian(tmp);
+    if(a)
+        JCoM = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
+bool iDynUtils::getRelativeJacobian(const int distal_link_index,
+                         const int base_link_index,
+                         Eigen::MatrixXd& J,
+                         bool global)
+{
+    yarp::sig::Matrix tmp;
+    bool a = iDyn3_model.getRelativeJacobian(distal_link_index, base_link_index,
+                                             tmp, global);
+    if(a)
+        J = cartesian_utils::toEigen(tmp);
+    return a;
+}
+
+Eigen::VectorXd iDynUtils::getCOM(const int link_index)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getCOM(link_index));
+}
+
+Eigen::MatrixXd iDynUtils::getPosition(const int link_index, bool inverse)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getPosition(link_index, inverse));
+}
+
+Eigen::MatrixXd iDynUtils::getPosition(const int first_link, const int second_link)
+{
+    return cartesian_utils::toEigen(iDyn3_model.getPosition(first_link, second_link));
+}
+
+Eigen::VectorXd iDynUtils::getJointBoundMin()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointBoundMin());
+}
+
+Eigen::VectorXd iDynUtils::getJointBoundMax()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointBoundMax());
+}
+
+Eigen::VectorXd iDynUtils::getJointTorqueMax()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getJointTorqueMax());
+}
+
+Eigen::VectorXd iDynUtils::getTorques()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getTorques());
+}
+
+Eigen::VectorXd iDynUtils::getAng()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getAng());
+}
+
+Eigen::VectorXd iDynUtils::getDAng()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getDAng());
+}
+
+Eigen::VectorXd iDynUtils::setAng(const Eigen::VectorXd& q)
+{
+    return cartesian_utils::toEigen(iDyn3_model.setAng(
+                                        cartesian_utils::fromEigentoYarp(q)));
+}
+
+Eigen::VectorXd iDynUtils::getVelCOM()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getVelCOM());
+}
+
+bool iDynUtils::getFloatingBaseMassMatrix(Eigen::MatrixXd & fb_mass_matrix)
+{
+    yarp::sig::Matrix M(iDyn3_model.getNrOfDOFs()+6, iDyn3_model.getNrOfDOFs()+6);
+    bool a = iDyn3_model.getFloatingBaseMassMatrix(M);
+    if(a)
+        fb_mass_matrix = cartesian_utils::toEigen(M);
+    return a;
+}
+
+Eigen::VectorXd iDynUtils::getCentroidalMomentum()
+{
+    return cartesian_utils::toEigen(iDyn3_model.getCentroidalMomentum());
+}
+
+bool iDynUtils::getSensorMeasurement(const int sensor_index, Eigen::VectorXd &ftm)
+{
+    yarp::sig::Vector tmp;
+    bool a = iDyn3_model.getSensorMeasurement(sensor_index, tmp);
+    if(a)
+        ftm = cartesian_utils::toEigen(tmp);
+    return a;
+}

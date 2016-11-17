@@ -35,6 +35,7 @@ FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 FIND_PACKAGE(rosconsole REQUIRED)
 FIND_PACKAGE(kdl_parser REQUIRED)
+FIND_PACKAGE(kdl_conversions REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(fcl REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED COMPONENTS    common
@@ -110,6 +111,7 @@ TARGET_LINK_LIBRARIES(idynutils PRIVATE ${moveit_core_LIBRARIES}
                                         ${srdfdom_LIBRARIES} 
                                         ${kdl_parser_LIBRARIES}
                                         ${iDynTree_LIBRARIES}
+					${kdl_conversions_LIBRARIES}
                                         ${YARP_LIBRARIES}
                                         ${PCL_LIBRARIES})
 

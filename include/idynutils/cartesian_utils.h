@@ -25,6 +25,7 @@
 #include <vector>
 #include <list>
 #include <urdf/model.h>
+#include <Eigen/Dense>
 
 /**
   This class implements quaternion error as in the paper:
@@ -246,6 +247,7 @@ public:
      * @param pan_tilt_matrix Homogeneous Matrix [4x4] in the same reference frame of the gaze vector
      */
     static void computePanTiltMatrix(const yarp::sig::Vector& gaze, yarp::sig::Matrix& pan_tilt_matrix);
+    static void computePanTiltMatrix(const Eigen::VectorXd& gaze, KDL::Frame& pan_tilt_matrix);
 
     /**
      * @brief computeCartesianError orientation and position error
@@ -258,6 +260,10 @@ public:
                                       const yarp::sig::Matrix &Td,
                                       yarp::sig::Vector& position_error,
                                       yarp::sig::Vector& orientation_error);
+    static void computeCartesianError(const Eigen::MatrixXd &T,
+                                      const Eigen::MatrixXd &Td,
+                                      Eigen::VectorXd& position_error,
+                                      Eigen::VectorXd& orientation_error);
 
     /**
      * @brief homogeneousMatrixFromRPY compute Homogeneous Matrix from position [x, y, z] and orientation [Roll, Pitch, Yaw]
@@ -350,6 +356,40 @@ public:
      */
     static void fromKDLWrenchtoYarpVector(const KDL::Wrench& wi, yarp::sig::Vector& wo);
 
+    static yarp::sig::Matrix fromEigentoYarp(const Eigen::MatrixXd& M);
+    static yarp::sig::Vector fromEigentoYarp(const Eigen::VectorXd& v);
+
+    /**
+    * Copied from Silvio Traversaro's iDynTree
+    *
+    * Copyright (C) 2013 RobotCub Consortium
+    * Author: Silvio Traversaro
+    * CopyPolicy: Released under the terms of the GNU LGPL v2.0 (or any later version)
+    *
+    */
+
+    static inline Eigen::Map<Eigen::VectorXd> toEigen(yarp::sig::Vector & yarpVector)
+    {
+        return Eigen::Map<Eigen::VectorXd>(yarpVector.data(),yarpVector.size());
+    }
+
+    static inline Eigen::Map< Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > toEigen(yarp::sig::Matrix & yarpMatrix)
+    {
+        return Eigen::Map< Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> >(yarpMatrix.data(),yarpMatrix.rows(),yarpMatrix.cols());
+    }
+
+    static inline Eigen::Map<const Eigen::VectorXd> toEigen(const yarp::sig::Vector & yarpVector)
+    {
+        return Eigen::Map<const Eigen::VectorXd>(yarpVector.data(),yarpVector.size());
+    }
+
+    static inline Eigen::Map<const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > toEigen(const yarp::sig::Matrix & yarpMatrix)
+    {
+        return Eigen::Map<const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> >(yarpMatrix.data(),yarpMatrix.rows(),yarpMatrix.cols());
+    }
+
+
+
     /**
      * @brief printKDLFrame print a KDL::Frame
      * @param T KDL::Frame
@@ -379,7 +419,8 @@ public:
          * @param x
          * @return scalar
          */
-        virtual double compute(const yarp::sig::Vector &x) = 0;
+
+        virtual double compute(const Eigen::VectorXd &x) = 0;
     };
 
     /**
@@ -394,9 +435,11 @@ public:
          * @param x
          * @return scalar
          */
-        virtual yarp::sig::Vector compute(const yarp::sig::Vector &x) = 0;
+
+        virtual Eigen::VectorXd compute(const Eigen::VectorXd &x) = 0;
         double size() { return _size; }
     };
+
 
     /**
      * @brief computeGradient compute numerical gradient of a function using 2 points formula:
@@ -409,7 +452,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
+    static Eigen::VectorXd computeGradient(const Eigen::VectorXd &x,
                                               CostFunction &fun,
                                               const double &step = 1E-3);
 
@@ -425,7 +468,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Vector computeGradient(const yarp::sig::Vector &x,
+    static Eigen::VectorXd computeGradient(const Eigen::VectorXd &x,
                                               CostFunction &fun,
                                               const std::vector<bool>& jointMask,
                                               const double &step = 1E-3);
@@ -442,7 +485,7 @@ public:
      * @param step step of gradient
      * @return vector of gradient
      */
-    static yarp::sig::Matrix computeHessian( const yarp::sig::Vector &x,
+    static Eigen::MatrixXd computeHessian( const Eigen::VectorXd &x,
                                               GradientVector &vec,
                                               const double &step = 1E-3);
 
