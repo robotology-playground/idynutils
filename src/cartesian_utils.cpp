@@ -351,7 +351,7 @@ Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
 Eigen::MatrixXd cartesian_utils::computeHessian(const Eigen::VectorXd &x,
                                                    GradientVector& vec,
                                                    const double& step) {
-    Eigen::MatrixXd hessian(int(vec.size()),x.size());
+    Eigen::MatrixXd hessian(vec.size(),x.size());
     Eigen::VectorXd deltas(x.rows());
     deltas.setZero(x.rows());
     const double h = step;
