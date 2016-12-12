@@ -424,3 +424,84 @@ yarp::sig::Vector cartesian_utils::fromEigentoYarp(const Eigen::VectorXd& v)
     return tmp;
 }
 
+KDL::Wrench toKDLWrench(const Eigen::VectorXd& v)
+{
+    KDL::Wrench tmp; tmp.Zero();
+    if(v.rows() == 6){
+        tmp.force.x(v[0]);
+        tmp.force.y(v[1]);
+        tmp.force.z(v[2]);
+        tmp.torque.x(v[3]);
+        tmp.torque.y(v[4]);
+        tmp.torque.z(v[5]);
+    }
+    return tmp;
+}
+
+KDL::Twist toKDLTwist(const Eigen::VectorXd& v)
+{
+    KDL::Twist tmp; tmp.Zero();
+    if(v.rows() == 6){
+        tmp.vel.x(v[0]);
+        tmp.vel.y(v[1]);
+        tmp.vel.z(v[2]);
+        tmp.rot.x(v[3]);
+        tmp.rot.y(v[4]);
+        tmp.rot.z(v[5]);
+    }
+    return tmp;
+}
+
+KDL::Frame toKDLFrame(const Eigen::MatrixXd& T)
+{
+    KDL::Frame tmp; tmp.Identity();
+    if(T.rows() == 4 && T.cols() == 4)
+    {
+        tmp.M(0,0) = T(0,0); tmp.M(0,1) = T(0,1); tmp.M(0,2) = T(0,2);
+        tmp.M(1,0) = T(1,0); tmp.M(1,1) = T(1,1); tmp.M(1,2) = T(1,2);
+        tmp.M(2,0) = T(2,0); tmp.M(2,1) = T(2,1); tmp.M(2,2) = T(2,2);
+
+        tmp.p.x(T(0,3));
+        tmp.p.y(T(1,3));
+        tmp.p.z(T(2,3));
+    }
+    return tmp;
+}
+
+Eigen::VectorXd toEigen(const KDL::Wrench& w)
+{
+    Eigen::VectorXd tmp(6); tmp.setZero(6);
+    tmp[0] = w.force.x();
+    tmp[1] = w.force.y();
+    tmp[2] = w.force.z();
+    tmp[3] = w.torque.x();
+    tmp[4] = w.torque.y();
+    tmp[5] = w.torque.z();
+    return tmp;
+}
+
+Eigen::VectorXd toEigen(const KDL::Twist& v)
+{
+    Eigen::VectorXd tmp(6); tmp.setZero(6);
+    tmp[0] = v.vel.x();
+    tmp[1] = v.vel.y();
+    tmp[2] = v.vel.z();
+    tmp[3] = v.rot.x();
+    tmp[4] = v.rot.y();
+    tmp[5] = v.rot.z();
+    return tmp;
+}
+
+Eigen::MatrixXd toEigen(const KDL::Frame& T)
+{
+    Eigen::MatrixXd tmp(4,4); tmp.setIdentity(4,4);
+    tmp(0,0) = T.M(0,0); tmp(0,1) = T.M(0,1); tmp(0,2) = T.M(0,2);
+    tmp(1,0) = T.M(1,0); tmp(1,1) = T.M(1,1); tmp(1,2) = T.M(1,2);
+    tmp(2,0) = T.M(2,0); tmp(2,1) = T.M(2,1); tmp(2,2) = T.M(2,2);
+
+    tmp(0,3) = T.p.x();
+    tmp(1,3) = T.p.y();
+    tmp(2,3) = T.p.z();
+    return tmp;
+}
+
