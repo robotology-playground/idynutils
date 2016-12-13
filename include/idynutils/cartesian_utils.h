@@ -389,13 +389,13 @@ public:
     }
 
 
-    KDL::Wrench toKDLWrench(const Eigen::VectorXd& v);
-    KDL::Twist toKDLTwist(const Eigen::VectorXd& v);
-    KDL::Frame toKDLFrame(const Eigen::MatrixXd& T);
+    static KDL::Wrench toKDLWrench(const Eigen::VectorXd& v);
+    static KDL::Twist toKDLTwist(const Eigen::VectorXd& v);
+    static KDL::Frame toKDLFrame(const Eigen::MatrixXd& T);
 
-    Eigen::VectorXd toEigen(const KDL::Wrench& w);
-    Eigen::VectorXd toEigen(const KDL::Twist& v);
-    Eigen::MatrixXd toEigen(const KDL::Frame& T);
+    static Eigen::VectorXd toEigen(const KDL::Wrench& w);
+    static Eigen::VectorXd toEigen(const KDL::Twist& v);
+    static Eigen::MatrixXd toEigen(const KDL::Frame& T);
 
     /**
      * @brief printKDLFrame print a KDL::Frame

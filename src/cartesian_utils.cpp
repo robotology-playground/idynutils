@@ -424,7 +424,7 @@ yarp::sig::Vector cartesian_utils::fromEigentoYarp(const Eigen::VectorXd& v)
     return tmp;
 }
 
-KDL::Wrench toKDLWrench(const Eigen::VectorXd& v)
+KDL::Wrench cartesian_utils::toKDLWrench(const Eigen::VectorXd& v)
 {
     KDL::Wrench tmp; tmp.Zero();
     if(v.rows() == 6){
@@ -438,7 +438,7 @@ KDL::Wrench toKDLWrench(const Eigen::VectorXd& v)
     return tmp;
 }
 
-KDL::Twist toKDLTwist(const Eigen::VectorXd& v)
+KDL::Twist cartesian_utils::toKDLTwist(const Eigen::VectorXd& v)
 {
     KDL::Twist tmp; tmp.Zero();
     if(v.rows() == 6){
@@ -452,7 +452,7 @@ KDL::Twist toKDLTwist(const Eigen::VectorXd& v)
     return tmp;
 }
 
-KDL::Frame toKDLFrame(const Eigen::MatrixXd& T)
+KDL::Frame cartesian_utils::toKDLFrame(const Eigen::MatrixXd& T)
 {
     KDL::Frame tmp; tmp.Identity();
     if(T.rows() == 4 && T.cols() == 4)
@@ -468,7 +468,7 @@ KDL::Frame toKDLFrame(const Eigen::MatrixXd& T)
     return tmp;
 }
 
-Eigen::VectorXd toEigen(const KDL::Wrench& w)
+Eigen::VectorXd cartesian_utils::toEigen(const KDL::Wrench& w)
 {
     Eigen::VectorXd tmp(6); tmp.setZero(6);
     tmp[0] = w.force.x();
@@ -480,7 +480,7 @@ Eigen::VectorXd toEigen(const KDL::Wrench& w)
     return tmp;
 }
 
-Eigen::VectorXd toEigen(const KDL::Twist& v)
+Eigen::VectorXd cartesian_utils::toEigen(const KDL::Twist& v)
 {
     Eigen::VectorXd tmp(6); tmp.setZero(6);
     tmp[0] = v.vel.x();
@@ -492,7 +492,7 @@ Eigen::VectorXd toEigen(const KDL::Twist& v)
     return tmp;
 }
 
-Eigen::MatrixXd toEigen(const KDL::Frame& T)
+Eigen::MatrixXd cartesian_utils::toEigen(const KDL::Frame& T)
 {
     Eigen::MatrixXd tmp(4,4); tmp.setIdentity(4,4);
     tmp(0,0) = T.M(0,0); tmp(0,1) = T.M(0,1); tmp(0,2) = T.M(0,2);
