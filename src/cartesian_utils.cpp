@@ -312,6 +312,13 @@ void cartesian_utils::printVelocityVector(const yarp::sig::Vector& v)
     std::cout<<"Angular Velocity: ["<<v[3]<<" "<<v[4]<<" "<<v[5]<<" ] [rad/sec]"<<std::endl;
 }
 
+yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+                                                    CostFunction& fun,
+                                                    const double& step) {
+    std::vector<bool> jointMask(x.size(), true);
+    return computeGradient(x, fun, jointMask, step);
+}
+
 Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
                                                     CostFunction& fun,
                                                     const double& step) {
@@ -319,6 +326,31 @@ Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
     return computeGradient(x, fun, jointMask, step);
 }
 
+yarp::sig::Vector cartesian_utils::computeGradient(const yarp::sig::Vector &x,
+                                                    CostFunction& fun,
+                                                    const std::vector<bool>& jointMask,
+                                                    const double& step) {
+    yarp::sig::Vector gradient(x.size(),0.0);
+    yarp::sig::Vector deltas(x.size(),0.0);
+    assert(jointMask.size() == x.size() &&
+           "jointMask must have the same size as x");
+    const double h = step;
+    for(unsigned int i = 0; i < gradient.size(); ++i)
+    {
+        if(jointMask[i])
+        {
+            deltas[i] = h;
+            double fun_a = fun.compute(x+deltas);
+            double fun_b = fun.compute(x-deltas);
+
+            gradient[i] = (fun_a - fun_b)/(2.0*h);
+            deltas[i] = 0.0;
+        } else
+            gradient[i] = 0.0;
+    }
+
+    return gradient;
+}
 
 Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
                                                     CostFunction& fun,
@@ -346,6 +378,28 @@ Eigen::VectorXd cartesian_utils::computeGradient(const Eigen::VectorXd &x,
     }
 
     return gradient;
+}
+
+yarp::sig::Matrix cartesian_utils::computeHessian(const yarp::sig::Vector &x,
+                                                   GradientVector& vec,
+                                                   const double& step) {
+    yarp::sig::Matrix hessian(vec.size(),x.size());
+    yarp::sig::Vector deltas(x.size(),0.0);
+    const double h = step;
+    for(unsigned int i = 0; i < vec.size(); ++i)
+    {
+        deltas[i] = h;
+        yarp::sig::Vector gradient_a = vec.compute(x+deltas);
+        yarp::sig::Vector gradient_b = vec.compute(x-deltas);
+        yarp::sig::Vector gradient(vec.size());
+        for(unsigned int j = 0; j < vec.size(); ++j)
+            gradient[j] = (gradient_a[j] - gradient_b[j])/(2.0*h);
+
+        hessian.setCol(i,gradient);
+        deltas[i] = 0.0;
+    }
+
+    return hessian;
 }
 
 Eigen::MatrixXd cartesian_utils::computeHessian(const Eigen::VectorXd &x,
