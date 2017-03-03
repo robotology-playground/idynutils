@@ -105,19 +105,20 @@ ADD_LIBRARY(idynutils SHARED    src/cartesian_utils.cpp
                                 src/yarp_single_chain_interface.cpp
                                 ${idynutils_INCLUDES})
 
-TARGET_LINK_LIBRARIES(idynutils PRIVATE ${moveit_core_LIBRARIES} 
-                                        ${orocos_kdl_LIBRARIES}
+TARGET_LINK_LIBRARIES(idynutils PRIVATE ${orocos_kdl_LIBRARIES}
                                         ${urdf_LIBRARIES}
                                         ${srdfdom_LIBRARIES} 
                                         ${kdl_parser_LIBRARIES}
                                         ${iDynTree_LIBRARIES}
-					${kdl_conversions_LIBRARIES}
+                                        ${kdl_conversions_LIBRARIES}
                                         ${YARP_LIBRARIES}
+                                        ${fcl_LIBRARIES}
+                                        ${moveit_core_LIBRARIES}
                                         ${PCL_LIBRARIES})
 
-########################################################################
+##########################################################################
 # use YCM to export idynutils so that it can be found using find_package #
-########################################################################
+# ########################################################################
 
 set(VARS_PREFIX "IDYNUTILS")
 
@@ -136,7 +137,7 @@ target_include_directories(idynutils PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DI
 set_target_properties(idynutils PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
                                 SOVERSION ${${VARS_PREFIX}_VERSION})
 
-target_link_libraries(idynutils LINK_PUBLIC ${fcl_LIBRARIES})
+target_link_libraries(idynutils LINK_PUBLIC ${moveit_core_LIBRARIES})
 
 message("fcl version: ${fcl_VERSION} ${fcl_MAJOR_VERSION}")
 
