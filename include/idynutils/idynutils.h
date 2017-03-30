@@ -212,6 +212,9 @@ public:
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const bool set_world_pose = false);
+    void updateiDyn3Model(const Eigen::VectorXd& q,
+                          const bool set_world_pose = false);
+        
     /**
      * @brief updateiDyn3Model updates the underlying robot model (uses both Kinematic and Dynamic RNEA)
      * @param q robot configuration
@@ -237,6 +240,9 @@ public:
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
                           const yarp::sig::Vector& dq,
+                          const bool set_world_pose = false);
+    void updateiDyn3Model(const Eigen::VectorXd& q,
+                          const Eigen::VectorXd& dq,
                           const bool set_world_pose = false);
 
     /**
@@ -263,15 +269,18 @@ public:
      *          if the IMU is NOT used we are assuming l_sole as inertial frame and a flat ground!
      *
      * @param q robot configuration
-     * @param dq_ref robot joint velocities
-     * @param ddq_ref robot joint accelerations
+     * @param dq robot joint velocities
+     * @param ddq robot joint accelerations
      * @param set_world_pose do we update the base link pose wrt the world frame?
-     * @param support_foot what is the support foot link name in single stance mode?
      * @TODO in the future we should use the IMU + rgbdslam + FK
      */
     void updateiDyn3Model(const yarp::sig::Vector& q,
-                          const yarp::sig::Vector& dq_ref,
-                          const yarp::sig::Vector& ddq_ref,
+                          const yarp::sig::Vector& dq,
+                          const yarp::sig::Vector& ddq,
+                          const bool set_world_pose = false);
+    void updateiDyn3Model(const Eigen::VectorXd& q,
+                          const Eigen::VectorXd& dq,
+                          const Eigen::VectorXd& ddq,
                           const bool set_world_pose = false);
 
     /**
@@ -311,6 +320,7 @@ public:
     const std::vector<std::string> &getFixedJointNames() const;
 
     yarp::sig::Vector zeros;
+    Eigen::VectorXd zerosXd;
 
     enum DefaultProjectorContacts {
         CONTACT_LEFT_FOOT  = 0x0001,

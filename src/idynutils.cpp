@@ -80,6 +80,7 @@ iDynUtils::iDynUtils(const std::string robot_name_,
     setControlledKinematicChainsJointNumbers();
 
     zeros.resize(iDyn3_model.getNrOfDOFs(),0.0);
+    zerosXd.setZero(iDyn3_model.getNrOfDOFs());
 
     links_in_contact.push_back("l_foot_lower_left_link");
     links_in_contact.push_back("l_foot_lower_right_link");
@@ -517,6 +518,11 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
     this->updateiDyn3Model(q,zeros,zeros, set_world_pose);
 }
 
+void iDynUtils::updateiDyn3Model(const Eigen::VectorXd& q,
+                                 const bool set_world_pose) {
+    this->updateiDyn3Model(q,zerosXd,zerosXd, set_world_pose);
+}
+
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector &q,
                                  const std::vector<ft_measure> &force_torque_measurement,
                                  const bool set_world_pose)
@@ -531,6 +537,12 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
                                  const yarp::sig::Vector& dq,
                                  const bool set_world_pose) {
     this->updateiDyn3Model(q,dq,zeros, set_world_pose);
+}
+
+void iDynUtils::updateiDyn3Model(const Eigen::VectorXd& q,
+                                 const Eigen::VectorXd& dq,
+                                 const bool set_world_pose) {
+    this->updateiDyn3Model(q,dq,zerosXd, set_world_pose);
 }
 
 void iDynUtils::updateiDyn3Model(const yarp::sig::Vector &q,
@@ -598,6 +610,17 @@ void iDynUtils::updateiDyn3Model(const yarp::sig::Vector& q,
         iDyn3_model.dynamicRNEA();
 
     iDyn3_model.computePositions();
+}
+
+void iDynUtils::updateiDyn3Model(const Eigen::VectorXd& q,
+                                 const Eigen::VectorXd& dq,
+                                 const Eigen::VectorXd& ddq,
+                                 const bool set_world_pose)
+{
+    this->updateiDyn3Model(cartesian_utils::fromEigentoYarp(q),
+                           cartesian_utils::fromEigentoYarp(dq),
+                           cartesian_utils::fromEigentoYarp(ddq),
+                           set_world_pose);
 }
 
 void iDynUtils::setJointNumbers(kinematic_chain& chain)
