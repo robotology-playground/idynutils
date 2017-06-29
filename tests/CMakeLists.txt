@@ -80,10 +80,11 @@ if(YCM_EP_DEVEL_MODE_idynutils)
                       DEPENDS   CartesianUtilsTest
                                 CollisionUtilsTest
                                 iDynUtilsTest
-                                interfacesTest
-                                RobotUtilsTest
+                                #interfacesTest
+                                #RobotUtilsTest
                                 testUtilsTest
-                                YSCITest)
+                                #YSCITest
+)
 endif()
 SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils 
               ${kdl_parser_LIBRARIES}
@@ -93,9 +94,9 @@ SET(TestLibs  ${GTEST_BOTH_LIBRARIES} ${iDynTree_LIBRARIES} idynutils
 
 add_definitions(-DIDYNUTILS_TESTS_ROBOTS_DIR="${CMAKE_CURRENT_BINARY_DIR}/robots/")
 
-ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
-TARGET_LINK_LIBRARIES(interfacesTest ${TestLibs})
-add_dependencies(interfacesTest GTest-ext idynutils)
+#ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
+#TARGET_LINK_LIBRARIES(interfacesTest ${TestLibs})
+#add_dependencies(interfacesTest GTest-ext idynutils)
 
 ADD_EXECUTABLE(CartesianUtilsTest     cartesian_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(CartesianUtilsTest ${TestLibs})
@@ -109,13 +110,13 @@ ADD_EXECUTABLE(iDynUtilsTest    idyn_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(iDynUtilsTest ${TestLibs} ${rosbag_LIBRARIES})
 add_dependencies(iDynUtilsTest GTest-ext idynutils)
 
-ADD_EXECUTABLE(RobotUtilsTest    robot_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(RobotUtilsTest ${TestLibs} ${octomap_LIBRARIES})
-add_dependencies(RobotUtilsTest GTest-ext idynutils)
+#ADD_EXECUTABLE(RobotUtilsTest    robot_utils_tests.cpp)
+#TARGET_LINK_LIBRARIES(RobotUtilsTest ${TestLibs} ${octomap_LIBRARIES})
+#add_dependencies(RobotUtilsTest GTest-ext idynutils)
 
-ADD_EXECUTABLE(YSCITest    yarp_single_chain_interface_tests.cpp)
-TARGET_LINK_LIBRARIES(YSCITest ${TestLibs})
-add_dependencies(YSCITest GTest-ext idynutils)
+#ADD_EXECUTABLE(YSCITest    yarp_single_chain_interface_tests.cpp)
+#TARGET_LINK_LIBRARIES(YSCITest ${TestLibs})
+#add_dependencies(YSCITest GTest-ext idynutils)
 
 ADD_EXECUTABLE(testUtilsTest     tests_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(testUtilsTest ${TestLibs})
@@ -127,9 +128,9 @@ add_definitions(-DIDYNUTILS_TESTS_DATA_DIR="${CMAKE_CURRENT_BINARY_DIR}/data/")
 add_test(NAME cartesian_utils_tests COMMAND CartesianUtilsTest)
 add_test(NAME collision_utils_tests COMMAND CollisionUtilsTest)
 add_test(NAME idyn_utils_tests COMMAND iDynUtilsTest)
-add_test(NAME robot_utils_tests COMMAND RobotUtilsTest)
+#add_test(NAME robot_utils_tests COMMAND RobotUtilsTest)
 add_test(NAME tests_utils_tests COMMAND testUtilsTest)
-add_test(NAME yarp_single_chain_interface_tests COMMAND YSCITest)
+#add_test(NAME yarp_single_chain_interface_tests COMMAND YSCITest)
 
 add_custom_target(copy_robot_model_files ALL
                   ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/robots" "${CMAKE_CURRENT_BINARY_DIR}/robots")
