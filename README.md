@@ -7,3 +7,5 @@ iDynUtils is developed under the European Project WALK-MAN: http://www.walk-man.
 ## Installation
 
 To Install iDynUtils, is is recommended to use the robotology superbuild http://www.github.com/robotology-playground/robotology-superbuild
+
+THIS LIBRARY IS NOT LONGER SUPPORTED
